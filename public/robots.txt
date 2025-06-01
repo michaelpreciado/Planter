@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://your-app-url.netlify.app/sitemap.xml
+
+# Disallow sensitive or unnecessary paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /.netlify/
+
+# Allow specific assets
+Allow: /assets/
+Allow: /images/
+Allow: /favicon.ico
+
+# Crawl delay (optional)
+Crawl-delay: 1 

@@ -5,13 +5,19 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:netlify": "next build && next export",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
     "analyze": "ANALYZE=true npm run build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "lighthouse": "lighthouse http://localhost:3000 --output=csv --output-path=./lighthouse-audit.csv"
+    "lighthouse": "lighthouse http://localhost:3000 --output=csv --output-path=./lighthouse-audit.csv",
+    "precommit": "npm run lint && npm run type-check",
+    "preview": "npm run build && npm run start",
+    "clean": "rm -rf .next out",
+    "postbuild": "echo 'Build completed successfully!'"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",

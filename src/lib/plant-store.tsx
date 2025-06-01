@@ -214,17 +214,17 @@ export const usePlantStore = create<PlantStore>()(
       addPlant: async (plantData) => {
         set({ loading: true, error: null });
         try {
-          const newPlant: Plant = {
-            ...plantData,
-            id: uuidv4(),
-            icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
-            iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
-            status: 'healthy',
-            lastWatered: 'Just planted',
-            nextWatering: calculateNextWatering(plantData.wateringFrequency),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
+        const newPlant: Plant = {
+          ...plantData,
+          id: uuidv4(),
+          icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
+          iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
+          status: 'healthy',
+          lastWatered: 'Just planted',
+          nextWatering: calculateNextWatering(plantData.wateringFrequency),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
 
           // Add to database first
           try {
@@ -238,10 +238,10 @@ export const usePlantStore = create<PlantStore>()(
           } catch (dbError) {
             // If database fails, still add locally (offline support)
             console.warn('Database add failed, adding locally:', dbError);
-            set((state) => ({
-              plants: [...state.plants, newPlant],
+        set((state) => ({
+          plants: [...state.plants, newPlant],
               loading: false,
-            }));
+        }));
           }
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to add plant', loading: false });
@@ -258,10 +258,10 @@ export const usePlantStore = create<PlantStore>()(
             console.warn('Database delete failed, removing locally:', dbError);
           }
           
-          set((state) => ({
-            plants: state.plants.filter((plant) => plant.id !== id),
+        set((state) => ({
+          plants: state.plants.filter((plant) => plant.id !== id),
             loading: false,
-          }));
+        }));
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to remove plant', loading: false });
         }
@@ -276,9 +276,9 @@ export const usePlantStore = create<PlantStore>()(
           }
 
           const updatedData = {
-            ...updates,
-            updatedAt: new Date().toISOString(),
-            status: updates.lastWatered 
+                  ...updates,
+                  updatedAt: new Date().toISOString(),
+                  status: updates.lastWatered 
               ? getPlantStatus(updates.lastWatered, currentPlant.wateringFrequency)
               : (updates.status || currentPlant.status),
           };
@@ -293,9 +293,9 @@ export const usePlantStore = create<PlantStore>()(
           set((state) => ({
             plants: state.plants.map((plant) =>
               plant.id === id ? { ...plant, ...updatedData } : plant
-            ),
+          ),
             loading: false,
-          }));
+        }));
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to update plant', loading: false });
         }
@@ -307,8 +307,8 @@ export const usePlantStore = create<PlantStore>()(
         
         if (plant) {
           await get().updatePlant(id, {
-            lastWatered: now,
-            status: 'healthy',
+                    lastWatered: now,
+                    status: 'healthy',
             nextWatering: calculateNextWatering(plant.wateringFrequency),
           });
 
@@ -359,7 +359,7 @@ const PlantContext = createContext<PlantStore | null>(null);
 
 export function PlantProvider({ children }: { children: ReactNode }) {
   const store = usePlantStore();
-
+  
   return (
     <PlantContext.Provider value={store}>
       {children}
