@@ -1,0 +1,6 @@
+This is a placeholder for the Android adaptive icon.
+To create the actual adaptive icon:
+1. Create a 1024x1024 PNG image
+2. Use transparent background  
+3. Center the Tamagotchi blob design
+4. Ensure 33% safe zone around edges for Android's masking 

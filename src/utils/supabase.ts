@@ -1,0 +1,123 @@
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types';
+
+// Use environment variables for Supabase configuration
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+// Plant operations with user authentication
+export const plantService = {
+  // Get all plants for the current user
+  async getPlants() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('plants')
+      .select('*')
+      .eq('userId', user.id)
+      .order('createdAt', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Create a new plant for the current user
+  async createPlant(plant: Omit<Database['public']['Tables']['plants']['Insert'], 'userId'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('plants')
+      .insert({
+        ...plant,
+        userId: user.id,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Update a plant (only if owned by current user)
+  async updatePlant(id: string, updates: Database['public']['Tables']['plants']['Update']) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('plants')
+      .update(updates)
+      .eq('id', id)
+      .eq('userId', user.id) // Ensure user owns the plant
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete a plant (only if owned by current user)
+  async deletePlant(id: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('plants')
+      .delete()
+      .eq('id', id)
+      .eq('userId', user.id); // Ensure user owns the plant
+    
+    if (error) throw error;
+  },
+
+  // Log watering event
+  async logWatering(plantId: string) {
+    return this.updatePlant(plantId, {
+      lastWatered: new Date().toISOString(),
+    });
+  },
+};
+
+// Profile operations
+export const profileService = {
+  // Get current user profile
+  async getProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // Create or update user profile
+  async upsertProfile(profile: Partial<Database['public']['Tables']['profiles']['Insert']>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        email: user.email || '',
+        username: profile.username || user.user_metadata?.username,
+        ...profile,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+}; 

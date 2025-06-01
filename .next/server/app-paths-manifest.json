@@ -1,0 +1,5 @@
+{
+  "/list/page": "app/list/page.js",
+  "/add-plant/page": "app/add-plant/page.js",
+  "/page": "app/page.js"
+}
