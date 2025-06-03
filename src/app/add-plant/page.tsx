@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { ImageCapture } from '@/components/ImageCapture';
@@ -256,9 +257,11 @@ export default function AddPlantPage() {
                         className="relative bg-gray-100 rounded-xl overflow-hidden"
                         style={{ aspectRatio: '3/2' }}
                       >
-                        <img
+                        <Image
                           src={imageUrl}
                           alt={`Note attachment ${index + 1}`}
+                          width={400}
+                          height={267}
                           className="w-full h-full object-cover"
                         />
                         <button

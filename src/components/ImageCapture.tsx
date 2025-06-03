@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 interface ImageCaptureProps {
   onImageCapture: (imageUrl: string) => void;
@@ -91,9 +92,11 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
         whileTap={{ scale: 0.98 }}
       >
         {currentImage ? (
-          <img
+          <Image
             src={currentImage}
             alt="Plant photo"
+            width={800}
+            height={600}
             className="w-full h-full object-cover"
           />
         ) : (

@@ -18,6 +18,12 @@ hosting/.cache
 /.firebase/
 /emulator-ui/
 
+# Next.js
+/.next/
+/out/
+.next
+out
+
 # Logs
 *.log
 npm-debug.log*

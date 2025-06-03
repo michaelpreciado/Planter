@@ -368,10 +368,9 @@ export function PlantProvider({ children }: { children: ReactNode }) {
 }
 
 export function usePlants() {
+  const store = usePlantStore();
   const context = useContext(PlantContext);
-  if (!context) {
-    // Fallback to direct store access if not in provider
-    return usePlantStore();
-  }
-  return context;
+  
+  // Return context if available, otherwise fallback to direct store access
+  return context || store;
 } 

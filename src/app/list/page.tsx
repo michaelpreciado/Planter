@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
 import { SwipeableCard } from '@/components/SwipeableCard';
@@ -224,9 +225,11 @@ export default function ListPage() {
                             {/* Plant Image/Icon */}
                             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                               {plant.imageUrl ? (
-                                <img
+                                <Image
                                   src={plant.imageUrl}
                                   alt={plant.name}
+                                  width={48}
+                                  height={48}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
