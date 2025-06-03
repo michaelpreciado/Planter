@@ -1,19 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Output configuration for Netlify
-  output: 'export',
+  // Removed output: 'export' to allow dynamic routes
   trailingSlash: true,
   distDir: 'out',
   
   experimental: {
-    // Temporarily disable turbo mode to fix module resolution issues
-    // turbo: {
-    //   rules: {
-    //     '*.svg': ['@svgr/webpack'],
-    //   },
-    // },
+    // Removed optimizeCss to fix critters module error
     serverComponentsExternalPackages: ['canvas'],
-    optimizeCss: true,
     scrollRestoration: true,
     webpackBuildWorker: true,
   },
@@ -24,9 +17,8 @@ const nextConfig = {
   generateEtags: false,
   swcMinify: true,
   
-  // Image optimization for static export
+  // Image optimization
   images: {
-    unoptimized: true, // Required for static export
     formats: ['image/avif', 'image/webp'],
     domains: ['supabase.co', 'your-supabase-domain.supabase.co'],
     deviceSizes: [360, 414, 768, 1024, 1280, 1920],
