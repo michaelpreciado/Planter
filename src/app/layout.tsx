@@ -11,17 +11,6 @@ const inter = Inter({
   preload: true,
 });
 
-// Version component for bottom center display
-function VersionDisplay() {
-  return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm border border-gray-200 dark:border-gray-700">
-      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-        v.1.0
-      </span>
-    </div>
-  );
-}
-
 export const metadata = {
   title: 'Plant Tracker - Keep Your Plants Happy',
   description: 'A beautiful plant care app with a Tamagotchi-style companion to help you nurture your green friends.',
@@ -98,7 +87,6 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-gray-50 dark:bg-dark-900 transition-colors duration-300`}>
         <Providers>
-          <VersionDisplay />
           <div className="min-h-screen flex flex-col pb-20">
             {children}
           </div>

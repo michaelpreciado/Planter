@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
+import { useTamagotchiStore, getColorFilter } from '@/lib/tamagotchi-store';
 
 // Memoized particle component for better performance
 const Particle = memo(({ type, delay }: { type: string; delay: number }) => {
@@ -53,6 +54,7 @@ export const TamagotchiBlob = memo(({
   mood = 'neutral' 
 }: TamagotchiBlobProps) => {
   const { plants } = usePlants();
+  const { settings } = useTamagotchiStore();
   const [isActive, setIsActive] = useState(false);
   const [particles, setParticles] = useState<{ id: number; type: string; delay: number }[]>([]);
   const [hasEntryPlayed, setHasEntryPlayed] = useState(false);
@@ -75,23 +77,35 @@ export const TamagotchiBlob = memo(({
 
   // Memoized filter styles for better performance
   const filterStyle = useMemo(() => {
-    switch (currentMood) {
-      case 'happy': return 'hue-rotate(60deg) saturate(1.2) brightness(1.1)';
-      case 'sad': return 'hue-rotate(240deg) saturate(0.8) brightness(0.8)';
-      case 'mad': return 'hue-rotate(0deg) saturate(1.5) brightness(1.2)';
-      default: return 'none';
+    // If mood is not neutral, use mood-based filters
+    if (currentMood !== 'neutral') {
+      switch (currentMood) {
+        case 'happy': return 'hue-rotate(60deg) saturate(1.2) brightness(1.1)';
+        case 'sad': return 'hue-rotate(240deg) saturate(0.8) brightness(0.8)';
+        case 'mad': return 'hue-rotate(0deg) saturate(1.5) brightness(1.2)';
+        default: return 'none';
+      }
     }
-  }, [currentMood]);
+    
+    // Otherwise, use custom color from settings
+    return getColorFilter(settings.color);
+  }, [currentMood, settings.color]);
 
   // Memoized glow color
   const glowColor = useMemo(() => {
-    switch (currentMood) {
-      case 'happy': return '#10B981';
-      case 'sad': return '#3B82F6'; 
-      case 'mad': return '#EF4444';
-      default: return '#6B7280';
+    // If mood is not neutral, use mood-based colors
+    if (currentMood !== 'neutral') {
+      switch (currentMood) {
+        case 'happy': return '#10B981';
+        case 'sad': return '#3B82F6'; 
+        case 'mad': return '#EF4444';
+        default: return '#6B7280';
+      }
     }
-  }, [currentMood]);
+    
+    // Otherwise, use custom color from settings
+    return settings.color;
+  }, [currentMood, settings.color]);
 
   // Auto-cycle animation
   useEffect(() => {

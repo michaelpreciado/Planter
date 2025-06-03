@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
+import { TamagotchiColorPicker } from './TamagotchiColorPicker';
+import { useTamagotchiStore } from '@/lib/tamagotchi-store';
 
 interface SettingsDropdownProps {
   className?: string;
@@ -10,11 +12,13 @@ interface SettingsDropdownProps {
 
 export function SettingsDropdown({ className = '' }: SettingsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [reminders, setReminders] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [weatherSync, setWeatherSync] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const haptic = useHapticFeedback();
+  const { settings } = useTamagotchiStore();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -42,8 +46,14 @@ export function SettingsDropdown({ className = '' }: SettingsDropdownProps) {
 
   const handleMenuClick = (item: string) => {
     haptic.lightImpact();
-    // TODO: Implement menu item actions
-    console.log(`Clicked: ${item}`);
+    
+    if (item === 'Tamagotchi Color') {
+      setShowColorPicker(true);
+      setIsOpen(false); // Close the dropdown
+    } else {
+      // TODO: Implement other menu item actions
+      console.log(`Clicked: ${item}`);
+    }
   };
 
   return (
@@ -161,7 +171,10 @@ export function SettingsDropdown({ className = '' }: SettingsDropdownProps) {
                 >
                   <span className="text-gray-900 font-medium">Tamagotchi Color</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-500 rounded-full" />
+                    <div 
+                      className="w-4 h-4 rounded-full border border-gray-300" 
+                      style={{ backgroundColor: settings.color }}
+                    />
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -202,6 +215,12 @@ export function SettingsDropdown({ className = '' }: SettingsDropdownProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Color Picker Modal */}
+      <TamagotchiColorPicker
+        isOpen={showColorPicker}
+        onClose={() => setShowColorPicker(false)}
+      />
     </div>
   );
 } 
