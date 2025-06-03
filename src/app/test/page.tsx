@@ -164,7 +164,7 @@ export default function TestPage() {
               onClick={handleClearLocalStorage}
               className="block w-full px-4 py-2 bg-red-500 text-white rounded"
             >
-              Clear localStorage & Reload
+              Clear localStorage &amp; Reload
             </button>
           </div>
         </div>
@@ -176,8 +176,8 @@ export default function TestPage() {
             <li>Try adding a test plant and see if it appears in the list</li>
             <li>Refresh the page and check if the plant persists</li>
             <li>Check the browser console for any errors</li>
-            <li>Use "Debug Store State" to see the current state</li>
-            <li>Use "Check localStorage" to see what's stored</li>
+            <li>Use &ldquo;Debug Store State&rdquo; to see the current state</li>
+            <li>Use &ldquo;Check localStorage&rdquo; to see what&rsquo;s stored</li>
             <li>Navigate to other pages and come back to see if plants disappear</li>
           </ol>
         </div>
