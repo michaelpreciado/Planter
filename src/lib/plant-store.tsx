@@ -370,7 +370,9 @@ export function PlantProvider({ children }: { children: ReactNode }) {
 export function usePlants() {
   const store = usePlantStore();
   const context = useContext(PlantContext);
-  
+
   // Return context if available, otherwise fallback to direct store access
   return context || store;
-} 
+}
+
+export { calculateNextWatering, getPlantStatus };
