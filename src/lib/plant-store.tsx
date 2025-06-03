@@ -226,7 +226,7 @@ export const usePlantStore = create<PlantStore>()(
             updatedAt: new Date().toISOString(),
           };
 
-          // Add to database first
+          // Try to add to database first
           try {
             const dbPlant = await plantService.createPlant(localPlantToDb(newPlant));
             // Update with actual database ID and data
@@ -238,13 +238,23 @@ export const usePlantStore = create<PlantStore>()(
           } catch (dbError) {
             // If database fails, still add locally (offline support)
             console.warn('Database add failed, adding locally:', dbError);
+            
+            // Check if it's a configuration error
+            if (dbError instanceof Error && dbError.message.includes('Database not configured')) {
+              console.info('💡 To enable cloud sync, set up your Supabase environment variables');
+            }
+            
             set((state) => ({
               plants: [...state.plants, newPlant],
               loading: false,
             }));
           }
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to add plant', loading: false });
+          console.error('Error adding plant:', error);
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to add plant', 
+            loading: false 
+          });
         }
       },
 

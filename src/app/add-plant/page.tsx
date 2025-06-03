@@ -23,7 +23,7 @@ const plantTypes = [
 
 export default function AddPlantPage() {
   const router = useRouter();
-  const { addPlant } = usePlants();
+  const { addPlant, error, loading } = usePlants();
   const haptic = useHapticFeedback();
   
   const [formData, setFormData] = useState({
@@ -68,6 +68,7 @@ export default function AddPlantPage() {
       haptic.success();
       router.push('/list');
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       haptic.error();
       setIsSubmitting(false);
     }
@@ -290,6 +291,30 @@ export default function AddPlantPage() {
               </div>
             </div>
           </motion.div>
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4"
+            >
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-red-800 text-sm font-medium">Unable to save to database</p>
+                  <p className="text-red-600 text-xs mt-1">
+                    {error.includes('Database not configured') 
+                      ? 'Your plant will be saved locally. To enable cloud sync, configure your database settings.'
+                      : error
+                    }
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Submit Button */}
           <motion.div

@@ -2,15 +2,36 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types';
 
 // Use environment variables for Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Check if environment variables are set
+if (!supabaseUrl || !supabaseAnonKey || 
+    supabaseUrl === 'https://your-project.supabase.co' || 
+    supabaseAnonKey === 'your-anon-key') {
+  console.warn('⚠️ Supabase environment variables not configured. Running in offline mode.');
+}
+
+export const supabase = createClient<Database>(
+  supabaseUrl || 'https://localhost:3000', 
+  supabaseAnonKey || 'dummy-key'
+);
+
+// Check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return !!(supabaseUrl && supabaseAnonKey && 
+    supabaseUrl !== 'https://your-project.supabase.co' && 
+    supabaseAnonKey !== 'your-anon-key');
+};
 
 // Plant operations with user authentication
 export const plantService = {
   // Get all plants for the current user
   async getPlants() {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -26,6 +47,10 @@ export const plantService = {
 
   // Create a new plant for the current user
   async createPlant(plant: Omit<Database['public']['Tables']['plants']['Insert'], 'userId'>) {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -44,6 +69,10 @@ export const plantService = {
 
   // Update a plant (only if owned by current user)
   async updatePlant(id: string, updates: Database['public']['Tables']['plants']['Update']) {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -61,6 +90,10 @@ export const plantService = {
 
   // Delete a plant (only if owned by current user)
   async deletePlant(id: string) {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
