@@ -39,10 +39,16 @@ interface PlantStore {
   
   // Sync operations
   syncWithDatabase: () => Promise<void>;
+  refreshPlants: () => Promise<void>;
+  clearError: () => void;
   clearRecentlyWatered: () => void;
   getPlantById: (id: string) => Plant | undefined;
   getHealthyPlants: () => Plant[];
   getPlantsNeedingWater: () => Plant[];
+  
+  // Debug operations (for development)
+  debugPlantStore: () => void;
+  
   initializeSampleData: () => void;
 }
 
@@ -204,10 +210,31 @@ export const usePlantStore = create<PlantStore>()(
         try {
           const dbPlants = await plantService.getPlants();
           const localPlants = dbPlants.map(dbPlantToLocal);
-          set({ plants: localPlants, loading: false });
+          
+          // Merge with existing plants instead of replacing
+          // Keep local plants that aren't in the database (offline-created)
+          set((state) => {
+            const existingLocalPlants = state.plants.filter(localPlant => 
+              !localPlants.some(dbPlant => dbPlant.id === localPlant.id)
+            );
+            
+            // Combine database plants with local-only plants
+            const mergedPlants = [...localPlants, ...existingLocalPlants];
+            
+            console.log(`Synced ${localPlants.length} plants from database, keeping ${existingLocalPlants.length} local plants`);
+            
+            return {
+              plants: mergedPlants,
+              loading: false
+            };
+          });
         } catch (error) {
           console.error('Failed to sync with database:', error);
-          set({ error: error instanceof Error ? error.message : 'Sync failed', loading: false });
+          // Don't clear local plants on sync failure
+          set({ 
+            error: error instanceof Error ? error.message : 'Sync failed', 
+            loading: false 
+          });
         }
       },
 
@@ -226,28 +253,31 @@ export const usePlantStore = create<PlantStore>()(
             updatedAt: new Date().toISOString(),
           };
 
-          // Try to add to database first
+          // Always save locally first to prevent data loss
+          set((state) => ({
+            plants: [...state.plants, newPlant],
+            loading: false,
+          }));
+
+          // Then try to sync to database
           try {
             const dbPlant = await plantService.createPlant(localPlantToDb(newPlant));
-            // Update with actual database ID and data
+            // Update with database ID and data if successful
             const finalPlant = dbPlantToLocal(dbPlant);
             set((state) => ({
-              plants: [...state.plants, finalPlant],
-              loading: false,
+              plants: state.plants.map(p => 
+                p.id === newPlant.id ? finalPlant : p
+              ),
             }));
+            console.log('Plant successfully synced to database');
           } catch (dbError) {
-            // If database fails, still add locally (offline support)
-            console.warn('Database add failed, adding locally:', dbError);
+            // Plant is already saved locally, just log the sync failure
+            console.warn('Database add failed, plant saved locally:', dbError);
             
             // Check if it's a configuration error
             if (dbError instanceof Error && dbError.message.includes('Database not configured')) {
               console.info('💡 To enable cloud sync, set up your Supabase environment variables');
             }
-            
-            set((state) => ({
-              plants: [...state.plants, newPlant],
-              loading: false,
-            }));
           }
         } catch (error) {
           console.error('Error adding plant:', error);
@@ -329,6 +359,16 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
+      // Manual refresh function that preserves local data
+      refreshPlants: async () => {
+        // Same as syncWithDatabase but with explicit user action
+        return get().syncWithDatabase();
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+
       clearRecentlyWatered: () => {
         set({ recentlyWateredPlant: null });
       },
@@ -345,6 +385,20 @@ export const usePlantStore = create<PlantStore>()(
         return get().plants.filter(plant => plant.status === 'needs_water' || plant.status === 'overdue');
       },
 
+      // Debug operations (for development)
+      debugPlantStore: () => {
+        const state = get();
+        console.log('=== Plant Store Debug ===');
+        console.log('Total plants:', state.plants.length);
+        console.log('Plant IDs:', state.plants.map(p => p.id));
+        console.log('Plant names:', state.plants.map(p => p.name));
+        console.log('Loading:', state.loading);
+        console.log('Error:', state.error);
+        console.log('Recent watered:', state.recentlyWateredPlant);
+        console.log('Full state:', state);
+        console.log('=========================');
+      },
+
       initializeSampleData: () => {
         const samplePlants = createSamplePlants();
         set((state) => ({
@@ -354,10 +408,14 @@ export const usePlantStore = create<PlantStore>()(
     }),
     {
       name: 'plant-store',
+      version: 1,
       partialize: (state) => ({ 
         plants: state.plants,
-        recentlyWateredPlant: state.recentlyWateredPlant 
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
+      },
+      skipHydration: false,
     }
   )
 );
