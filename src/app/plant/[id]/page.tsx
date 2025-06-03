@@ -10,6 +10,13 @@ import { ImageCapture } from '@/components/ImageCapture';
 import { TamagotchiBlob } from '@/components/TamagotchiBlob';
 import { format, formatDistanceToNow } from 'date-fns';
 
+// Required for static export with dynamic routes
+export async function generateStaticParams() {
+  // Return empty array to allow all dynamic routes to be rendered at runtime
+  // This is needed for client-side dynamic content with static export
+  return [];
+}
+
 export default function PlantDetailPage() {
   const params = useParams();
   const router = useRouter();

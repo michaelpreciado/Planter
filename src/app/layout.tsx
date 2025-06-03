@@ -11,10 +11,10 @@ const inter = Inter({
   preload: true,
 });
 
-// Version component for top left display
+// Version component for bottom center display
 function VersionDisplay() {
   return (
-    <div className="fixed top-4 left-4 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm border border-gray-200 dark:border-gray-700">
       <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
         v.1.0
       </span>
