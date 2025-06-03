@@ -1,6 +1,6 @@
 # Plant Tracker 🌱
 
-A beautiful React Native app for tracking your plants with a cute Tamagotchi-style interface. Built with Expo, TypeScript, and NativeWind.
+A sleek **Next.js** web application for tracking your plants with a cute Tamagotchi-style interface. Built with TypeScript and Tailwind CSS.
 
 ## Features
 
@@ -12,14 +12,13 @@ A beautiful React Native app for tracking your plants with a cute Tamagotchi-sty
 
 ## Tech Stack
 
-- **Expo SDK 50+** with EAS build profile
-- **React Native 0.73+** with TypeScript strict mode
-- **React Navigation v6** (Drawer + Bottom Tabs)
-- **NativeWind** for utility-first styling
-- **React Native SVG** + **Moti** for animations
-- **Expo Vector Icons** (Ionicons)
+- **Next.js 14** with React 18
+- **TypeScript** with strict mode
+- **Tailwind CSS** for utility-first styling
+- **Radix UI** for accessible components
+- **Framer Motion** for animations
 - **React Hook Form** for form management
-- **AsyncStorage** for local persistence
+- **Zustand** for state management
 - **Supabase** (ready for backend integration)
 
 ## Quick Start
