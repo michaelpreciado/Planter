@@ -16,7 +16,8 @@
     "precommit": "npm run lint && npm run type-check",
     "preview": "npm run build && npm run start",
     "clean": "rm -rf .next out",
-    "postbuild": "echo 'Build completed successfully!'"
+    "postbuild": "echo 'Build completed successfully!'",
+    "test": "jest"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
@@ -65,7 +66,12 @@
     "lighthouse": "^11.4.0",
     "prettier": "^3.1.1",
     "prettier-plugin-tailwindcss": "^0.5.9",
-    "storybook": "^7.6.6"
+    "storybook": "^7.6.6",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.4.0",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "engines": {
     "node": ">=18.0.0",
