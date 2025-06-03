@@ -220,7 +220,7 @@ export const TamagotchiBlob = memo(({
             }}
           >
             <Image
-              src="/assets/tamagatchi.png"
+              src="/assets/tamagotchi.png"
               alt="Tamagotchi Pet"
               width={size}
               height={size}
