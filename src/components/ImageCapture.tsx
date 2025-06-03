@@ -39,7 +39,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
       const result = e.target?.result as string;
       
       // Create an image to resize it
-      const img = new Image();
+      const img = document.createElement('img') as HTMLImageElement;
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
