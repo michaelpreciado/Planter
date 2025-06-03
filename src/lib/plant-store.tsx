@@ -101,8 +101,9 @@ const dbPlantToLocal = (dbPlant: DBPlant): Plant => ({
   updatedAt: dbPlant.updatedAt,
 });
 
-// Convert local plant to database format
-const localPlantToDb = (localPlant: Plant, userId: string): Omit<DBPlant, 'id' | 'createdAt' | 'updatedAt'> => ({
+// Convert local plant to database format. The userId will be added by the
+// service layer so it is omitted here.
+const localPlantToDb = (localPlant: Plant): Omit<DBPlant, 'id' | 'createdAt' | 'updatedAt' | 'userId'> => ({
   name: localPlant.name,
   species: localPlant.species,
   plantedDate: localPlant.plantingDate,
@@ -116,7 +117,6 @@ const localPlantToDb = (localPlant: Plant, userId: string): Omit<DBPlant, 'id' |
   notes: localPlant.notes,
   noteAttachments: localPlant.noteAttachments,
   imageUrl: localPlant.imageUrl,
-  userId,
 });
 
 // Sample plants for testing
@@ -228,7 +228,7 @@ export const usePlantStore = create<PlantStore>()(
 
           // Add to database first
           try {
-            const dbPlant = await plantService.createPlant(localPlantToDb(newPlant, ''));
+            const dbPlant = await plantService.createPlant(localPlantToDb(newPlant));
             // Update with actual database ID and data
             const finalPlant = dbPlantToLocal(dbPlant);
             set((state) => ({
