@@ -19,9 +19,10 @@ export default function TestPage() {
   const handleAddTestPlant = async () => {
     if (!testPlantName.trim()) return;
     
+    console.log('Adding test plant:', testPlantName);
     await addPlant({
       name: testPlantName.trim(),
-      species: 'test',
+      species: 'test species',
       wateringFrequency: 7,
       notes: 'Test plant created at ' + new Date().toLocaleTimeString(),
       noteAttachments: [],
@@ -29,6 +30,20 @@ export default function TestPage() {
     });
     
     setTestPlantName('');
+    console.log('Plant added successfully');
+  };
+
+  const handleAddQuickTestPlant = async () => {
+    console.log('Adding quick test plant');
+    await addPlant({
+      name: 'Quick Test Plant ' + Date.now(),
+      species: 'Testicus planticus',
+      wateringFrequency: 3,
+      notes: 'Quick test plant for debugging',
+      noteAttachments: [],
+      plantingDate: new Date().toISOString(),
+    });
+    console.log('Quick plant added successfully');
   };
 
   const handleCheckLocalStorage = () => {
@@ -38,9 +53,12 @@ export default function TestPage() {
       try {
         const parsed = JSON.parse(stored);
         console.log('Parsed storage:', parsed);
+        console.log('Plants in storage:', parsed.state?.plants?.length || 0);
       } catch (e) {
         console.error('Failed to parse stored data:', e);
       }
+    } else {
+      console.log('No plant-store data found in localStorage');
     }
   };
 
@@ -108,6 +126,13 @@ export default function TestPage() {
               Add Plant
             </button>
           </div>
+          <button
+            onClick={handleAddQuickTestPlant}
+            disabled={loading}
+            className="mt-2 w-full px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          >
+            Add Quick Test Plant
+          </button>
         </div>
 
         {/* Debug Actions */}

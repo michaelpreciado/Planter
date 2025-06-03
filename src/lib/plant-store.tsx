@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { format, addDays, subDays } from 'date-fns';
-import { plantService } from '@/utils/supabase';
+import { plantService, isSupabaseConfigured } from '@/utils/supabase';
 import { Plant as DBPlant } from '@/types';
 
 export interface Plant {
@@ -30,6 +30,7 @@ interface PlantStore {
   recentlyWateredPlant: string | null;
   loading: boolean;
   error: string | null;
+  hasHydrated: boolean;
   
   // Local operations (for offline support)
   addPlant: (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -98,7 +99,7 @@ const dbPlantToLocal = (dbPlant: DBPlant): Plant => ({
   icon: dbPlant.icon,
   iconColor: dbPlant.iconColor,
   lastWatered: dbPlant.lastWatered,
-  nextWatering: dbPlant.nextWatering,
+  nextWatering: dbPlant.nextWatering || calculateNextWatering(dbPlant.wateringFrequency),
   status: dbPlant.status,
   notes: dbPlant.notes,
   noteAttachments: dbPlant.noteAttachments,
@@ -117,8 +118,17 @@ const localPlantToDb = (localPlant: Plant): Omit<DBPlant, 'id' | 'createdAt' | '
   wateringFrequency: localPlant.wateringFrequency,
   icon: localPlant.icon,
   iconColor: localPlant.iconColor,
-  lastWatered: localPlant.lastWatered,
-  nextWatering: localPlant.nextWatering || calculateNextWatering(localPlant.wateringFrequency),
+  lastWatered: localPlant.lastWatered === 'Just planted' ? undefined : localPlant.lastWatered,
+  // Only send actual date strings to the database, not user-friendly strings
+  nextWatering: (() => {
+    if (localPlant.lastWatered === 'Just planted') {
+      return addDays(new Date(), localPlant.wateringFrequency).toISOString();
+    }
+    if (localPlant.nextWatering && ['Tomorrow', 'Today', 'Overdue'].some(str => localPlant.nextWatering?.includes(str))) {
+      return addDays(new Date(), localPlant.wateringFrequency).toISOString();
+    }
+    return localPlant.nextWatering || addDays(new Date(), localPlant.wateringFrequency).toISOString();
+  })(),
   status: localPlant.status,
   notes: localPlant.notes,
   noteAttachments: localPlant.noteAttachments,
@@ -203,9 +213,16 @@ export const usePlantStore = create<PlantStore>()(
       recentlyWateredPlant: null,
       loading: false,
       error: null,
+      hasHydrated: false,
       
       // Sync with database
       syncWithDatabase: async () => {
+        // Don't sync if database is not configured
+        if (!isSupabaseConfigured()) {
+          console.log('Database not configured - staying in offline mode');
+          return;
+        }
+        
         set({ loading: true, error: null });
         try {
           const dbPlants = await plantService.getPlants();
@@ -412,8 +429,15 @@ export const usePlantStore = create<PlantStore>()(
       partialize: (state) => ({ 
         plants: state.plants,
       }),
-      onRehydrateStorage: () => (state) => {
-        console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Failed to rehydrate plant store:', error);
+        } else {
+          console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
+          if (state) {
+            state.hasHydrated = true;
+          }
+        }
       },
       skipHydration: false,
     }

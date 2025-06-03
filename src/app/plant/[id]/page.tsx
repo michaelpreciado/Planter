@@ -13,18 +13,33 @@ import { format, formatDistanceToNow } from 'date-fns';
 export default function PlantDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered } = usePlants();
+  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, hasHydrated } = usePlants();
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState('');
 
   const plant = getPlantById(params.id as string);
 
+  // Show loading while hydrating
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4 animate-pulse">🌱</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading plant details...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error only after hydration is complete
   if (!plant) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">🌱</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Plant not found</h2>
+          <p className="text-gray-600 mb-4">Plant ID: {params.id}</p>
+          <p className="text-gray-600 mb-4">Total plants in store: {plants.length}</p>
           <Link href="/list" className="text-green-600 hover:text-green-700">
             ← Back to plant list
           </Link>

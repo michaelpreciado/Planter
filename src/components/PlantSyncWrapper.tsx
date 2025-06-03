@@ -18,6 +18,9 @@ export function PlantSyncWrapper({ children }: { children: React.ReactNode }) {
     // - Already synced
     // - Supabase not configured
     if (authLoading || !user || hasInitialSynced || !isSupabaseConfigured()) {
+      if (!isSupabaseConfigured()) {
+        console.log('Supabase not configured - running in offline mode');
+      }
       return;
     }
 
