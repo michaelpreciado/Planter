@@ -56,7 +56,7 @@ export default function AddPlantPage() {
     haptic.mediumImpact();
 
     try {
-      addPlant({
+      await addPlant({
         name: formData.name.trim(),
         species: selectedType,
         wateringFrequency: formData.wateringFrequency,
