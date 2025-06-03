@@ -214,17 +214,17 @@ export const usePlantStore = create<PlantStore>()(
       addPlant: async (plantData) => {
         set({ loading: true, error: null });
         try {
-        const newPlant: Plant = {
-          ...plantData,
-          id: uuidv4(),
-          icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
-          iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
-          status: 'healthy',
-          lastWatered: 'Just planted',
-          nextWatering: calculateNextWatering(plantData.wateringFrequency),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+          const newPlant: Plant = {
+            ...plantData,
+            id: uuidv4(),
+            icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
+            iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
+            status: 'healthy',
+            lastWatered: 'Just planted',
+            nextWatering: calculateNextWatering(plantData.wateringFrequency),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
 
           // Add to database first
           try {
@@ -238,10 +238,10 @@ export const usePlantStore = create<PlantStore>()(
           } catch (dbError) {
             // If database fails, still add locally (offline support)
             console.warn('Database add failed, adding locally:', dbError);
-        set((state) => ({
-          plants: [...state.plants, newPlant],
+            set((state) => ({
+              plants: [...state.plants, newPlant],
               loading: false,
-        }));
+            }));
           }
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to add plant', loading: false });
