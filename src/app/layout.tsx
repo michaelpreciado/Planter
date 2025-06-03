@@ -19,7 +19,6 @@ export const metadata = {
   creator: 'Plant Tracker Team',
   publisher: 'Plant Tracker',
   robots: 'index, follow',
-  language: 'en',
   category: 'productivity',
   openGraph: {
     title: 'Plant Tracker - Keep Your Plants Happy',
@@ -73,7 +72,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -85,9 +84,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
       </head>
-      <body className={`${inter.className} antialiased bg-gray-50 dark:bg-dark-900 transition-colors duration-300`}>
+      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen`}>
         <Providers>
-          <div className="min-h-screen flex flex-col pb-20">
+          <div className="min-h-screen flex flex-col pb-20 bg-background">
             {children}
           </div>
           <BottomNavigation />

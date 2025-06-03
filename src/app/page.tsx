@@ -83,7 +83,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex flex-col pb-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-background flex flex-col pb-20">
       {/* Top Controls */}
       <motion.div
         variants={itemVariants}
@@ -97,24 +97,24 @@ export default function HomePage() {
           {user ? (
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                <div className="text-sm font-medium text-foreground">
                   {user.user_metadata?.username || user.email?.split('@')[0]}
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
                 >
                   Sign Out
                 </button>
               </div>
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                 <span className="text-lg">🌱</span>
               </div>
             </div>
           ) : (
             <motion.button
               onClick={() => setShowAuthModal(true)}
-              className="bg-white/20 dark:bg-gray-800/30 backdrop-blur-md border border-white/30 dark:border-gray-700/50 hover:bg-white/30 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="bg-card/80 backdrop-blur-md border border-border hover:bg-card text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
               whileTap={{ scale: 0.95 }}
               disabled={authLoading}
             >
@@ -133,8 +133,8 @@ export default function HomePage() {
         animate="visible"
         className="text-center px-6 pb-8"
       >
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-white">Plant Tracker</h1>
-        <p className="text-gray-600 dark:text-gray-300">Keep your plants happy and healthy</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Plant Tracker</h1>
+        <p className="text-muted-foreground">Keep your plants happy and healthy</p>
       </motion.header>
 
       {/* Tamagotchi Section */}
@@ -156,7 +156,7 @@ export default function HomePage() {
               {/* Mood indicator */}
               <motion.div
                 variants={itemVariants}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center"
+                className="absolute -top-2 -right-2 w-6 h-6 bg-card rounded-full shadow-lg flex items-center justify-center"
               >
                 {!user ? (
                   <span className="text-blue-500 text-lg">😴</span>
@@ -173,17 +173,17 @@ export default function HomePage() {
           {!user && (
             <motion.div
               variants={itemVariants}
-              className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-700/50 rounded-2xl p-6 mb-8 text-center shadow-lg"
+              className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-6 mb-8 text-center shadow-lg"
             >
-              <div className="text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
+              <div className="text-foreground text-sm font-medium mb-2">
                 🌱 Welcome to Plant Tracker
               </div>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+              <p className="text-muted-foreground text-sm mb-4">
                 Sign in to save your plants and sync across devices
               </p>
               <motion.button
                 onClick={() => setShowAuthModal(true)}
-                className="bg-white/30 dark:bg-gray-700/40 backdrop-blur-md border border-white/40 dark:border-gray-600/50 hover:bg-white/40 dark:hover:bg-gray-600/50 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-card/80 backdrop-blur-md border border-border hover:bg-card text-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                 whileTap={{ scale: 0.95 }}
               >
                 Get Started
@@ -195,16 +195,16 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <motion.div
               variants={itemVariants}
-              className="bg-white/80 backdrop-blur rounded-2xl p-6 mb-8 shadow-lg dark:bg-gray-800/80"
+              className="bg-card/80 backdrop-blur rounded-2xl p-6 mb-8 shadow-lg"
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">{healthyPlants}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Healthy Plants</div>
+                  <div className="text-sm text-muted-foreground">Healthy Plants</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Need Water</div>
+                  <div className="text-sm text-muted-foreground">Need Water</div>
                 </div>
               </div>
             </motion.div>
@@ -238,7 +238,7 @@ export default function HomePage() {
           {user && (
             <motion.div
               variants={itemVariants}
-              className="text-center mt-8 text-xs text-gray-500 dark:text-gray-400"
+              className="text-center mt-8 text-xs text-muted-foreground"
             >
               👈 Swipe left for plants • Swipe right to add plant 👉
             </motion.div>
