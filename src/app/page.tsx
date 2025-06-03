@@ -10,17 +10,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useMobileGestures, useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { isSupabaseConfigured } from '@/utils/supabase';
 
 export default function HomePage() {
-  const { plants, initializeSampleData } = usePlants();
+  const { plants, initializeSampleData, syncWithDatabase, loading, error } = usePlants();
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
   const [showDebugTools, setShowDebugTools] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
   const healthyPlants = plants.filter(p => p.status === 'healthy').length;
   const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
+  const isDbConfigured = isSupabaseConfigured();
 
   // Mobile gestures for navigation
   useMobileGestures({
@@ -80,6 +83,20 @@ export default function HomePage() {
   const handleSignOut = async () => {
     haptic.mediumImpact();
     await signOut();
+  };
+
+  const handleSync = async () => {
+    if (!isDbConfigured || !user) return;
+    
+    haptic.mediumImpact();
+    try {
+      await syncWithDatabase();
+      setLastSyncTime(new Date().toLocaleTimeString());
+      haptic.success();
+    } catch (error) {
+      console.error('Sync failed:', error);
+      haptic.error();
+    }
   };
 
   return (
@@ -197,7 +214,7 @@ export default function HomePage() {
               variants={itemVariants}
               className="bg-card/80 backdrop-blur rounded-2xl p-6 mb-8 shadow-lg"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">{healthyPlants}</div>
                   <div className="text-sm text-muted-foreground">Healthy Plants</div>
@@ -206,6 +223,63 @@ export default function HomePage() {
                   <div className="text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
                   <div className="text-sm text-muted-foreground">Need Water</div>
                 </div>
+              </div>
+              
+              {/* Sync Status */}
+              <div className="border-t border-border pt-4">
+                {!isDbConfigured ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                      <span className="text-xs text-muted-foreground">Offline Mode</span>
+                    </div>
+                    <Link 
+                      href="/SUPABASE_SETUP.md" 
+                      className="text-xs text-blue-500 hover:text-blue-600"
+                    >
+                      Enable Sync
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${loading ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></span>
+                      <span className="text-xs text-muted-foreground">
+                        {loading ? 'Syncing...' : lastSyncTime ? `Synced ${lastSyncTime}` : 'Cloud Sync Ready'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleSync}
+                      disabled={loading}
+                      className="text-xs text-blue-500 hover:text-blue-600 disabled:text-gray-400"
+                    >
+                      🔄 Sync
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Database Setup Notice */}
+          {user && !isDbConfigured && (
+            <motion.div
+              variants={itemVariants}
+              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-4"
+            >
+              <div className="text-center">
+                <div className="text-blue-600 dark:text-blue-400 text-sm font-medium mb-2">
+                  📱 Enable Cross-Device Sync
+                </div>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mb-3">
+                  Your plants are saved locally. Set up cloud sync to access them from any device!
+                </p>
+                <Link
+                  href="/test"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors inline-block"
+                >
+                  View Setup Guide
+                </Link>
               </div>
             </motion.div>
           )}
