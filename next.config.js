@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removed output: 'export' to allow dynamic routes
+  // Standard Next.js configuration for Netlify
   trailingSlash: true,
-  distDir: 'out',
   
   experimental: {
     // Removed optimizeCss to fix critters module error
