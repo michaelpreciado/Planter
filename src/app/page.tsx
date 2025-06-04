@@ -100,16 +100,16 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-20">
+    <div className="min-h-screen bg-background flex flex-col pb-safe">
       {/* Top Controls */}
       <motion.div
         variants={itemVariants}
         initial="hidden"
         animate="visible"
-        className="flex justify-end items-center pt-safe px-6 py-6"
+        className="flex justify-end items-center pt-safe px-4 sm:px-6 py-4 sm:py-6"
       >
         {/* Auth and Night Mode Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* User Menu */}
           {user ? (
             <div className="flex items-center gap-3">
@@ -148,10 +148,10 @@ export default function HomePage() {
         variants={itemVariants}
         initial="hidden"
         animate="visible"
-        className="text-center px-6 pb-8"
+        className="text-center px-4 sm:px-6 pb-6 sm:pb-8"
       >
-        <h1 className="text-3xl font-bold text-foreground mb-2">Plant Tracker</h1>
-        <p className="text-muted-foreground">Keep your plants happy and healthy</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Plant Tracker</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Keep your plants happy and healthy</p>
       </motion.header>
 
       {/* Tamagotchi Section */}
@@ -159,16 +159,16 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex-1 flex items-center justify-center px-6"
+        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-24 sm:pb-20 overflow-y-auto"
       >
-        <div className="max-w-sm w-full">
+        <div className="max-w-sm w-full space-y-6">
           {/* Plant Character */}
           <motion.div 
             variants={blobVariants}
-            className="mb-8 flex justify-center"
+            className="flex justify-center"
           >
             <div className="relative">
-              <TamagotchiBlob size={200} showAnimation={true} />
+              <TamagotchiBlob size={160} showAnimation={true} />
               
               {/* Mood indicator */}
               <motion.div
@@ -190,7 +190,7 @@ export default function HomePage() {
           {!user && (
             <motion.div
               variants={itemVariants}
-              className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-6 mb-8 text-center shadow-lg"
+              className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-4 sm:p-6 text-center shadow-lg"
             >
               <div className="text-foreground text-sm font-medium mb-2">
                 🌱 Welcome to Plant Tracker
@@ -212,16 +212,16 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <motion.div
               variants={itemVariants}
-              className="bg-card/80 backdrop-blur rounded-2xl p-6 mb-8 shadow-lg"
+              className="bg-card/80 backdrop-blur rounded-2xl p-4 sm:p-6 shadow-lg"
             >
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{healthyPlants}</div>
-                  <div className="text-sm text-muted-foreground">Healthy Plants</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">{healthyPlants}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Healthy Plants</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
-                  <div className="text-sm text-muted-foreground">Need Water</div>
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Need Water</div>
                 </div>
               </div>
               
@@ -265,7 +265,7 @@ export default function HomePage() {
           {user && !isDbConfigured && (
             <motion.div
               variants={itemVariants}
-              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-4"
+              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 text-center"
             >
               <div className="text-center">
                 <div className="text-blue-600 dark:text-blue-400 text-sm font-medium mb-2">
@@ -293,7 +293,7 @@ export default function HomePage() {
             {user && plants.length === 0 && (
               <motion.div 
                 variants={itemVariants}
-                className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4"
+                className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4 text-center"
               >
                 <div className="text-center">
                   <div className="text-yellow-600 dark:text-yellow-400 text-sm font-medium mb-2">No plants yet?</div>
@@ -312,7 +312,7 @@ export default function HomePage() {
           {user && (
             <motion.div
               variants={itemVariants}
-              className="text-center mt-8 text-xs text-muted-foreground"
+              className="text-center text-xs text-muted-foreground"
             >
               👈 Swipe left for plants • Swipe right to add plant 👉
             </motion.div>

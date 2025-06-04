@@ -45,8 +45,8 @@ export function BottomNavigation() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pb-safe z-40">
-      <div className="flex items-center justify-around px-6 py-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 pb-safe z-40">
+      <div className="flex items-center justify-around px-4 sm:px-6 py-3">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           
@@ -55,7 +55,7 @@ export function BottomNavigation() {
               key={item.href}
               href={item.href}
               onClick={handleNavClick}
-              className="relative flex flex-col items-center justify-center py-2 px-4 min-w-0 flex-1"
+              className="relative flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 min-h-[44px]"
             >
               {/* Active indicator dot */}
               {isActive && (

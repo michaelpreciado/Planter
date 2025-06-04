@@ -84,9 +84,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
       </head>
-      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen`}>
+      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden`}>
         <Providers>
-          <div className="min-h-screen flex flex-col pb-20 bg-background">
+          <div className="min-h-screen flex flex-col bg-background">
             {children}
           </div>
           <BottomNavigation />
