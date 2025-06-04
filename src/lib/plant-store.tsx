@@ -93,19 +93,21 @@ const getPlantStatus = (lastWatered: string, frequency: number): Plant['status']
 const dbPlantToLocal = (dbPlant: DBPlant): Plant => ({
   id: dbPlant.id,
   name: dbPlant.name,
-  species: dbPlant.species,
+  species: dbPlant.species || '',
   plantingDate: dbPlant.plantingDate || dbPlant.plantedDate || new Date().toISOString(),
   wateringFrequency: dbPlant.wateringFrequency,
-  icon: dbPlant.icon,
-  iconColor: dbPlant.iconColor,
+  icon: dbPlant.icon || '🌱',
+  iconColor: dbPlant.iconColor || '#10B981',
   lastWatered: dbPlant.lastWatered,
-  nextWatering: dbPlant.nextWatering || calculateNextWatering(dbPlant.wateringFrequency),
-  status: dbPlant.status,
-  notes: dbPlant.notes,
-  noteAttachments: dbPlant.noteAttachments,
+  nextWatering: typeof dbPlant.nextWatering === 'string' 
+    ? dbPlant.nextWatering 
+    : calculateNextWatering(dbPlant.wateringFrequency),
+  status: dbPlant.status || 'healthy',
+  notes: dbPlant.notes || '',
+  noteAttachments: dbPlant.noteAttachments || [],
   imageUrl: dbPlant.imageUrl,
-  createdAt: dbPlant.createdAt,
-  updatedAt: dbPlant.updatedAt,
+  createdAt: dbPlant.createdAt || new Date().toISOString(),
+  updatedAt: dbPlant.updatedAt || new Date().toISOString(),
 });
 
 // Convert local plant to database format. The userId will be added by the
@@ -119,15 +121,16 @@ const localPlantToDb = (localPlant: Plant): Omit<DBPlant, 'id' | 'createdAt' | '
   icon: localPlant.icon,
   iconColor: localPlant.iconColor,
   lastWatered: localPlant.lastWatered === 'Just planted' ? undefined : localPlant.lastWatered,
-  // Only send actual date strings to the database, not user-friendly strings
+  // Ensure nextWatering is always a string, not a date calculation
   nextWatering: (() => {
-    if (localPlant.lastWatered === 'Just planted') {
-      return addDays(new Date(), localPlant.wateringFrequency).toISOString();
+    if (!localPlant.nextWatering || localPlant.lastWatered === 'Just planted') {
+      return calculateNextWatering(localPlant.wateringFrequency);
     }
-    if (localPlant.nextWatering && ['Tomorrow', 'Today', 'Overdue'].some(str => localPlant.nextWatering?.includes(str))) {
-      return addDays(new Date(), localPlant.wateringFrequency).toISOString();
+    // If it's a user-friendly string, convert to a proper calculation
+    if (['Tomorrow', 'Today', 'Overdue'].some(str => localPlant.nextWatering?.includes(str))) {
+      return calculateNextWatering(localPlant.wateringFrequency);
     }
-    return localPlant.nextWatering || addDays(new Date(), localPlant.wateringFrequency).toISOString();
+    return localPlant.nextWatering;
   })(),
   status: localPlant.status,
   notes: localPlant.notes,

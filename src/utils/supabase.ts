@@ -118,6 +118,10 @@ export const plantService = {
 export const profileService = {
   // Get current user profile
   async getProfile() {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -131,26 +135,54 @@ export const profileService = {
       throw error;
     }
     
+    // Transform database fields to match TypeScript interface
+    if (data) {
+      return {
+        id: data.id,
+        email: data.email,
+        username: data.username,
+        avatar_url: data.avatar_url,
+        createdAt: data.createdAt || data.created_at,
+        updatedAt: data.updatedAt || data.updated_at,
+      };
+    }
+    
     return data;
   },
 
   // Create or update user profile
   async upsertProfile(profile: Partial<Database['public']['Tables']['profiles']['Insert']>) {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Transform camelCase to snake_case for database
+    const dbProfile = {
+      id: user.id,
+      email: user.email || '',
+      username: profile.username || user.user_metadata?.username,
+      avatar_url: profile.avatar_url,
+    };
+
     const { data, error } = await supabase
       .from('profiles')
-      .upsert({
-        id: user.id,
-        email: user.email || '',
-        username: profile.username || user.user_metadata?.username,
-        ...profile,
-      })
+      .upsert(dbProfile)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+
+    // Transform back to camelCase for return
+    return {
+      id: data.id,
+      email: data.email,
+      username: data.username,
+      avatar_url: data.avatar_url,
+      createdAt: data.createdAt || data.created_at,
+      updatedAt: data.updatedAt || data.updated_at,
+    };
   },
 }; 

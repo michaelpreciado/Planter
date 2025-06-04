@@ -25,8 +25,8 @@ export interface User {
   email: string;
   username?: string;
   avatar_url?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Form data types
@@ -62,9 +62,26 @@ export interface Database {
   public: {
     Tables: {
       profiles: {
-        Row: User;
-        Insert: Omit<User, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>;
+        Row: {
+          id: string;
+          email: string;
+          username?: string;
+          avatar_url?: string;
+          createdAt: string;
+          updatedAt: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          username?: string;
+          avatar_url?: string;
+        };
+        Update: {
+          email?: string;
+          username?: string;
+          avatar_url?: string;
+          updatedAt?: string;
+        };
       };
       plants: {
         Row: Plant;
