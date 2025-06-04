@@ -1,1 +1,3 @@
-{}
+{
+  "/plant/[id]/page": "app/plant/[id]/page.js"
+}
