@@ -173,14 +173,14 @@ export default function HomePage() {
               {/* Mood indicator */}
               <motion.div
                 variants={itemVariants}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-card rounded-full shadow-lg flex items-center justify-center"
+                className="absolute -top-4 -right-4 w-8 h-8 bg-card rounded-full shadow-lg flex items-center justify-center border-2 border-background"
               >
                 {!user ? (
-                  <span className="text-blue-500 text-lg">😴</span>
+                  <span className="text-blue-500 text-xl">😴</span>
                 ) : plantsNeedingWater > 0 ? (
-                  <span className="text-red-500 text-lg">😰</span>
+                  <span className="text-red-500 text-xl">😰</span>
                 ) : (
-                  <span className="text-green-500 text-lg">😊</span>
+                  <span className="text-green-500 text-xl">😊</span>
                 )}
               </motion.div>
             </div>
