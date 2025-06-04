@@ -131,6 +131,7 @@ export function SwipeableListItem({
         drag="x"
         dragConstraints={{ left: -120, right: 120 }}
         dragElastic={0.1}
+        style={{ touchAction: 'pan-y' }}
         whileTap={{ scale: 0.98 }}
       >
         {/* Water Animation Overlay */}
