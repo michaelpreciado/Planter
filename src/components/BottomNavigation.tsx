@@ -46,7 +46,7 @@ export function BottomNavigation() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 pb-safe z-40">
-      <div className="flex items-center justify-around px-4 sm:px-6 py-3">
+      <div className="flex items-center justify-around px-4 sm:px-6 py-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           
@@ -55,20 +55,20 @@ export function BottomNavigation() {
               key={item.href}
               href={item.href}
               onClick={handleNavClick}
-              className="relative flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 min-h-[44px]"
+              className="relative flex flex-col items-center justify-center py-1 px-2 min-w-0 flex-1 min-h-[36px]"
             >
               {/* Active indicator dot */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-1 w-2 h-2 bg-green-600 rounded-full"
+                  className="absolute -top-0.5 w-1.5 h-1.5 bg-green-600 rounded-full"
                   initial={false}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
               
               {/* Icon */}
-              <div className="mb-1">
+              <div className="mb-0.5">
                 {item.icon(isActive)}
               </div>
               
