@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { PageTransition } from '@/components/PageTransition';
 import './globals.css';
 
 const inter = Inter({
@@ -86,9 +87,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden`}>
         <Providers>
-          <div className="min-h-screen flex flex-col bg-background">
+          <PageTransition>
             {children}
-          </div>
+          </PageTransition>
           <BottomNavigation />
           <Toaster />
         </Providers>
