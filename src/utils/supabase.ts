@@ -81,15 +81,10 @@ export const plantService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Add updatedAt timestamp manually
-    const updateData = {
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
+    // Remove manual updatedAt timestamp - let Supabase handle it automatically
     const { data, error } = await supabase
       .from('plants')
-      .update(updateData)
+      .update(updates)
       .eq('id', id)
       .eq('userId', user.id) // Ensure user owns the plant
       .select()

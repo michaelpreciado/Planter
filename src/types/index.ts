@@ -86,9 +86,7 @@ export interface Database {
       plants: {
         Row: Plant;
         Insert: Omit<Plant, 'id' | 'createdAt' | 'updatedAt'>;
-        Update: Partial<Omit<Plant, 'id' | 'createdAt' | 'userId'>> & {
-          updatedAt?: string;
-        };
+        Update: Partial<Omit<Plant, 'id' | 'createdAt' | 'updatedAt' | 'userId'>>;
       };
     };
     Views: {

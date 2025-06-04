@@ -137,19 +137,6 @@ const localPlantToDb = (localPlant: Plant): Omit<DBPlant, 'id' | 'createdAt' | '
   noteAttachments: localPlant.noteAttachments,
   imageUrl: localPlant.imageUrl,
 });
-// Convert update data to database format
-const localUpdateToDb = (updates: Partial<Plant>): any => {
-  const dbUpdates: any = {};
-  if (updates.name !== undefined) dbUpdates.name = updates.name;
-  if (updates.species !== undefined) dbUpdates.species = updates.species;
-  if (updates.lastWatered !== undefined) dbUpdates.lastWatered = updates.lastWatered === "Just planted" ? undefined : updates.lastWatered;
-  if (updates.nextWatering !== undefined) dbUpdates.nextWatering = updates.nextWatering;
-  if (updates.status !== undefined) dbUpdates.status = updates.status;
-  if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
-  if (updates.imageUrl !== undefined) dbUpdates.imageUrl = updates.imageUrl;
-  return dbUpdates;
-};
-
 
 // Sample plants for testing
 const createSamplePlants = (): Plant[] => {
@@ -357,7 +344,7 @@ export const usePlantStore = create<PlantStore>()(
 
           // Update in database first
           try {
-            await plantService.updatePlant(id, localUpdateToDb(updatedData));
+            await plantService.updatePlant(id, updatedData);
           } catch (dbError) {
             console.warn('Database update failed, updating locally:', dbError);
           }
