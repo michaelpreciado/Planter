@@ -122,6 +122,7 @@ export function SwipeableCard({
         drag="x"
         dragConstraints={{ left: -200, right: 200 }}
         dragElastic={0.1}
+        style={{ touchAction: 'pan-y' }}
         animate={controls}
         onDrag={(event, info) => {
           try {
