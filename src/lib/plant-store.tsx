@@ -337,7 +337,6 @@ export const usePlantStore = create<PlantStore>()(
 
           const updatedData = {
                   ...updates,
-                  updatedAt: new Date().toISOString(),
                   status: updates.lastWatered 
               ? getPlantStatus(updates.lastWatered, currentPlant.wateringFrequency)
               : (updates.status || currentPlant.status),
@@ -350,9 +349,15 @@ export const usePlantStore = create<PlantStore>()(
             console.warn('Database update failed, updating locally:', dbError);
           }
 
+          // Add updatedAt for local state only
+          const localUpdatedData = {
+            ...updatedData,
+            updatedAt: new Date().toISOString(),
+          };
+
           set((state) => ({
             plants: state.plants.map((plant) =>
-              plant.id === id ? { ...plant, ...updatedData } : plant
+              plant.id === id ? { ...plant, ...localUpdatedData } : plant
           ),
             loading: false,
         }));

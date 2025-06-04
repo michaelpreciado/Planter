@@ -101,4 +101,4 @@ If you want to test sync immediately without setting up Supabase:
 - Make sure to restart your dev server after adding `.env.local`
 - Check Supabase dashboard for any error logs
 
-Your app is **already built for sync** - it just needs the database connection! 🎉 
+Your app is **already built for sync** - it just needs the database connection! 🎉

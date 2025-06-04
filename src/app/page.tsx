@@ -159,7 +159,7 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-24 sm:pb-20 overflow-y-auto"
+        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-20 sm:pb-16 overflow-y-auto"
       >
         <div className="max-w-sm w-full space-y-6">
           {/* Plant Character */}

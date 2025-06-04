@@ -24,6 +24,11 @@ export const isSupabaseConfigured = () => {
     supabaseAnonKey !== 'your-anon-key');
 };
 
+// Transform database plant data to ensure consistent column names
+const transformPlantFromDB = (data: any) => {
+  return data; // No transformation needed since database uses camelCase
+};
+
 // Plant operations with user authentication
 export const plantService = {
   // Get all plants for the current user
@@ -42,7 +47,7 @@ export const plantService = {
       .order('createdAt', { ascending: false });
     
     if (error) throw error;
-    return data;
+    return data?.map(transformPlantFromDB) || [];
   },
 
   // Create a new plant for the current user
@@ -64,7 +69,7 @@ export const plantService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return transformPlantFromDB(data);
   },
 
   // Update a plant (only if owned by current user)
@@ -76,16 +81,22 @@ export const plantService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Add updatedAt timestamp manually
+    const updateData = {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from('plants')
-      .update(updates)
+      .update(updateData)
       .eq('id', id)
       .eq('userId', user.id) // Ensure user owns the plant
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return transformPlantFromDB(data);
   },
 
   // Delete a plant (only if owned by current user)
@@ -142,8 +153,8 @@ export const profileService = {
         email: data.email,
         username: data.username,
         avatar_url: data.avatar_url,
-        createdAt: data.createdAt || data.created_at,
-        updatedAt: data.updatedAt || data.updated_at,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
       };
     }
     
@@ -181,8 +192,8 @@ export const profileService = {
       email: data.email,
       username: data.username,
       avatar_url: data.avatar_url,
-      createdAt: data.createdAt || data.created_at,
-      updatedAt: data.updatedAt || data.updated_at,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     };
   },
 }; 

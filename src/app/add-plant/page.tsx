@@ -104,7 +104,7 @@ export default function AddPlantPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-16">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}

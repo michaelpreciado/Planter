@@ -167,7 +167,7 @@
   /* Improved mobile safe area handling */
   @media screen and (max-width: 640px) {
     .mobile-safe-bottom {
-      padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
     }
     
     .mobile-safe-nav {
@@ -330,7 +330,7 @@
   }
 
   .pb-safe {
-    padding-bottom: max(calc(env(safe-area-inset-bottom) + 5rem), 6rem);
+    padding-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
   }
 
   .pl-safe {
@@ -342,7 +342,7 @@
   }
 
   .mb-safe {
-    margin-bottom: max(calc(env(safe-area-inset-bottom) + 5rem), 6rem);
+    margin-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
   }
 
   /* Touch action utilities */
