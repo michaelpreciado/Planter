@@ -5,11 +5,12 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
-import { WaterAnimation } from '@/components/WaterAnimation';
-import { SwipeableCard } from '@/components/SwipeableCard';
+import dynamic from 'next/dynamic';
 import { PullToRefreshIndicator } from '@/components/PullToRefreshIndicator';
-import { BottomNavigation } from '@/components/BottomNavigation';
 import { NightModeToggle } from '@/components/NightModeToggle';
+
+const WaterAnimation = dynamic(() => import('@/components/WaterAnimation'), { ssr: false });
+const SwipeableCard = dynamic(() => import('@/components/SwipeableCard'), { ssr: false });
 import { usePullToRefresh, useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { format } from 'date-fns';
 
@@ -310,7 +311,6 @@ export default function ListPage() {
         </div>
       </div>
 
-      <BottomNavigation />
     </div>
   );
 } 
