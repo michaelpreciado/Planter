@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabase';
+import { usePlantStore } from '@/lib/plant-store';
 
 interface AuthContextType {
   user: User | null;
@@ -84,6 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clear local plant data when user signs out
+    usePlantStore.getState().clearPlants();
   };
 
   const value = {
