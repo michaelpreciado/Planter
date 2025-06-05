@@ -43,6 +43,7 @@ interface PlantStore {
   refreshPlants: () => Promise<void>;
   clearError: () => void;
   clearRecentlyWatered: () => void;
+  clearPlants: () => void;
   getPlantById: (id: string) => Plant | undefined;
   getHealthyPlants: () => Plant[];
   getPlantsNeedingWater: () => Plant[];
@@ -409,6 +410,10 @@ export const usePlantStore = create<PlantStore>()(
 
       clearRecentlyWatered: () => {
         set({ recentlyWateredPlant: null });
+      },
+
+      clearPlants: () => {
+        set({ plants: [], recentlyWateredPlant: null });
       },
 
       getPlantById: (id) => {

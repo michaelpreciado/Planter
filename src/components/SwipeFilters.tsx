@@ -64,8 +64,9 @@ export function SwipeFilters({ filters, activeFilter, onFilterChange }: SwipeFil
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         animate={controls}
-        className="flex touch-pan-x"
+        className="flex"
         style={{
+          touchAction: 'pan-y',
           x: dragOffset,
         }}
       >
