@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlants } from '@/lib/plant-store';
@@ -16,6 +17,7 @@ export default function PlantDetailPage() {
   const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, hasHydrated } = usePlants();
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState('');
+  const [noteImages, setNoteImages] = useState<string[]>([]);
 
   const plant = getPlantById(params.id as string);
 
@@ -67,24 +69,76 @@ export default function PlantDetailPage() {
   };
 
   const handleAddNote = () => {
-    if (newNote.trim()) {
+    if (newNote.trim() || noteImages.length > 0) {
       const currentNotes = plant.notes || '';
-      const timestamp = format(new Date(), 'MMM dd');
-      const noteEntry = `${timestamp}: ${newNote.trim()}`;
-      const updatedNotes = currentNotes ? `${currentNotes}\n${noteEntry}` : noteEntry;
+      const currentAttachments = plant.noteAttachments || [];
+      const timestamp = format(new Date(), 'MMM dd, HH:mm');
       
-      updatePlant(plant.id, { notes: updatedNotes });
+      // Create a structured note entry
+      const noteEntry = {
+        id: Date.now().toString(),
+        timestamp,
+        text: newNote.trim(),
+        images: [...noteImages] as string[]
+      };
+      
+      // For backward compatibility, we'll store structured notes as JSON in the notes field
+      // and individual images in noteAttachments
+      let updatedNotes = '';
+      try {
+        const existingNotes = currentNotes ? JSON.parse(currentNotes) : [];
+        const allNotes = Array.isArray(existingNotes) ? existingNotes : [];
+        allNotes.push(noteEntry);
+        updatedNotes = JSON.stringify(allNotes);
+      } catch {
+        // If parsing fails, convert old format to new
+        const legacyNotes = currentNotes.split('\n').filter(line => line.trim()).map((line, index) => ({
+          id: `legacy-${index}`,
+          timestamp: line.includes(':') ? line.split(':')[0] : format(new Date(), 'MMM dd'),
+          text: line.includes(':') ? line.split(':').slice(1).join(':').trim() : line,
+          images: [] as string[]
+        }));
+        legacyNotes.push(noteEntry);
+        updatedNotes = JSON.stringify(legacyNotes);
+      }
+      
+      const updatedAttachments = [...currentAttachments, ...noteImages];
+      
+      updatePlant(plant.id, { 
+        notes: updatedNotes,
+        noteAttachments: updatedAttachments 
+      });
+      
       setNewNote('');
+      setNoteImages([]);
       setShowAddNote(false);
     }
+  };
+
+  const handleAddNoteImage = (imageUrl: string) => {
+    if (imageUrl && noteImages.length < 3) {
+      setNoteImages(prev => [...prev, imageUrl]);
+    }
+  };
+
+  const handleRemoveNoteImage = (index: number) => {
+    setNoteImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleImageCapture = (imageUrl: string) => {
     updatePlant(plant.id, { imageUrl });
   };
 
-  const getPlantHistory = () => {
-    const history = [];
+  interface HistoryEntry {
+    date: string;
+    text: string;
+    type: 'planted' | 'watered' | 'note';
+    timestamp?: string;
+    images?: string[];
+  }
+
+  const getPlantHistory = (): HistoryEntry[] => {
+    const history: HistoryEntry[] = [];
     
     // Add planting date
     history.push({
@@ -104,17 +158,36 @@ export default function PlantDetailPage() {
 
     // Add notes if any
     if (plant.notes) {
-      const noteLines = plant.notes.split('\n').filter(line => line.trim());
-      noteLines.forEach(note => {
-        if (note.includes(':')) {
-          const [datePart, ...textParts] = note.split(':');
-          history.push({
-            date: new Date().toISOString(), // Approximate date
-            text: textParts.join(':').trim(),
-            type: 'note'
+      try {
+        const notes = JSON.parse(plant.notes);
+        if (Array.isArray(notes)) {
+          notes.forEach((note: any) => {
+            history.push({
+              date: new Date().toISOString(), // Use timestamp if available
+              text: note.text || '',
+              images: note.images || [],
+              type: 'note',
+              timestamp: note.timestamp
+            });
           });
+        } else {
+          throw new Error('Not array format');
         }
-      });
+      } catch {
+        // Handle legacy format
+        const noteLines = plant.notes.split('\n').filter(line => line.trim());
+        noteLines.forEach(note => {
+          if (note.includes(':')) {
+            const [datePart, ...textParts] = note.split(':');
+            history.push({
+              date: new Date().toISOString(),
+              text: textParts.join(':').trim(),
+              type: 'note',
+              timestamp: datePart
+            });
+          }
+        });
+      }
     }
 
     return history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -241,7 +314,57 @@ export default function PlantDetailPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 rows={3}
               />
-              <div className="flex gap-2 mt-3">
+              
+              {/* Note Images */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">Photos</span>
+                  <span className="text-xs text-gray-500">
+                    {noteImages.length}/3 photos
+                  </span>
+                </div>
+                
+                {/* Existing Images */}
+                {noteImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {noteImages.map((imageUrl, index) => (
+                      <div
+                        key={index}
+                        className="relative bg-gray-200 rounded-lg overflow-hidden aspect-square"
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`Note image ${index + 1}`}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNoteImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 transition-colors"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Add New Image */}
+                {noteImages.length < 3 && (
+                  <div className="aspect-square">
+                    <ImageCapture
+                      onImageCapture={handleAddNoteImage}
+                      placeholder="Add Photo"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2 mt-4">
                 <button
                   onClick={handleAddNote}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
@@ -252,6 +375,7 @@ export default function PlantDetailPage() {
                   onClick={() => {
                     setShowAddNote(false);
                     setNewNote('');
+                    setNoteImages([]);
                   }}
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
                 >
@@ -262,19 +386,52 @@ export default function PlantDetailPage() {
           )}
 
           {/* History Timeline */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {getPlantHistory().map((entry, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
-                className="flex justify-between items-center"
+                className="bg-white rounded-lg p-4 border border-gray-200"
               >
-                <span className="text-gray-600 font-medium">
-                  {format(new Date(entry.date), 'MMM dd')}
-                </span>
-                <span className="text-gray-900">{entry.text}</span>
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {entry.timestamp || format(new Date(entry.date), 'MMM dd')}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    entry.type === 'planted' ? 'bg-green-100 text-green-800' :
+                    entry.type === 'watered' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {entry.type === 'planted' ? 'Planted' : 
+                     entry.type === 'watered' ? 'Watered' : 'Note'}
+                  </span>
+                </div>
+                
+                {entry.text && (
+                  <p className="text-gray-700 text-sm mb-3">{entry.text}</p>
+                )}
+                
+                {/* Note Images */}
+                {entry.images && entry.images.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {entry.images.map((imageUrl: string, imgIndex: number) => (
+                      <div
+                        key={imgIndex}
+                        className="relative bg-gray-200 rounded-lg overflow-hidden aspect-square"
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`Note image ${imgIndex + 1}`}
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
