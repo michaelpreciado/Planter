@@ -345,6 +345,15 @@
     margin-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
   }
 
+  /* Navigation-specific safe area utilities */
+  .pb-nav-safe {
+    padding-bottom: max(calc(env(safe-area-inset-bottom) + 5rem), 5rem);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+
   /* Touch action utilities */
   .touch-none { touch-action: none; }
   .touch-pan-x { touch-action: pan-x; }

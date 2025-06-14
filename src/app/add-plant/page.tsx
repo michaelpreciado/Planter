@@ -7,8 +7,9 @@ import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { ImageCapture } from '@/components/ImageCapture';
-import { BottomNavigation } from '@/components/BottomNavigation';
 import { NightModeToggle } from '@/components/NightModeToggle';
+import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
+import { usePageBasic } from '@/hooks/usePageReady';
 
 const plantTypes = [
   { id: 'succulent', name: 'Succulent', icon: '🌵' },
@@ -23,8 +24,11 @@ const plantTypes = [
 
 export default function AddPlantPage() {
   const router = useRouter();
-  const { addPlant, error, loading, hasHydrated } = usePlants();
+  const { addPlant, error, loading } = usePlants();
   const haptic = useHapticFeedback();
+  
+  // Use professional page loading pattern
+  const { isReady } = usePageBasic(400);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -103,49 +107,9 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-  // Show loading state while hydrating
-  if (!hasHydrated) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col pb-16">
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
-        >
-          <motion.button
-            onClick={() => {
-              router.back();
-              haptic.lightImpact();
-            }}
-            className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors btn-mobile"
-            whileTap={{ scale: 0.9 }}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-            </svg>
-          </motion.button>
-          <h1 className="text-xl font-bold text-foreground">Add New Plant</h1>
-          <NightModeToggle />
-        </motion.header>
-
-        {/* Loading Content */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <motion.div
-              className="w-12 h-12 mx-auto text-green-500"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            >
-              <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </motion.div>
-            <div className="text-sm text-muted-foreground">Preparing plant form...</div>
-          </div>
-        </div>
-      </div>
-    );
+  // Show professional loader while page is preparing
+  if (!isReady) {
+    return <PageLoader message="Preparing plant form..." showProgress={true} />;
   }
 
   return (
@@ -366,7 +330,7 @@ export default function AddPlantPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="pt-4 pb-safe"
+            className="pt-4 pb-nav-safe"
           >
             <motion.button
               type="submit"
@@ -398,15 +362,12 @@ export default function AddPlantPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 2 }}
-            className="text-center text-xs text-muted-foreground pb-4"
+            className="text-center text-xs text-muted-foreground pb-nav-safe"
           >
             👉 Swipe right to go back
           </motion.div>
         </form>
       </div>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 } 

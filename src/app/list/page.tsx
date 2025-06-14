@@ -8,15 +8,19 @@ import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
 import { SwipeableCard } from '@/components/SwipeableCard';
 import { PullToRefreshIndicator } from '@/components/PullToRefreshIndicator';
-import { BottomNavigation } from '@/components/BottomNavigation';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { usePullToRefresh, useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { format } from 'date-fns';
+import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
+import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function ListPage() {
-  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered, hasHydrated, loading } = usePlants();
+  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered } = usePlants();
   const [filter, setFilter] = useState<'all' | 'healthy' | 'needs_water' | 'overdue'>('all');
   const haptic = useHapticFeedback();
+  
+  // Use professional page loading pattern
+  const { isReady } = usePageWithPlants(500);
 
   const filteredPlants = plants.filter(plant => {
     if (filter === 'all') return true;
@@ -85,59 +89,15 @@ export default function ListPage() {
     }
   };
 
-  // Show loading state while hydrating
-  if (!hasHydrated || loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col pb-16">
-        {/* Header */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-20"
-        >
-          <Link href="/" className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-            </svg>
-          </Link>
-          <h1 className="text-xl font-bold text-foreground">My Plants</h1>
-          <div className="flex items-center gap-2">
-            <NightModeToggle />
-            <Link href="/add-plant" className="text-primary p-2 -m-2 rounded-lg active:bg-primary/20 transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
-            </Link>
-          </div>
-        </motion.header>
-
-        {/* Loading Content */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <motion.div
-              className="w-12 h-12 mx-auto text-green-500"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            >
-              <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </motion.div>
-            <div className="text-sm text-muted-foreground">Loading your plants...</div>
-          </div>
-        </div>
-      </div>
-    );
+  // Show professional loader while page is preparing
+  if (!isReady) {
+    return <PageLoader message="Loading your plants..." showProgress={true} />;
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative pb-16">
       {/* Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-20"
-      >
+      <PageHeader title="My Plants">
         <Link href="/" className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
@@ -152,7 +112,7 @@ export default function ListPage() {
             </svg>
           </Link>
         </div>
-      </motion.header>
+      </PageHeader>
 
       {/* Filter Tabs */}
       <motion.div 
@@ -226,7 +186,7 @@ export default function ListPage() {
               </Link>
             </motion.div>
           ) : (
-            <div className="space-y-4 pb-safe">
+            <div className="space-y-4 pb-nav-safe">
               {filteredPlants.map((plant, index) => (
                 <motion.div
                   key={plant.id}
@@ -354,8 +314,6 @@ export default function ListPage() {
           )}
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 } 

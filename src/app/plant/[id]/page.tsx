@@ -10,27 +10,25 @@ import { WaterAnimation } from '@/components/WaterAnimation';
 import { ImageCapture } from '@/components/ImageCapture';
 import { TamagotchiBlob } from '@/components/TamagotchiBlob';
 import { format, formatDistanceToNow } from 'date-fns';
+import { PageLoader } from '@/components/PageLoader';
+import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function PlantDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, hasHydrated } = usePlants();
+  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants } = usePlants();
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [noteImages, setNoteImages] = useState<string[]>([]);
+  
+  // Use professional page loading pattern
+  const { isReady } = usePageWithPlants(500);
 
   const plant = getPlantById(params.id as string);
 
-  // Show loading while hydrating
-  if (!hasHydrated) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">🌱</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading plant details...</h2>
-        </div>
-      </div>
-    );
+  // Show professional loader while page is preparing
+  if (!isReady) {
+    return <PageLoader message="Loading plant details..." showProgress={true} />;
   }
 
   // Show error only after hydration is complete
@@ -454,7 +452,7 @@ export default function PlantDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="grid grid-cols-2 gap-4 mb-8"
+          className="grid grid-cols-2 gap-4 pb-nav-safe"
         >
           <button
             onClick={handleWaterPlant}

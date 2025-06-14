@@ -45,7 +45,7 @@ export function BottomNavigation() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 z-40" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 z-50 safe-area-bottom" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -82,6 +82,6 @@ export function BottomNavigation() {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 } 

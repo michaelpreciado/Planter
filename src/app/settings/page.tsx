@@ -3,15 +3,25 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePlants } from '@/lib/plant-store';
+import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
+import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function SettingsPage() {
   const { plants } = usePlants();
+  
+  // Use professional page loading pattern
+  const { isReady } = usePageWithPlants(400);
 
   const stats = {
     totalPlants: plants.length,
     healthyPlants: plants.filter(p => p.status === 'healthy').length,
     plantsNeedingWater: plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length,
   };
+
+  // Show professional loader while page is preparing
+  if (!isReady) {
+    return <PageLoader message="Loading settings..." showProgress={true} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -31,7 +41,7 @@ export default function SettingsPage() {
       </motion.header>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-6 pb-safe">
+      <div className="flex-1 px-6 py-6 pb-nav-safe">
         {/* Stats Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -152,6 +152,27 @@ const localUpdateToDb = (updates: Partial<Plant>): any => {
 };
 
 
+// Enhanced loading state management
+let hydrationPromise: Promise<void> | null = null;
+const ensureHydration = async (): Promise<void> => {
+  if (hydrationPromise) return hydrationPromise;
+  
+  hydrationPromise = new Promise((resolve) => {
+    // Ensure DOM is ready and store is hydrated
+    if (typeof window !== 'undefined') {
+      if (document.readyState === 'complete') {
+        resolve();
+      } else {
+        window.addEventListener('load', () => resolve(), { once: true });
+      }
+    } else {
+      resolve();
+    }
+  });
+  
+  return hydrationPromise;
+};
+
 // Sample plants for testing
 const createSamplePlants = (): Plant[] => {
   const now = new Date().toISOString();
@@ -458,10 +479,19 @@ export const usePlantStore = create<PlantStore>()(
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.error('Failed to rehydrate plant store:', error);
+          // Even on error, mark as hydrated to prevent infinite loading
+          if (state) {
+            state.hasHydrated = true;
+            state.error = 'Failed to restore saved data';
+          }
         } else {
           console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
           if (state) {
             state.hasHydrated = true;
+            // Ensure minimum delay for smooth UX
+            setTimeout(() => {
+              console.log('Plant store fully ready');
+            }, 100);
           }
         }
       },

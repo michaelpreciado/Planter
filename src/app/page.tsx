@@ -11,6 +11,8 @@ import { useMobileGestures, useHapticFeedback } from '@/hooks/useMobileGestures'
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
+import { PageLoader } from '@/components/PageLoader';
+import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function HomePage() {
   const { plants, initializeSampleData, syncWithDatabase, loading, error } = usePlants();
@@ -20,12 +22,15 @@ export default function HomePage() {
   const [showDebugTools, setShowDebugTools] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  
+  // Use professional page loading pattern
+  const { isReady } = usePageWithPlants(600);
 
   const healthyPlants = plants.filter(p => p.status === 'healthy').length;
   const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
   const isDbConfigured = isSupabaseConfigured();
 
-  // Mobile gestures for navigation
+  // Mobile gestures for navigation - must be called before conditional returns
   useMobileGestures({
     onSwipeLeft: () => {
       router.push('/list');
@@ -36,6 +41,11 @@ export default function HomePage() {
       haptic.lightImpact();
     },
   });
+
+  // Show professional loader while page is preparing
+  if (!isReady) {
+    return <PageLoader message="Welcome to Plant Tracker" showProgress={true} />;
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -159,7 +169,7 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-20 sm:pb-16 overflow-y-auto"
+        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-nav-safe overflow-y-auto"
       >
         <div className="max-w-sm w-full space-y-6">
           {/* Plant Character */}
