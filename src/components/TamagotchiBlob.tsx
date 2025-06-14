@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
-import { useTamagotchiStore, getColorFilter } from '@/lib/tamagotchi-store';
+import { calculateHydrationPercentage, getStatusFromHydration, getSpriteForStatus, type Status } from '@/utils/hydration';
 
 // Memoized particle component for better performance
 const Particle = memo(({ type, delay }: { type: string; delay: number }) => {
@@ -45,7 +45,7 @@ Particle.displayName = 'Particle';
 interface TamagotchiBlobProps {
   size?: number;
   showAnimation?: boolean;
-  mood?: 'happy' | 'sad' | 'mad' | 'neutral';
+  mood?: Status | 'neutral';
 }
 
 export const TamagotchiBlob = memo(({ 
@@ -54,58 +54,46 @@ export const TamagotchiBlob = memo(({
   mood = 'neutral' 
 }: TamagotchiBlobProps) => {
   const { plants } = usePlants();
-  const { settings } = useTamagotchiStore();
   const [isActive, setIsActive] = useState(false);
   const [particles, setParticles] = useState<{ id: number; type: string; delay: number }[]>([]);
   const [hasEntryPlayed, setHasEntryPlayed] = useState(false);
 
-  // Determine mood based on plants
+  // Determine mood based on plants using hydration logic
   const calculatedMood = useMemo(() => {
     if (plants.length === 0) return 'neutral';
     
-    const overduePlants = plants.filter(p => p.status === 'overdue').length;
-    const needsWaterPlants = plants.filter(p => p.status === 'needs_water').length;
-    const healthyPlants = plants.filter(p => p.status === 'healthy').length;
+    // Calculate average hydration across all plants
+    const plantsWithHydration = plants.map(plant => {
+      if (!plant.lastWatered || !plant.nextWatering) return 50; // Default to moderate hydration
+      
+      const lastWatered = plant.lastWatered === 'Just planted' ? new Date() : new Date(plant.lastWatered);
+      const nextWaterDue = new Date(lastWatered.getTime() + (plant.wateringFrequency * 24 * 60 * 60 * 1000));
+      
+      return calculateHydrationPercentage(lastWatered, nextWaterDue);
+    });
     
-    if (overduePlants > 0) return 'mad';
-    if (needsWaterPlants > 0) return 'sad';
-    if (healthyPlants > 0) return 'happy';
-    return 'neutral';
+    const avgHydration = plantsWithHydration.reduce((sum, h) => sum + h, 0) / plantsWithHydration.length;
+    return getStatusFromHydration(avgHydration);
   }, [plants]);
 
   const currentMood = mood !== 'neutral' ? mood : calculatedMood;
 
-  // Memoized filter styles for better performance
-  const filterStyle = useMemo(() => {
-    // If mood is not neutral, use mood-based filters
-    if (currentMood !== 'neutral') {
-      switch (currentMood) {
-        case 'happy': return 'hue-rotate(60deg) saturate(1.2) brightness(1.1)';
-        case 'sad': return 'hue-rotate(240deg) saturate(0.8) brightness(0.8)';
-        case 'mad': return 'hue-rotate(0deg) saturate(1.5) brightness(1.2)';
-        default: return 'none';
-      }
-    }
-    
-    // Otherwise, use custom color from settings
-    return getColorFilter(settings.color);
-  }, [currentMood, settings.color]);
+  // Get sprite URL based on mood
+  const spriteUrl = useMemo(() => {
+    if (currentMood === 'neutral') return '/assets/happy.png'; // Default sprite
+    if (currentMood === 'thirsty') return '/assets/thirsty.png';
+    return getSpriteForStatus(currentMood as Status);
+  }, [currentMood]);
 
   // Memoized glow color
   const glowColor = useMemo(() => {
-    // If mood is not neutral, use mood-based colors
-    if (currentMood !== 'neutral') {
-      switch (currentMood) {
-        case 'happy': return '#10B981';
-        case 'sad': return '#3B82F6'; 
-        case 'mad': return '#EF4444';
-        default: return '#6B7280';
-      }
+    switch (currentMood) {
+      case 'happy': return '#10B981';
+      case 'thirsty': return '#F59E0B';
+      case 'mad': return '#EF4444';
+      default: return '#6B7280';
     }
-    
-    // Otherwise, use custom color from settings
-    return settings.color;
-  }, [currentMood, settings.color]);
+  }, [currentMood]);
 
   // Auto-cycle animation
   useEffect(() => {
@@ -138,7 +126,7 @@ export const TamagotchiBlob = memo(({
       case 'happy':
         newParticles = generateParticles('✨', 5);
         break;
-      case 'sad':
+      case 'thirsty':
         newParticles = generateParticles('💧', 3);
         break;
       case 'mad':
@@ -220,18 +208,15 @@ export const TamagotchiBlob = memo(({
             }}
           >
             <Image
-              src="/assets/tamagotchi.png"
-              alt="Tamagotchi Pet"
+              src={spriteUrl}
+              alt={`Plant companion - ${currentMood}`}
               width={size}
               height={size}
               className="w-full h-full object-contain"
               style={{
-                filter: filterStyle,
                 imageRendering: 'crisp-edges'
               }}
               priority={size > 100}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             />
           </motion.div>
         </motion.div>

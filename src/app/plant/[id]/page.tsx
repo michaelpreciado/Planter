@@ -8,7 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
 import { ImageCapture } from '@/components/ImageCapture';
-import { TamagotchiBlob } from '@/components/TamagotchiBlob';
+import { PlantAvatar } from '@/components/PlantAvatar';
 import { format, formatDistanceToNow } from 'date-fns';
 import { PageLoader } from '@/components/PageLoader';
 import { usePageWithPlants } from '@/hooks/usePageReady';
@@ -442,7 +442,13 @@ export default function PlantDetailPage() {
             className="flex justify-end mt-6"
           >
             <div className="w-16 h-16">
-              <TamagotchiBlob size={64} showAnimation={false} />
+              {plant && (
+                <PlantAvatar 
+                  lastWatered={plant.lastWatered || new Date().toISOString()}
+                  nextWaterDue={new Date(Date.now() + plant.wateringFrequency * 24 * 60 * 60 * 1000).toISOString()}
+                  size={64}
+                />
+              )}
             </div>
           </motion.div>
         </motion.div>
