@@ -47,6 +47,8 @@ interface PlantStore {
   getPlantById: (id: string) => Plant | undefined;
   getHealthyPlants: () => Plant[];
   getPlantsNeedingWater: () => Plant[];
+  getPlantsWithRealTimeStatus: () => Plant[];
+  refreshPlantStatuses: () => void;
   
   // Debug operations (for development)
   debugPlantStore: () => void;
@@ -60,15 +62,35 @@ const plantColors = [
   '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
 ];
 
-const calculateNextWatering = (frequency: number): string => {
-  const nextDate = addDays(new Date(), frequency);
+const calculateNextWatering = (frequency: number, lastWatered?: string): string => {
   const today = new Date();
   
-  if (frequency === 1) {
+  // If no last watered date or just planted, calculate from today
+  if (!lastWatered || lastWatered === 'Just planted') {
+    const nextDate = addDays(today, frequency);
+    
+    if (frequency === 1) {
+      return 'Tomorrow';
+    } else if (frequency <= 7) {
+      return `in ${frequency} days`;
+    } else {
+      return format(nextDate, 'MMM dd');
+    }
+  }
+  
+  // Calculate based on last watered date
+  const lastWateredDate = new Date(lastWatered);
+  const daysSinceWatered = Math.floor((today.getTime() - lastWateredDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysUntilNextWatering = frequency - daysSinceWatered;
+  
+  if (daysUntilNextWatering <= 0) {
+    return daysSinceWatered > frequency + 2 ? 'Overdue' : 'Today';
+  } else if (daysUntilNextWatering === 1) {
     return 'Tomorrow';
-  } else if (frequency <= 7) {
-    return `in ${frequency} days`;
+  } else if (daysUntilNextWatering <= 7) {
+    return `in ${daysUntilNextWatering} days`;
   } else {
+    const nextDate = addDays(lastWateredDate, frequency);
     return format(nextDate, 'MMM dd');
   }
 };
@@ -90,6 +112,13 @@ const getPlantStatus = (lastWatered: string, frequency: number): Plant['status']
   return 'healthy';
 };
 
+// Helper function to get real-time plant status and next watering
+const getRealTimePlantInfo = (plant: Plant): { status: Plant['status'], nextWatering: string } => {
+  const status = getPlantStatus(plant.lastWatered || '', plant.wateringFrequency);
+  const nextWatering = calculateNextWatering(plant.wateringFrequency, plant.lastWatered);
+  return { status, nextWatering };
+};
+
 // Convert database plant to local plant format
 const dbPlantToLocal = (dbPlant: DBPlant): Plant => ({
   id: dbPlant.id,
@@ -102,7 +131,7 @@ const dbPlantToLocal = (dbPlant: DBPlant): Plant => ({
   lastWatered: dbPlant.lastWatered,
   nextWatering: typeof dbPlant.nextWatering === 'string' 
     ? dbPlant.nextWatering 
-    : calculateNextWatering(dbPlant.wateringFrequency),
+    : calculateNextWatering(dbPlant.wateringFrequency, dbPlant.lastWatered),
   status: dbPlant.status || 'healthy',
   notes: dbPlant.notes || '',
   noteAttachments: dbPlant.noteAttachments || [],
@@ -125,11 +154,11 @@ const localPlantToDb = (localPlant: Plant): Omit<DBPlant, 'id' | 'createdAt' | '
   // Ensure nextWatering is always a string, not a date calculation
   nextWatering: (() => {
     if (!localPlant.nextWatering || localPlant.lastWatered === 'Just planted') {
-      return calculateNextWatering(localPlant.wateringFrequency);
+      return calculateNextWatering(localPlant.wateringFrequency, localPlant.lastWatered);
     }
     // If it's a user-friendly string, convert to a proper calculation
     if (['Tomorrow', 'Today', 'Overdue'].some(str => localPlant.nextWatering?.includes(str))) {
-      return calculateNextWatering(localPlant.wateringFrequency);
+      return calculateNextWatering(localPlant.wateringFrequency, localPlant.lastWatered);
     }
     return localPlant.nextWatering;
   })(),
@@ -303,7 +332,7 @@ export const usePlantStore = create<PlantStore>()(
             iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
             status: 'healthy',
             lastWatered: 'Just planted',
-            nextWatering: calculateNextWatering(plantData.wateringFrequency),
+            nextWatering: calculateNextWatering(plantData.wateringFrequency, plantData.lastWatered),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -409,7 +438,7 @@ export const usePlantStore = create<PlantStore>()(
           await get().updatePlant(id, {
                     lastWatered: now,
                     status: 'healthy',
-            nextWatering: calculateNextWatering(plant.wateringFrequency),
+            nextWatering: calculateNextWatering(plant.wateringFrequency, now),
           });
 
           set({ recentlyWateredPlant: id });
@@ -447,6 +476,32 @@ export const usePlantStore = create<PlantStore>()(
 
       getPlantsNeedingWater: () => {
         return get().plants.filter(plant => plant.status === 'needs_water' || plant.status === 'overdue');
+      },
+
+      // Get plants with real-time status updates
+      getPlantsWithRealTimeStatus: () => {
+        return get().plants.map(plant => {
+          const realTimeInfo = getRealTimePlantInfo(plant);
+          return {
+            ...plant,
+            status: realTimeInfo.status,
+            nextWatering: realTimeInfo.nextWatering
+          };
+        });
+      },
+
+      // Update all plants with current status
+      refreshPlantStatuses: () => {
+        set((state) => ({
+          plants: state.plants.map(plant => {
+            const realTimeInfo = getRealTimePlantInfo(plant);
+            return {
+              ...plant,
+              status: realTimeInfo.status,
+              nextWatering: realTimeInfo.nextWatering
+            };
+          })
+        }));
       },
 
       // Debug operations (for development)
@@ -519,8 +574,13 @@ export function usePlants() {
   const store = usePlantStore();
   const context = useContext(PlantContext);
 
-  // Return context if available, otherwise fallback to direct store access
-  return context || store;
+  const baseStore = context || store;
+  
+  // Return enhanced store with real-time plant data
+  return {
+    ...baseStore,
+    plants: baseStore.getPlantsWithRealTimeStatus(),
+  };
 }
 
-export { calculateNextWatering, getPlantStatus };
+export { calculateNextWatering, getPlantStatus, getRealTimePlantInfo };
