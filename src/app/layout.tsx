@@ -87,7 +87,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
       </head>
-      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden`}>
+      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden mobile-scroll-container`}>
         <Providers>
           <PageTransition>
             {children}

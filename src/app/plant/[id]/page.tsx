@@ -214,7 +214,7 @@ export default function PlantDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background dark:bg-gray-900 flex flex-col relative">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex flex-col relative mobile-scroll-container">
       {/* Water Animation */}
       <WaterAnimation 
         isVisible={recentlyWateredPlant === plant?.id}
@@ -226,7 +226,7 @@ export default function PlantDetailPage() {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between px-6 py-4 pt-safe"
+        className="flex items-center justify-between px-6 py-4 pt-safe flex-shrink-0"
       >
         <button onClick={() => router.back()} className="text-foreground">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +243,7 @@ export default function PlantDetailPage() {
       </motion.header>
 
       {/* Main Content */}
-      <div className="flex-1 px-6 pb-safe">
+      <div className="flex-1 px-6 pb-safe overflow-y-auto mobile-scroll momentum-scroll" style={{ touchAction: 'pan-y' }}>
         {/* Status Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

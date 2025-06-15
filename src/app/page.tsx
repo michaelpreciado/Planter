@@ -7,7 +7,7 @@ import { NightModeToggle } from '@/components/NightModeToggle';
 import { AuthModal } from '@/components/AuthModal';
 import { usePlants } from '@/lib/plant-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobileGestures, useHapticFeedback } from '@/hooks/useMobileGestures';
+import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
@@ -30,17 +30,7 @@ export default function HomePage() {
   const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
   const isDbConfigured = isSupabaseConfigured();
 
-  // Mobile gestures for navigation - must be called before conditional returns
-  useMobileGestures({
-    onSwipeLeft: () => {
-      router.push('/list');
-      haptic.lightImpact();
-    },
-    onSwipeRight: () => {
-      router.push('/add-plant');
-      haptic.lightImpact();
-    },
-  });
+  // Mobile gestures removed - users must use buttons for navigation
 
   // Show professional loader while page is preparing
   if (!isReady) {

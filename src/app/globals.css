@@ -165,6 +165,11 @@
       scroll-behavior: smooth;
       /* Prevent horizontal scroll bounce */
       overflow-x: hidden;
+      /* Better touch responsiveness */
+      touch-action: manipulation;
+      /* Ensure proper height on mobile */
+      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     /* Optimize list items for smooth scrolling */
@@ -193,6 +198,19 @@
       user-select: none;
       /* Optimize tap highlighting */
       -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Fix mobile scroll issues with flexbox layouts */
+    .mobile-flex-scroll-fix {
+      /* Ensure flex container allows scrolling */
+      overflow: hidden;
+      height: 100%;
+    }
+    
+    .mobile-flex-scroll-fix > * {
+      /* Allow flex children to scroll */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
   }
 
@@ -251,6 +269,25 @@
   @supports (height: 100dvh) {
     .min-h-screen {
       min-height: 100dvh;
+    }
+  }
+  
+  /* Prevent mobile scroll issues from bottom navigation */
+  @media screen and (max-width: 768px) {
+    body {
+      /* Ensure proper scroll behavior on mobile */
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    
+    /* Fix for plant page specific scroll issues */
+    .plant-page-scroll-fix {
+      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
   }
 
@@ -394,20 +431,7 @@
     @apply active:scale-95 active:opacity-80 transition-all duration-150;
   }
 
-  .swipe-hint {
-    @apply relative overflow-hidden;
-  }
-
-  .swipe-hint::before {
-    content: '';
-    @apply absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-transparent via-primary/20 to-transparent;
-    animation: swipe-indicator 2s ease-in-out infinite;
-  }
-
-  @keyframes swipe-indicator {
-    0%, 100% { transform: translateX(-100%); opacity: 0; }
-    50% { transform: translateX(0); opacity: 1; }
-  }
+  /* Swipe hint styles removed - no more swipe gestures */
 
   /* Aspect ratio utilities */
   .aspect-tamagotchi {
