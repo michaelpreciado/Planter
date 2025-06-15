@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
-import { ImageCapture } from '@/components/ImageCapture';
+import { ImageCaptureWithStorage } from '@/components/ImageCaptureWithStorage';
+import { ImageDisplay } from '@/components/ImageDisplay';
 import { PlantAvatar } from '@/components/PlantAvatar';
 import { format, formatDistanceToNow } from 'date-fns';
 import { PageLoader } from '@/components/PageLoader';
@@ -16,7 +17,7 @@ import { usePageWithPlants } from '@/hooks/usePageReady';
 export default function PlantDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants } = usePlants();
+  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, storeImage, removeImage } = usePlants();
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [noteImages, setNoteImages] = useState<string[]>([]);
@@ -113,18 +114,26 @@ export default function PlantDetailPage() {
     }
   };
 
-  const handleAddNoteImage = (imageUrl: string) => {
-    if (imageUrl && noteImages.length < 3) {
-      setNoteImages(prev => [...prev, imageUrl]);
+  const handleAddNoteImage = async (imageId: string) => {
+    if (imageId && noteImages.length < 3) {
+      setNoteImages(prev => [...prev, imageId]);
     }
   };
 
-  const handleRemoveNoteImage = (index: number) => {
+  const handleRemoveNoteImage = async (index: number) => {
+    const imageId = noteImages[index];
+    if (imageId) {
+      try {
+        await removeImage(imageId);
+      } catch (error) {
+        console.error('Failed to remove image from storage:', error);
+      }
+    }
     setNoteImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleImageCapture = (imageUrl: string) => {
-    updatePlant(plant.id, { imageUrl });
+  const handleImageCapture = (imageId: string) => {
+    updatePlant(plant.id, { imageUrl: imageId });
   };
 
   interface HistoryEntry {
@@ -273,9 +282,9 @@ export default function PlantDetailPage() {
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <ImageCapture
+          <ImageCaptureWithStorage
             onImageCapture={handleImageCapture}
-            currentImage={plant.imageUrl}
+            currentImageId={plant.imageUrl}
             placeholder="Add a photo of your plant"
           />
         </motion.div>
@@ -327,13 +336,13 @@ export default function PlantDetailPage() {
                 {/* Existing Images */}
                 {noteImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mb-3">
-                    {noteImages.map((imageUrl, index) => (
+                    {noteImages.map((imageId, index) => (
                       <div
                         key={index}
                         className="relative bg-muted dark:bg-gray-700 rounded-lg overflow-hidden aspect-square"
                       >
-                        <Image
-                          src={imageUrl}
+                        <ImageDisplay
+                          imageId={imageId}
                           alt={`Note image ${index + 1}`}
                           width={100}
                           height={100}
@@ -356,7 +365,7 @@ export default function PlantDetailPage() {
                 {/* Add New Image */}
                 {noteImages.length < 3 && (
                   <div className="aspect-square">
-                    <ImageCapture
+                    <ImageCaptureWithStorage
                       onImageCapture={handleAddNoteImage}
                       placeholder="Add Photo"
                     />
@@ -416,13 +425,13 @@ export default function PlantDetailPage() {
                 {/* Note Images */}
                 {entry.images && entry.images.length > 0 && (
                   <div className="grid grid-cols-2 gap-2">
-                    {entry.images.map((imageUrl: string, imgIndex: number) => (
+                    {entry.images.map((imageId: string, imgIndex: number) => (
                       <div
                         key={imgIndex}
                         className="relative bg-muted dark:bg-gray-700 rounded-lg overflow-hidden aspect-square"
                       >
-                        <Image
-                          src={imageUrl}
+                        <ImageDisplay
+                          imageId={imageId}
                           alt={`Note image ${imgIndex + 1}`}
                           width={200}
                           height={200}

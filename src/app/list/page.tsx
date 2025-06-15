@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ImageDisplay } from '@/components/ImageDisplay';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
 // SwipeableCard removed - users must use buttons instead
@@ -194,12 +195,20 @@ export default function ListPage() {
                             {/* Plant Image/Icon */}
                             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                               {plant.imageUrl ? (
-                                <Image
-                                  src={plant.imageUrl}
+                                <ImageDisplay
+                                  imageId={plant.imageUrl}
                                   alt={plant.name}
                                   width={48}
                                   height={48}
                                   className="w-full h-full object-cover"
+                                  fallback={
+                                    <div 
+                                      className="w-full h-full rounded-full flex items-center justify-center text-2xl"
+                                      style={{ backgroundColor: plant.iconColor + '20', color: plant.iconColor }}
+                                    >
+                                      {plant.icon}
+                                    </div>
+                                  }
                                 />
                               ) : (
                                 <div 

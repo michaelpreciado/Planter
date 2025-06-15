@@ -266,13 +266,14 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="fixed bottom-4 left-4 right-4 bg-white dark:bg-gray-800 rounded-2xl p-6 z-50 shadow-2xl max-w-md mx-auto"
+              className="fixed inset-0 flex items-center justify-center p-4 z-50"
             >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
-                {currentImage ? 'Update Photo' : 'Add Photo'}
-              </h3>
-              
-              <div className="space-y-3">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl max-w-md w-full mx-auto">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
+                  {currentImage ? 'Update Photo' : 'Add Photo'}
+                </h3>
+                
+                <div className="space-y-3">
                 {/* Camera Option */}
                 <button
                   type="button"
@@ -324,6 +325,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
                 >
                   Cancel
                 </button>
+                </div>
               </div>
             </motion.div>
           </>
