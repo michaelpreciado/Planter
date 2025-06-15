@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
+import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { ImageCapture } from '@/components/ImageCapture';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
@@ -29,6 +30,9 @@ export default function AddPlantPage() {
   
   // Use professional page loading pattern
   const { isReady } = usePageBasic(400);
+
+  // Scroll optimization
+  const { scrollRef: formScrollRef, scrollToTop } = useVerticalScrollOptimization();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -53,6 +57,8 @@ export default function AddPlantPage() {
     
     if (!formData.name.trim() || !selectedType) {
       haptic.error();
+      // Scroll to top to show any error messages
+      scrollToTop();
       return;
     }
 
@@ -137,13 +143,20 @@ export default function AddPlantPage() {
       </motion.header>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        ref={formScrollRef}
+        className="flex-1 overflow-y-auto mobile-scroll-container"
+        style={{
+          touchAction: 'pan-y',
+        }}
+      >
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Plant Name */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="scroll-card"
           >
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
               Plant Name *
@@ -164,11 +177,12 @@ export default function AddPlantPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            className="scroll-card"
           >
             <label className="block text-sm font-medium text-foreground mb-4">
               Plant Type *
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 scroll-card">
               {plantTypes.map((type, index) => (
                 <motion.button
                   key={type.id}
@@ -196,6 +210,7 @@ export default function AddPlantPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
+            className="scroll-card"
           >
             <label className="block text-sm font-medium text-foreground mb-4">
               Watering Frequency
@@ -233,6 +248,7 @@ export default function AddPlantPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            className="scroll-card"
           >
             <label htmlFor="notes" className="block text-sm font-medium text-foreground mb-2">
               Notes & Photos (Optional)

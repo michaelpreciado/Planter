@@ -159,6 +159,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
               <div className="space-y-3">
                 {/* Camera Option */}
                 <button
+                  type="button"
                   onClick={() => cameraInputRef.current?.click()}
                   className="w-full bg-green-500 text-white py-4 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-3"
                 >
@@ -171,6 +172,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
 
                 {/* Gallery Option */}
                 <button
+                  type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full bg-blue-500 text-white py-4 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-3"
                 >
@@ -183,6 +185,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
                 {/* Remove Option */}
                 {currentImage && (
                   <button
+                    type="button"
                     onClick={removeImage}
                     className="w-full bg-red-500 text-white py-4 rounded-xl font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-3"
                   >
@@ -195,6 +198,7 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
 
                 {/* Cancel Option */}
                 <button
+                  type="button"
                   onClick={() => setShowOptions(false)}
                   className="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                 >

@@ -10,6 +10,7 @@ import { SwipeableCard } from '@/components/SwipeableCard';
 import { PullToRefreshIndicator } from '@/components/PullToRefreshIndicator';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { usePullToRefresh, useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
+import { useListScrollOptimization, useHorizontalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { format } from 'date-fns';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { usePageWithPlants } from '@/hooks/usePageReady';
@@ -21,6 +22,10 @@ export default function ListPage() {
   
   // Use professional page loading pattern
   const { isReady } = usePageWithPlants(500);
+
+  // Scroll optimizations
+  const { scrollRef: mainScrollRef, scrollToTop } = useListScrollOptimization();
+  const { scrollRef: filterScrollRef } = useHorizontalScrollOptimization();
 
   const filteredPlants = plants.filter(plant => {
     if (filter === 'all') return true;
@@ -121,7 +126,13 @@ export default function ListPage() {
         transition={{ delay: 0.1 }}
         className="bg-card/60 backdrop-blur-md px-6 py-4 border-b border-border relative z-20"
       >
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+        <div 
+          ref={filterScrollRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide"
+          style={{
+            touchAction: 'pan-x',
+          }}
+        >
           {[
             { key: 'all', label: 'All', count: plants.length },
             { key: 'healthy', label: 'Healthy', count: plants.filter(p => p.status === 'healthy').length },
@@ -133,6 +144,8 @@ export default function ListPage() {
               onClick={() => {
                 setFilter(key as any);
                 haptic.lightImpact();
+                // Smooth scroll to top when changing filters
+                setTimeout(() => scrollToTop(), 100);
               }}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all min-w-fit ${
                 filter === key
@@ -159,7 +172,13 @@ export default function ListPage() {
           pullDistance={pullDistance}
         />
 
-        <div className="h-full overflow-y-auto px-6 py-4">
+        <div 
+          ref={mainScrollRef}
+          className="h-full overflow-y-auto px-6 py-4 mobile-scroll-container"
+          style={{
+            touchAction: 'pan-y',
+          }}
+        >
           {filteredPlants.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -193,6 +212,7 @@ export default function ListPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  className="scroll-card"
                 >
                   <SwipeableCard
                     onSwipeLeft={() => handleRemovePlant(plant.id)}
@@ -217,7 +237,7 @@ export default function ListPage() {
                     }}
                   >
                     <Link href={`/plant/${plant.id}`}>
-                      <div className="p-4 bg-card/80 backdrop-blur-md shadow-sm border border-border cursor-pointer active:bg-accent transition-colors relative rounded-xl">
+                      <div className="p-4 bg-card/80 backdrop-blur-md shadow-sm border border-border cursor-pointer active:bg-accent transition-colors relative rounded-xl mobile-list-item mobile-touch-optimized">
                         {/* Water Animation */}
                         <WaterAnimation 
                           isVisible={recentlyWateredPlant === plant.id}

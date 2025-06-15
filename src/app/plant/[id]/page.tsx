@@ -160,8 +160,13 @@ export default function PlantDetailPage() {
         const notes = JSON.parse(plant.notes);
         if (Array.isArray(notes)) {
           notes.forEach((note: any) => {
+            // Use the note's ID (which is Date.now().toString()) to get the actual creation time
+            const creationDate = note.id && !note.id.startsWith('legacy-') 
+              ? new Date(parseInt(note.id)).toISOString()
+              : new Date().toISOString();
+            
             history.push({
-              date: new Date().toISOString(), // Use timestamp if available
+              date: creationDate,
               text: note.text || '',
               images: note.images || [],
               type: 'note',
@@ -174,14 +179,21 @@ export default function PlantDetailPage() {
       } catch {
         // Handle legacy format
         const noteLines = plant.notes.split('\n').filter(line => line.trim());
-        noteLines.forEach(note => {
+        noteLines.forEach((note, index) => {
           if (note.includes(':')) {
             const [datePart, ...textParts] = note.split(':');
             history.push({
-              date: new Date().toISOString(),
+              date: new Date(Date.now() - (noteLines.length - index) * 60000).toISOString(), // Stagger legacy notes by minutes
               text: textParts.join(':').trim(),
               type: 'note',
               timestamp: datePart
+            });
+          } else {
+            history.push({
+              date: new Date(Date.now() - (noteLines.length - index) * 60000).toISOString(),
+              text: note,
+              type: 'note',
+              timestamp: format(new Date(), 'MMM dd')
             });
           }
         });

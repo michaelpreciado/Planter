@@ -106,6 +106,96 @@
     display: none;
   }
 
+  /* Enhanced mobile scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    /* Prevent momentum scroll from interfering */
+    overflow-anchor: none;
+    /* Optimize for performance */
+    will-change: scroll-position;
+    /* Better scroll snapping on mobile */
+    scroll-snap-type: y proximity;
+  }
+
+  .mobile-scroll-x {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    overflow-anchor: none;
+    will-change: scroll-position;
+    scroll-snap-type: x proximity;
+  }
+
+  /* Smooth scroll optimization for cards */
+  .scroll-card {
+    scroll-snap-align: start;
+    scroll-margin-top: 1rem;
+  }
+
+  /* Prevent scroll bounce on iOS */
+  .no-bounce {
+    overscroll-behavior: none;
+  }
+
+  /* Enhanced momentum scrolling */
+  .momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+    transform: translateZ(0);
+    /* Force hardware acceleration */
+    will-change: scroll-position;
+    /* Optimize scroll performance */
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* Mobile-specific scroll optimizations */
+  @media screen and (max-width: 768px) {
+    /* Optimize scrolling containers for mobile */
+    .mobile-scroll-container {
+      /* Prevent scroll chaining */
+      overscroll-behavior: contain;
+      /* Enable momentum scrolling */
+      -webkit-overflow-scrolling: touch;
+      /* Optimize for performance */
+      will-change: scroll-position;
+      /* Smooth scrolling */
+      scroll-behavior: smooth;
+      /* Prevent horizontal scroll bounce */
+      overflow-x: hidden;
+    }
+
+    /* Optimize list items for smooth scrolling */
+    .mobile-list-item {
+      /* Optimize rendering */
+      contain: layout style paint;
+      /* Prevent layout thrashing */
+      will-change: transform;
+      /* Smooth transitions */
+      transition: transform 0.2s ease-out;
+    }
+
+    /* Reduce motion for better performance on low-end devices */
+    @media (prefers-reduced-motion: no-preference) {
+      .mobile-scroll-smooth {
+        scroll-behavior: smooth;
+      }
+    }
+
+    /* Optimize touch interactions */
+    .mobile-touch-optimized {
+      /* Better touch response */
+      touch-action: manipulation;
+      /* Prevent text selection during scroll */
+      -webkit-user-select: none;
+      user-select: none;
+      /* Optimize tap highlighting */
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+
   /* Focus styles */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
@@ -359,6 +449,28 @@
   .touch-pan-x { touch-action: pan-x; }
   .touch-pan-y { touch-action: pan-y; }
   .touch-manipulation { touch-action: manipulation; }
+
+  /* Text utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
 
   /* Mobile spacing utilities */
   .mobile-padding {

@@ -177,23 +177,7 @@ export default function HomePage() {
             variants={blobVariants}
             className="flex justify-center"
           >
-            <div className="relative">
-              <TamagotchiBlob size={160} showAnimation={true} />
-              
-              {/* Mood indicator */}
-              <motion.div
-                variants={itemVariants}
-                className="absolute -top-4 -right-4 w-8 h-8 bg-card rounded-full shadow-lg flex items-center justify-center border-2 border-background"
-              >
-                {!user ? (
-                  <span className="text-blue-500 text-xl">😴</span>
-                ) : plantsNeedingWater > 0 ? (
-                  <span className="text-red-500 text-xl">😰</span>
-                ) : (
-                  <span className="text-green-500 text-xl">😊</span>
-                )}
-              </motion.div>
-            </div>
+            <TamagotchiBlob size={160} showAnimation={true} />
           </motion.div>
 
           {/* User Welcome / Login Prompt */}
@@ -224,7 +208,7 @@ export default function HomePage() {
               variants={itemVariants}
               className="bg-card/80 backdrop-blur rounded-2xl p-4 sm:p-6 shadow-lg"
             >
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div className="text-center">
                   <div className="text-xl sm:text-2xl font-bold text-green-600">{healthyPlants}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Healthy Plants</div>
@@ -233,40 +217,6 @@ export default function HomePage() {
                   <div className="text-xl sm:text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Need Water</div>
                 </div>
-              </div>
-              
-              {/* Sync Status */}
-              <div className="border-t border-border pt-4">
-                {!isDbConfigured ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                      <span className="text-xs text-muted-foreground">Offline Mode</span>
-                    </div>
-                    <Link 
-                      href="/SUPABASE_SETUP.md" 
-                      className="text-xs text-blue-500 hover:text-blue-600"
-                    >
-                      Enable Sync
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${loading ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></span>
-                      <span className="text-xs text-muted-foreground">
-                        {loading ? 'Syncing...' : lastSyncTime ? `Synced ${lastSyncTime}` : 'Cloud Sync Ready'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleSync}
-                      disabled={loading}
-                      className="text-xs text-blue-500 hover:text-blue-600 disabled:text-gray-400"
-                    >
-                      🔄 Sync
-                    </button>
-                  </div>
-                )}
               </div>
             </motion.div>
           )}
@@ -318,15 +268,7 @@ export default function HomePage() {
             )}
           </motion.div>
 
-          {/* Gesture Hint */}
-          {user && (
-            <motion.div
-              variants={itemVariants}
-              className="text-center text-xs text-muted-foreground"
-            >
-              👈 Swipe left for plants • Swipe right to add plant 👉
-            </motion.div>
-          )}
+
         </div>
       </motion.div>
 
