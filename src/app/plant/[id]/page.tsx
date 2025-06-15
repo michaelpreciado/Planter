@@ -34,13 +34,13 @@ export default function PlantDetailPage() {
   // Show error only after hydration is complete
   if (!plant) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">🌱</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Plant not found</h2>
-          <p className="text-gray-600 mb-4">Plant ID: {params.id}</p>
-          <p className="text-gray-600 mb-4">Total plants in store: {plants.length}</p>
-          <Link href="/list" className="text-green-600 hover:text-green-700">
+          <h2 className="text-xl font-semibold text-foreground mb-2">Plant not found</h2>
+          <p className="text-muted-foreground mb-4">Plant ID: {params.id}</p>
+          <p className="text-muted-foreground mb-4">Total plants in store: {plants.length}</p>
+          <Link href="/list" className="text-primary hover:text-primary/80">
             ← Back to plant list
           </Link>
         </div>
@@ -214,7 +214,7 @@ export default function PlantDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col relative">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex flex-col relative">
       {/* Water Animation */}
       <WaterAnimation 
         isVisible={recentlyWateredPlant === plant?.id}
@@ -228,12 +228,12 @@ export default function PlantDetailPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between px-6 py-4 pt-safe"
       >
-        <button onClick={() => router.back()} className="text-gray-700">
+        <button onClick={() => router.back()} className="text-foreground">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h1 className="text-xl font-bold text-gray-900">{plant.name}</h1>
+        <h1 className="text-xl font-bold text-foreground">{plant.name}</h1>
         <div 
           className="w-8 h-8 rounded-full flex items-center justify-center text-xl"
           style={{ backgroundColor: plant.iconColor + '20', color: plant.iconColor }}
@@ -249,26 +249,16 @@ export default function PlantDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gray-50 rounded-2xl p-6 mb-6"
+          className="bg-card dark:bg-gray-800 rounded-2xl p-6 mb-6"
         >
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-medium">Last Watered</span>
-              <span className="text-gray-900">
-                {plant.lastWatered === 'Just planted' 
-                  ? 'Just planted' 
-                  : formatDistanceToNow(new Date(plant.lastWatered!), { addSuffix: true })
-                }
-              </span>
+              <span className="text-muted-foreground font-medium">Next Watering</span>
+              <span className="text-foreground">{plant.nextWatering}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-medium">Next Watering</span>
-              <span className="text-gray-900">{plant.nextWatering}</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-medium">Health Status</span>
+              <span className="text-muted-foreground font-medium">Health Status</span>
               <span className={`font-semibold ${getStatusColor(plant.status)}`}>
                 {getStatusText(plant.status)}
               </span>
@@ -298,10 +288,10 @@ export default function PlantDetailPage() {
           className="mb-6"
         >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">History</h2>
+            <h2 className="text-xl font-bold text-foreground">History</h2>
             <button
               onClick={() => setShowAddNote(true)}
-              className="text-green-600 font-medium flex items-center gap-1"
+              className="text-primary font-medium flex items-center gap-1"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -315,21 +305,21 @@ export default function PlantDetailPage() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="bg-gray-50 rounded-lg p-4 mb-4"
+              className="bg-muted dark:bg-gray-800 rounded-lg p-4 mb-4"
             >
               <textarea
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a note about your plant..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-border bg-background dark:bg-gray-700 text-foreground rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 rows={3}
               />
               
               {/* Note Images */}
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700">Photos</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-sm font-medium text-foreground">Photos</span>
+                  <span className="text-xs text-muted-foreground">
                     {noteImages.length}/3 photos
                   </span>
                 </div>
@@ -340,7 +330,7 @@ export default function PlantDetailPage() {
                     {noteImages.map((imageUrl, index) => (
                       <div
                         key={index}
-                        className="relative bg-gray-200 rounded-lg overflow-hidden aspect-square"
+                        className="relative bg-muted dark:bg-gray-700 rounded-lg overflow-hidden aspect-square"
                       >
                         <Image
                           src={imageUrl}
@@ -377,7 +367,7 @@ export default function PlantDetailPage() {
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={handleAddNote}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
                 >
                   Save Note
                 </button>
@@ -387,7 +377,7 @@ export default function PlantDetailPage() {
                     setNewNote('');
                     setNoteImages([]);
                   }}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
+                  className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
                 >
                   Cancel
                 </button>
@@ -403,16 +393,16 @@ export default function PlantDetailPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
-                className="bg-white rounded-lg p-4 border border-gray-200"
+                className="bg-card dark:bg-gray-800 rounded-lg p-4 border border-border"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-foreground">
                     {entry.timestamp || format(new Date(entry.date), 'MMM dd')}
                   </span>
                   <span className={`text-xs px-2 py-1 rounded-full ${
-                    entry.type === 'planted' ? 'bg-green-100 text-green-800' :
-                    entry.type === 'watered' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
+                    entry.type === 'planted' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                    entry.type === 'watered' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
+                    'bg-muted text-muted-foreground'
                   }`}>
                     {entry.type === 'planted' ? 'Planted' : 
                      entry.type === 'watered' ? 'Watered' : 'Note'}
@@ -420,7 +410,7 @@ export default function PlantDetailPage() {
                 </div>
                 
                 {entry.text && (
-                  <p className="text-gray-700 text-sm mb-3">{entry.text}</p>
+                  <p className="text-muted-foreground text-sm mb-3">{entry.text}</p>
                 )}
                 
                 {/* Note Images */}
@@ -429,7 +419,7 @@ export default function PlantDetailPage() {
                     {entry.images.map((imageUrl: string, imgIndex: number) => (
                       <div
                         key={imgIndex}
-                        className="relative bg-gray-200 rounded-lg overflow-hidden aspect-square"
+                        className="relative bg-muted dark:bg-gray-700 rounded-lg overflow-hidden aspect-square"
                       >
                         <Image
                           src={imageUrl}
@@ -474,7 +464,7 @@ export default function PlantDetailPage() {
         >
           <button
             onClick={handleWaterPlant}
-            className="bg-blue-500 text-white py-4 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+            className="bg-primary text-primary-foreground py-4 rounded-xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
@@ -483,7 +473,7 @@ export default function PlantDetailPage() {
           </button>
           <Link
             href="/list"
-            className="bg-gray-100 text-gray-700 py-4 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            className="bg-secondary text-secondary-foreground py-4 rounded-xl font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
