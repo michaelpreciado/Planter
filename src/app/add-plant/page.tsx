@@ -12,6 +12,7 @@ import { ImageCaptureWithStorage } from '@/components/ImageCaptureWithStorage';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { usePageBasic } from '@/hooks/usePageReady';
+import { AuthGuard } from '@/components/AuthGuard';
 
 const plantTypes = [
   { id: 'succulent', name: 'Succulent', icon: '🌵' },
@@ -142,7 +143,8 @@ export default function AddPlantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16">
+    <AuthGuard message="Please sign in to add new plants to your collection">
+      <div className="min-h-screen bg-background flex flex-col pb-16">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -423,7 +425,8 @@ export default function AddPlantPage() {
             👉 Swipe right to go back
           </motion.div>
         </form>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 } 

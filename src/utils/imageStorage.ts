@@ -158,6 +158,20 @@ class ImageStorageManager {
   }
 
   /**
+   * Update image metadata to associate with a plant
+   */
+  async updateImagePlantId(imageId: string, plantId: string): Promise<void> {
+    await this.init();
+
+    const metadata = this.metadata.get(imageId);
+    if (metadata) {
+      metadata.plantId = plantId;
+      this.metadata.set(imageId, metadata);
+      await this.persist();
+    }
+  }
+
+  /**
    * Remove all images for a plant
    */
   async removePlantImages(plantId: string): Promise<void> {
@@ -195,6 +209,21 @@ class ImageStorageManager {
       maxSize: STORAGE_CONFIG.MAX_TOTAL_SIZE,
       usagePercentage: (totalSize / STORAGE_CONFIG.MAX_TOTAL_SIZE) * 100,
     };
+  }
+
+  /**
+   * Debug: Get all image metadata
+   */
+  getAllImageMetadata(): Array<ImageMetadata> {
+    return Array.from(this.metadata.values());
+  }
+
+  /**
+   * Debug: Check if an image exists
+   */
+  async imageExists(imageId: string): Promise<boolean> {
+    await this.init();
+    return this.images.has(imageId);
   }
 
   /**
@@ -313,11 +342,20 @@ export const removeImage = (id: string) =>
 export const getPlantImages = (plantId: string) => 
   imageStorage.getPlantImages(plantId);
 
+export const updateImagePlantId = (imageId: string, plantId: string) => 
+  imageStorage.updateImagePlantId(imageId, plantId);
+
 export const removePlantImages = (plantId: string) => 
   imageStorage.removePlantImages(plantId);
 
 export const getStorageStats = () => 
   imageStorage.getStorageStats();
+
+export const getAllImageMetadata = () => 
+  imageStorage.getAllImageMetadata();
+
+export const imageExists = (imageId: string) => 
+  imageStorage.imageExists(imageId);
 
 export const clearAllImages = () => 
   imageStorage.clearAll(); 

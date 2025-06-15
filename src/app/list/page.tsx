@@ -15,6 +15,7 @@ import { useListScrollOptimization, useHorizontalScrollOptimization } from '@/ho
 import { format } from 'date-fns';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { usePageWithPlants } from '@/hooks/usePageReady';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export default function ListPage() {
   const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered } = usePlants();
@@ -75,7 +76,8 @@ export default function ListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative pb-16">
+    <AuthGuard message="Please sign in to view and manage your plants">
+      <div className="min-h-screen bg-background flex flex-col relative pb-16">
       {/* Header */}
       <PageHeader title="My Plants">
         <Link href="/" className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors">
@@ -287,6 +289,7 @@ export default function ListPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AuthGuard>
   );
 } 

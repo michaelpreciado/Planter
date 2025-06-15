@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { format, addDays, subDays } from 'date-fns';
 import { plantService, isSupabaseConfigured } from '@/utils/supabase';
 import { Plant as DBPlant } from '@/types';
-import { storeImage, getImage, removeImage, removePlantImages } from '@/utils/imageStorage';
+import { storeImage, getImage, removeImage, removePlantImages, updateImagePlantId, getAllImageMetadata, imageExists } from '@/utils/imageStorage';
 
 export interface Plant {
   id: string;
@@ -60,6 +60,7 @@ interface PlantStore {
   storeImage: (imageData: string, plantId?: string, noteId?: string) => Promise<string>;
   getImage: (imageId: string) => Promise<string | null>;
   removeImage: (imageId: string) => Promise<void>;
+  updateImagePlantId: (imageId: string, plantId: string) => Promise<void>;
 }
 
 const plantIcons = ['🌱', '🍃', '🌿', '🌺', '🌻', '🌹', '🌷', '🌵', '🍅', '🥕', '🌾', '🌸', '🌼', '🪴', '🌳'];
@@ -349,6 +350,20 @@ export const usePlantStore = create<PlantStore>()(
             loading: false,
           }));
 
+          // Associate images with the plant after it's created
+          try {
+            if (newPlant.imageUrl) {
+              await updateImagePlantId(newPlant.imageUrl, newPlant.id);
+            }
+            if (newPlant.noteAttachments && newPlant.noteAttachments.length > 0) {
+              for (const imageId of newPlant.noteAttachments) {
+                await updateImagePlantId(imageId, newPlant.id);
+              }
+            }
+          } catch (imageError) {
+            console.warn('Failed to associate images with plant:', imageError);
+          }
+
           // Then try to sync to database
           try {
             const dbPlant = await plantService.createPlant(localPlantToDb(newPlant));
@@ -518,7 +533,7 @@ export const usePlantStore = create<PlantStore>()(
       },
 
       // Debug operations (for development)
-      debugPlantStore: () => {
+      debugPlantStore: async () => {
         const state = get();
         console.log('=== Plant Store Debug ===');
         console.log('Total plants:', state.plants.length);
@@ -527,7 +542,28 @@ export const usePlantStore = create<PlantStore>()(
         console.log('Loading:', state.loading);
         console.log('Error:', state.error);
         console.log('Recent watered:', state.recentlyWateredPlant);
-        console.log('Full state:', state);
+        
+        // Image diagnostics
+        console.log('=== Image Debug ===');
+        const imageMetadata = getAllImageMetadata();
+        console.log('Total stored images:', imageMetadata.length);
+        
+        for (const plant of state.plants) {
+          console.log(`Plant "${plant.name}" (${plant.id}):`);
+          if (plant.imageUrl) {
+            const exists = await imageExists(plant.imageUrl);
+            console.log(`  - Main image: ${plant.imageUrl} (exists: ${exists})`);
+          }
+          if (plant.noteAttachments && plant.noteAttachments.length > 0) {
+            console.log(`  - Note attachments: ${plant.noteAttachments.length}`);
+            for (const imageId of plant.noteAttachments) {
+              const exists = await imageExists(imageId);
+              console.log(`    - ${imageId} (exists: ${exists})`);
+            }
+          }
+        }
+        
+        console.log('All image metadata:', imageMetadata);
         console.log('=========================');
       },
 
@@ -562,6 +598,15 @@ export const usePlantStore = create<PlantStore>()(
           await removeImage(imageId);
         } catch (error) {
           console.error('Failed to remove image:', error);
+          throw error;
+        }
+      },
+
+      updateImagePlantId: async (imageId: string, plantId: string) => {
+        try {
+          await updateImagePlantId(imageId, plantId);
+        } catch (error) {
+          console.error('Failed to update image plant ID:', error);
           throw error;
         }
       },
@@ -625,6 +670,7 @@ export function usePlants() {
     storeImage: baseStore.storeImage,
     getImage: baseStore.getImage,
     removeImage: baseStore.removeImage,
+    updateImagePlantId: baseStore.updateImagePlantId,
   };
 }
 
