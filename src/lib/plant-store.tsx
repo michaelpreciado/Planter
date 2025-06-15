@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { format, addDays, subDays } from 'date-fns';
 import { plantService, isSupabaseConfigured } from '@/utils/supabase';
 import { Plant as DBPlant } from '@/types';
+import { storeImage, getImage, removeImage, removePlantImages } from '@/utils/imageStorage';
 
 export interface Plant {
   id: string;
@@ -19,8 +20,8 @@ export interface Plant {
   nextWatering?: string;
   status: 'healthy' | 'needs_water' | 'overdue';
   notes?: string;
-  noteAttachments?: string[]; // Array of image URLs for note attachments
-  imageUrl?: string;
+  noteAttachments?: string[]; // Array of image IDs for note attachments
+  imageUrl?: string; // Image ID for plant photo
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +55,11 @@ interface PlantStore {
   debugPlantStore: () => void;
   
   initializeSampleData: () => void;
+  
+  // Image operations
+  storeImage: (imageData: string, plantId?: string, noteId?: string) => Promise<string>;
+  getImage: (imageId: string) => Promise<string | null>;
+  removeImage: (imageId: string) => Promise<void>;
 }
 
 const plantIcons = ['🌱', '🍃', '🌿', '🌺', '🌻', '🌹', '🌷', '🌵', '🍅', '🥕', '🌾', '🌸', '🌼', '🪴', '🌳'];
@@ -375,7 +381,14 @@ export const usePlantStore = create<PlantStore>()(
       removePlant: async (id) => {
         set({ loading: true, error: null });
         try {
-          // Remove from database first
+          // Clean up associated images first
+          try {
+            await removePlantImages(id);
+          } catch (imageError) {
+            console.warn('Failed to clean up plant images:', imageError);
+          }
+
+          // Remove from database
           try {
             await plantService.deletePlant(id);
           } catch (dbError) {
@@ -524,6 +537,34 @@ export const usePlantStore = create<PlantStore>()(
           plants: [...state.plants, ...samplePlants],
         }));
       },
+
+      // Image operations
+      storeImage: async (imageData: string, plantId?: string, noteId?: string) => {
+        try {
+          return await storeImage(imageData, plantId, noteId);
+        } catch (error) {
+          console.error('Failed to store image:', error);
+          throw error;
+        }
+      },
+
+      getImage: async (imageId: string) => {
+        try {
+          return await getImage(imageId);
+        } catch (error) {
+          console.error('Failed to get image:', error);
+          return null;
+        }
+      },
+
+      removeImage: async (imageId: string) => {
+        try {
+          await removeImage(imageId);
+        } catch (error) {
+          console.error('Failed to remove image:', error);
+          throw error;
+        }
+      },
     }),
     {
       name: 'plant-store',
@@ -580,6 +621,10 @@ export function usePlants() {
   return {
     ...baseStore,
     plants: baseStore.getPlantsWithRealTimeStatus(),
+    // Explicitly expose image methods for easier access
+    storeImage: baseStore.storeImage,
+    getImage: baseStore.getImage,
+    removeImage: baseStore.removeImage,
   };
 }
 

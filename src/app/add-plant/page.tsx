@@ -8,6 +8,8 @@ import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { ImageCapture } from '@/components/ImageCapture';
+import { ImageDisplay } from '@/components/ImageDisplay';
+import { ImageCaptureWithStorage } from '@/components/ImageCaptureWithStorage';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { usePageBasic } from '@/hooks/usePageReady';
@@ -25,7 +27,7 @@ const plantTypes = [
 
 export default function AddPlantPage() {
   const router = useRouter();
-  const { addPlant, error, loading } = usePlants();
+  const { addPlant, error, loading, storeImage, removeImage } = usePlants();
   const haptic = useHapticFeedback();
   
   // Use professional page loading pattern
@@ -97,17 +99,33 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-  const handleAddNoteImage = (imageUrl: string) => {
+  const handleAddNoteImage = async (imageUrl: string) => {
     if (imageUrl) {
-      setFormData(prev => ({
-        ...prev,
-        noteAttachments: [...prev.noteAttachments, imageUrl]
-      }));
+      try {
+        // Store the image and get an ID back
+        const imageId = await storeImage(imageUrl, undefined, Date.now().toString());
+        setFormData(prev => ({
+          ...prev,
+          noteAttachments: [...prev.noteAttachments, imageId]
+        }));
+        haptic.success();
+      } catch (error) {
+        console.error('Failed to store note image:', error);
+        haptic.error();
+      }
     }
-    haptic.success();
   };
 
-  const handleRemoveNoteImage = (index: number) => {
+  const handleRemoveNoteImage = async (index: number) => {
+    const imageId = formData.noteAttachments[index];
+    if (imageId) {
+      try {
+        await removeImage(imageId);
+      } catch (error) {
+        console.error('Failed to remove image from storage:', error);
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       noteAttachments: prev.noteAttachments.filter((_, i) => i !== index)
@@ -115,12 +133,14 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-  const handlePlantImageCapture = (imageUrl: string) => {
+  const handlePlantImageCapture = (imageId: string) => {
     setFormData(prev => ({
       ...prev,
-      imageUrl: imageUrl
+      imageUrl: imageId
     }));
-    haptic.success();
+    if (imageId) {
+      haptic.success();
+    }
   };
 
   // Show professional loader while page is preparing
@@ -263,9 +283,9 @@ export default function AddPlantPage() {
             <label className="block text-sm font-medium text-foreground mb-4">
               Plant Photo (Optional)
             </label>
-            <ImageCapture
+            <ImageCaptureWithStorage
               onImageCapture={handlePlantImageCapture}
-              currentImage={formData.imageUrl}
+              currentImageId={formData.imageUrl}
               placeholder="Add a photo of your plant"
             />
           </motion.div>
@@ -302,7 +322,7 @@ export default function AddPlantPage() {
                 {/* Existing Attachments */}
                 {formData.noteAttachments.length > 0 && (
                   <div className="grid grid-cols-2 gap-3 mb-3">
-                    {formData.noteAttachments.map((imageUrl, index) => (
+                    {formData.noteAttachments.map((imageId, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -310,8 +330,8 @@ export default function AddPlantPage() {
                         className="relative bg-muted rounded-xl overflow-hidden"
                         style={{ aspectRatio: '3/2' }}
                       >
-                        <Image
-                          src={imageUrl}
+                        <ImageDisplay
+                          imageId={imageId}
                           alt={`Note attachment ${index + 1}`}
                           width={400}
                           height={267}
