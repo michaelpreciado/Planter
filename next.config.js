@@ -16,12 +16,19 @@ const nextConfig = {
   generateEtags: false,
   swcMinify: true,
   
-  // Image optimization
+  // Fixed Image optimization for Netlify deployment
   images: {
+    // Disable image optimization to prevent RSC payload errors on Netlify
+    unoptimized: true,
+    // Keep formats for future use when not using unoptimized
     formats: ['image/avif', 'image/webp'],
-    domains: ['supabase.co', 'your-supabase-domain.supabase.co'],
-    deviceSizes: [360, 414, 768, 1024, 1280, 1920],
+    // Remove domains that may cause CORS issues
+    domains: [],
+    // Simplified device sizes
+    deviceSizes: [640, 768, 1024, 1280, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Disable remote patterns for now
+    remotePatterns: [],
   },
   
   // Bundle analysis

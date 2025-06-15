@@ -41,7 +41,6 @@ export default function AddPlantPage() {
     species: '',
     wateringFrequency: 7,
     notes: '',
-    noteAttachments: [] as string[],
     imageUrl: '',
   });
   const [selectedType, setSelectedType] = useState<string>('');
@@ -74,7 +73,6 @@ export default function AddPlantPage() {
         species: selectedType,
         wateringFrequency: formData.wateringFrequency,
         notes: formData.notes.trim(),
-        noteAttachments: formData.noteAttachments,
         imageUrl: formData.imageUrl,
         plantingDate: new Date().toISOString(),
       });
@@ -100,32 +98,7 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-  const handleAddNoteImage = async (imageId: string) => {
-    if (imageId) {
-      setFormData(prev => ({
-        ...prev,
-        noteAttachments: [...prev.noteAttachments, imageId]
-      }));
-      haptic.success();
-    }
-  };
 
-  const handleRemoveNoteImage = async (index: number) => {
-    const imageId = formData.noteAttachments[index];
-    if (imageId) {
-      try {
-        await removeImage(imageId);
-      } catch (error) {
-        console.error('Failed to remove image from storage:', error);
-      }
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      noteAttachments: prev.noteAttachments.filter((_, i) => i !== index)
-    }));
-    haptic.lightImpact();
-  };
 
   const handlePlantImageCapture = (imageId: string) => {
     setFormData(prev => ({
@@ -293,70 +266,16 @@ export default function AddPlantPage() {
             className="scroll-card"
           >
             <label htmlFor="notes" className="block text-sm font-medium text-foreground mb-2">
-              Notes & Additional Photos (Optional)
+              Notes (Optional)
             </label>
-            <div className="space-y-4">
-              <textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                className="input input-mobile w-full resize-none"
-                rows={3}
-                placeholder="Special care instructions, location, etc."
-              />
-              
-              {/* Note Image Attachments */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-foreground">Photo Attachments</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formData.noteAttachments.length}/5 photos
-                  </span>
-                </div>
-                
-                {/* Existing Attachments */}
-                {formData.noteAttachments.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    {formData.noteAttachments.map((imageId, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative bg-muted rounded-xl overflow-hidden"
-                        style={{ aspectRatio: '3/2' }}
-                      >
-                        <ImageDisplay
-                          imageId={imageId}
-                          alt={`Note attachment ${index + 1}`}
-                          width={400}
-                          height={267}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveNoteImage(index)}
-                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-lg hover:bg-destructive/90 transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
-                          </svg>
-                        </button>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Add New Image */}
-                {formData.noteAttachments.length < 5 && (
-                  <div className="w-full" style={{ aspectRatio: '3/2' }}>
-                    <ImageCaptureWithStorage
-                      onImageCapture={handleAddNoteImage}
-                      placeholder="Add Note Photo"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            <textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              className="input input-mobile w-full resize-none"
+              rows={3}
+              placeholder="Special care instructions, location, etc."
+            />
           </motion.div>
 
           {/* Error Message */}

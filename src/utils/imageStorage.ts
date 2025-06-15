@@ -2,14 +2,7 @@
  * Enhanced image storage utilities for better memory management and storage optimization
  */
 
-// Storage keys
-const STORAGE_KEYS = {
-  IMAGES: 'planter_images',
-  METADATA: 'planter_image_metadata',
-} as const;
-
-// Image metadata interface
-interface ImageMetadata {
+export interface ImageMetadata {
   id: string;
   size: number;
   created: number;
@@ -17,6 +10,12 @@ interface ImageMetadata {
   plantId?: string;
   noteId?: string;
 }
+
+// Storage keys
+const STORAGE_KEYS = {
+  IMAGES: 'plant-app-images',
+  METADATA: 'plant-app-image-metadata',
+} as const;
 
 // Storage configuration
 const STORAGE_CONFIG = {
@@ -28,53 +27,127 @@ const STORAGE_CONFIG = {
 
 class ImageStorageManager {
   private images: Map<string, string> = new Map();
-  private metadata: Map<string, ImageMetadata> = new Map();
-  private initialized = false;
+  public metadata: Map<string, ImageMetadata> = new Map();
+  public initialized = false;
+  private initPromise: Promise<void> | null = null;
 
   /**
-   * Initialize the storage manager
+   * Initialize the storage manager with better error handling
    */
   async init(): Promise<void> {
     if (this.initialized) return;
+    
+    // Prevent multiple initialization attempts
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
+    this.initPromise = this._performInit();
+    return this.initPromise;
+  }
+
+  private async _performInit(): Promise<void> {
     try {
-      // Load existing images and metadata
+      // Check if localStorage is available (for SSR/deployment compatibility)
+      if (typeof window === 'undefined' || !window.localStorage) {
+        console.warn('localStorage not available, image storage disabled');
+        this.initialized = true;
+        return;
+      }
+
+      // Load existing images and metadata with error handling
+      await this._loadStoredData();
+      
+      // Clean up old or excess images
+      await this.cleanup();
+      
+      this.initialized = true;
+      console.log('Image storage initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize image storage:', error);
+      // Reset storage on error to prevent corruption
+      this._resetStorage();
+      this.initialized = true;
+    }
+  }
+
+  private async _loadStoredData(): Promise<void> {
+    try {
       const savedImages = localStorage.getItem(STORAGE_KEYS.IMAGES);
       const savedMetadata = localStorage.getItem(STORAGE_KEYS.METADATA);
 
       if (savedImages) {
         const parsedImages = JSON.parse(savedImages);
-        this.images = new Map(Object.entries(parsedImages));
+        if (typeof parsedImages === 'object' && parsedImages !== null) {
+          this.images = new Map(Object.entries(parsedImages));
+        }
       }
 
       if (savedMetadata) {
         const parsedMetadata = JSON.parse(savedMetadata);
-        this.metadata = new Map(
-          Object.entries(parsedMetadata).map(([key, value]) => [key, value as ImageMetadata])
-        );
+        if (typeof parsedMetadata === 'object' && parsedMetadata !== null) {
+          this.metadata = new Map(
+            Object.entries(parsedMetadata).map(([key, value]) => [key, value as ImageMetadata])
+          );
+        }
       }
 
-      // Clean up old or excess images
-      await this.cleanup();
-      
-      this.initialized = true;
+      // Validate data consistency
+      this._validateStorageConsistency();
     } catch (error) {
-      console.error('Failed to initialize image storage:', error);
-      // Reset storage on error
-      this.images.clear();
-      this.metadata.clear();
-      this.initialized = true;
+      console.error('Failed to load stored data:', error);
+      throw error;
+    }
+  }
+
+  private _validateStorageConsistency(): void {
+    // Remove metadata for images that don't exist
+    const imageIds = new Set(this.images.keys());
+    const metadataIds = new Set(this.metadata.keys());
+    
+    for (const metadataId of metadataIds) {
+      if (!imageIds.has(metadataId)) {
+        this.metadata.delete(metadataId);
+      }
+    }
+
+    // Remove images that don't have metadata
+    for (const imageId of imageIds) {
+      if (!metadataIds.has(imageId)) {
+        this.images.delete(imageId);
+      }
+    }
+  }
+
+  private _resetStorage(): void {
+    this.images.clear();
+    this.metadata.clear();
+    try {
+      localStorage.removeItem(STORAGE_KEYS.IMAGES);
+      localStorage.removeItem(STORAGE_KEYS.METADATA);
+    } catch (error) {
+      console.error('Failed to reset storage:', error);
     }
   }
 
   /**
-   * Store an image with automatic cleanup
+   * Store an image with automatic cleanup and better error handling
    */
   async storeImage(imageData: string, plantId?: string, noteId?: string): Promise<string> {
     await this.init();
 
+    // Check if localStorage is available
+    if (typeof window === 'undefined' || !window.localStorage) {
+      throw new Error('Storage not available');
+    }
+
     const id = this.generateId();
     const size = this.calculateSize(imageData);
+
+    // Validate image data
+    if (!this._isValidImageData(imageData)) {
+      throw new Error('Invalid image data format');
+    }
 
     try {
       // Check if we need to clean up before storing
@@ -95,33 +168,52 @@ class ImageStorageManager {
         noteId,
       });
 
-      // Save to localStorage
-      await this.persist();
+      // Save to localStorage with retry logic
+      await this._persistWithRetry();
 
       return id;
     } catch (error) {
+      // Clean up if storing failed
+      this.images.delete(id);
+      this.metadata.delete(id);
+      
       console.error('Failed to store image:', error);
-      throw new Error('Failed to store image. Storage may be full.');
+      throw new Error('Failed to store image. Storage may be full or unavailable.');
     }
   }
 
   /**
-   * Retrieve an image by ID
+   * Get an image by ID with better error handling
    */
   async getImage(id: string): Promise<string | null> {
     await this.init();
 
-    const imageData = this.images.get(id);
-    if (!imageData) return null;
-
-    // Update last accessed time
-    const metadata = this.metadata.get(id);
-    if (metadata) {
-      metadata.lastAccessed = Date.now();
-      this.metadata.set(id, metadata);
+    if (!id || typeof id !== 'string') {
+      return null;
     }
 
-    return imageData;
+    try {
+      const imageData = this.images.get(id);
+      if (!imageData) {
+        return null;
+      }
+
+      // Update last accessed time
+      const metadata = this.metadata.get(id);
+      if (metadata) {
+        metadata.lastAccessed = Date.now();
+        this.metadata.set(id, metadata);
+        // Persist updated metadata asynchronously
+        this._persistWithRetry().catch(error => {
+          console.warn('Failed to update access time:', error);
+        });
+      }
+
+      return imageData;
+    } catch (error) {
+      console.error('Failed to get image:', error);
+      return null;
+    }
   }
 
   /**
@@ -130,9 +222,18 @@ class ImageStorageManager {
   async removeImage(id: string): Promise<void> {
     await this.init();
 
-    this.images.delete(id);
-    this.metadata.delete(id);
-    await this.persist();
+    if (!id || typeof id !== 'string') {
+      return;
+    }
+
+    try {
+      this.images.delete(id);
+      this.metadata.delete(id);
+      await this._persistWithRetry();
+    } catch (error) {
+      console.error('Failed to remove image:', error);
+      throw error;
+    }
   }
 
   /**
@@ -196,18 +297,29 @@ class ImageStorageManager {
   /**
    * Get storage statistics
    */
-  getStorageStats(): {
+  getStats(): {
     totalImages: number;
     totalSize: number;
-    maxSize: number;
     usagePercentage: number;
+    available: boolean;
   } {
+    const available = typeof window !== 'undefined' && !!window.localStorage;
+    
+    if (!available || !this.initialized) {
+      return {
+        totalImages: 0,
+        totalSize: 0,
+        usagePercentage: 0,
+        available,
+      };
+    }
+
     const totalSize = this.getTotalSize();
     return {
       totalImages: this.images.size,
       totalSize,
-      maxSize: STORAGE_CONFIG.MAX_TOTAL_SIZE,
       usagePercentage: (totalSize / STORAGE_CONFIG.MAX_TOTAL_SIZE) * 100,
+      available,
     };
   }
 
@@ -227,85 +339,118 @@ class ImageStorageManager {
   }
 
   /**
-   * Force cleanup of old images
+   * Clean up old or excess images
    */
   async cleanup(force = false): Promise<void> {
-    const totalSize = this.getTotalSize();
-    const needsCleanup = force || 
-      totalSize > STORAGE_CONFIG.MAX_TOTAL_SIZE * STORAGE_CONFIG.CLEANUP_THRESHOLD ||
-      this.images.size >= STORAGE_CONFIG.MAX_IMAGES;
+    await this.init();
 
-    if (!needsCleanup) return;
+    try {
+      const totalSize = this.getTotalSize();
+      const shouldCleanup = force || 
+        totalSize > STORAGE_CONFIG.MAX_TOTAL_SIZE * STORAGE_CONFIG.CLEANUP_THRESHOLD ||
+        this.images.size > STORAGE_CONFIG.MAX_IMAGES * STORAGE_CONFIG.CLEANUP_THRESHOLD;
 
-    const now = Date.now();
-    const maxAge = STORAGE_CONFIG.MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
-    const imagesToRemove: string[] = [];
-
-    // First, remove images older than max age
-    for (const [id, metadata] of this.metadata.entries()) {
-      if (now - metadata.created > maxAge) {
-        imagesToRemove.push(id);
+      if (!shouldCleanup) {
+        return;
       }
-    }
 
-    // If still need more space, remove least recently accessed
-    if (imagesToRemove.length === 0 || force) {
-      const sortedByAccess = Array.from(this.metadata.entries())
-        .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+      const now = Date.now();
+      const maxAge = STORAGE_CONFIG.MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+      const metadataArray = Array.from(this.metadata.values());
 
-      const removeCount = Math.max(1, Math.floor(this.images.size * 0.2)); // Remove 20%
-      for (let i = 0; i < removeCount && i < sortedByAccess.length; i++) {
-        imagesToRemove.push(sortedByAccess[i][0]);
+      // Remove old images first
+      const oldImages = metadataArray.filter(meta => now - meta.created > maxAge);
+      for (const meta of oldImages) {
+        this.images.delete(meta.id);
+        this.metadata.delete(meta.id);
       }
-    }
 
-    // Remove the images
-    for (const id of imagesToRemove) {
-      this.images.delete(id);
-      this.metadata.delete(id);
-    }
+      // If still over limits, remove least recently used images
+      if (this.images.size > STORAGE_CONFIG.MAX_IMAGES || 
+          this.getTotalSize() > STORAGE_CONFIG.MAX_TOTAL_SIZE) {
+        const sortedByAccess = metadataArray
+          .filter(meta => this.images.has(meta.id)) // Only existing images
+          .sort((a, b) => a.lastAccessed - b.lastAccessed);
 
-    if (imagesToRemove.length > 0) {
-      console.log(`Cleaned up ${imagesToRemove.length} images from storage`);
-      await this.persist();
+        const targetSize = Math.floor(STORAGE_CONFIG.MAX_IMAGES * 0.7);
+        const toRemove = sortedByAccess.slice(0, sortedByAccess.length - targetSize);
+
+        for (const meta of toRemove) {
+          this.images.delete(meta.id);
+          this.metadata.delete(meta.id);
+        }
+      }
+
+      await this._persistWithRetry();
+      console.log(`Cleanup completed. Images: ${this.images.size}, Size: ${this.getTotalSize()} bytes`);
+    } catch (error) {
+      console.error('Failed to cleanup images:', error);
     }
   }
 
   /**
-   * Clear all stored images
+   * Clear all stored images (for debugging/reset)
    */
   async clearAll(): Promise<void> {
-    this.images.clear();
-    this.metadata.clear();
+    await this.init();
     
     try {
-      localStorage.removeItem(STORAGE_KEYS.IMAGES);
-      localStorage.removeItem(STORAGE_KEYS.METADATA);
+      this.images.clear();
+      this.metadata.clear();
+      
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(STORAGE_KEYS.IMAGES);
+        localStorage.removeItem(STORAGE_KEYS.METADATA);
+      }
     } catch (error) {
-      console.error('Failed to clear storage:', error);
+      console.error('Failed to clear all images:', error);
+      throw error;
     }
   }
 
-  // Private methods
-
+  // Private helper methods
   private generateId(): string {
     return `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private calculateSize(imageData: string): number {
-    // Approximate size in bytes (base64 is about 4/3 the size of original)
-    return imageData.length * 0.75;
+    // Rough estimate: base64 is ~33% larger than binary
+    return Math.ceil(imageData.length * 0.75);
+  }
+
+  private _isValidImageData(imageData: string): boolean {
+    return typeof imageData === 'string' && 
+           imageData.startsWith('data:image/') && 
+           imageData.length > 100; // Minimum reasonable size
   }
 
   private getTotalSize(): number {
-    let total = 0;
-    for (const metadata of this.metadata.values()) {
-      total += metadata.size;
-    }
-    return total;
+    return Array.from(this.metadata.values()).reduce((total, meta) => total + meta.size, 0);
   }
 
-  private async persist(): Promise<void> {
+  private async _persistWithRetry(maxRetries = 3): Promise<void> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.persist();
+        return;
+      } catch (error) {
+        console.error(`Persistence attempt ${attempt} failed:`, error);
+        
+        if (attempt === maxRetries) {
+          throw error;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempt)));
+      }
+    }
+  }
+
+  public async persist(): Promise<void> {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      throw new Error('localStorage not available');
+    }
+
     try {
       const imagesObj = Object.fromEntries(this.images.entries());
       const metadataObj = Object.fromEntries(this.metadata.entries());
@@ -316,7 +461,11 @@ class ImageStorageManager {
       console.error('Failed to persist images to storage:', error);
       
       // If storage is full, try emergency cleanup
-      if (error instanceof Error && error.name === 'QuotaExceededError') {
+      if (error instanceof Error && (
+        error.name === 'QuotaExceededError' || 
+        error.message.includes('quota') ||
+        error.message.includes('storage')
+      )) {
         await this.cleanup(true);
         throw new Error('Storage quota exceeded. Some images may have been removed.');
       }
@@ -326,36 +475,56 @@ class ImageStorageManager {
   }
 }
 
-// Create singleton instance
-export const imageStorage = new ImageStorageManager();
+// Export singleton instance
+export const imageStorageManager = new ImageStorageManager();
 
-// Helper functions for easy use
+// Convenience functions
 export const storeImage = (imageData: string, plantId?: string, noteId?: string) => 
-  imageStorage.storeImage(imageData, plantId, noteId);
+  imageStorageManager.storeImage(imageData, plantId, noteId);
 
 export const getImage = (id: string) => 
-  imageStorage.getImage(id);
+  imageStorageManager.getImage(id);
 
 export const removeImage = (id: string) => 
-  imageStorage.removeImage(id);
-
-export const getPlantImages = (plantId: string) => 
-  imageStorage.getPlantImages(plantId);
-
-export const updateImagePlantId = (imageId: string, plantId: string) => 
-  imageStorage.updateImagePlantId(imageId, plantId);
-
-export const removePlantImages = (plantId: string) => 
-  imageStorage.removePlantImages(plantId);
+  imageStorageManager.removeImage(id);
 
 export const getStorageStats = () => 
-  imageStorage.getStorageStats();
-
-export const getAllImageMetadata = () => 
-  imageStorage.getAllImageMetadata();
-
-export const imageExists = (imageId: string) => 
-  imageStorage.imageExists(imageId);
+  imageStorageManager.getStats();
 
 export const clearAllImages = () => 
-  imageStorage.clearAll(); 
+  imageStorageManager.clearAll();
+
+// Helper functions for plant store integration
+export const getAllImageMetadata = (): ImageMetadata[] => {
+  if (!imageStorageManager.initialized) {
+    return [];
+  }
+  return Array.from(imageStorageManager.metadata.values());
+};
+
+export const imageExists = async (imageId: string): Promise<boolean> => {
+  if (!imageId) return false;
+  const image = await getImage(imageId);
+  return image !== null;
+};
+
+export const updateImagePlantId = async (imageId: string, plantId: string): Promise<void> => {
+  await imageStorageManager.init();
+  const metadata = imageStorageManager.metadata.get(imageId);
+  if (metadata) {
+    metadata.plantId = plantId;
+    imageStorageManager.metadata.set(imageId, metadata);
+    await imageStorageManager.persist();
+  }
+};
+
+export const removePlantImages = async (plantId: string): Promise<void> => {
+  await imageStorageManager.init();
+  const toRemove = Array.from(imageStorageManager.metadata.values())
+    .filter(meta => meta.plantId === plantId)
+    .map(meta => meta.id);
+  
+  for (const imageId of toRemove) {
+    await removeImage(imageId);
+  }
+}; 

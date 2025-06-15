@@ -78,9 +78,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//your-supabase-domain.supabase.co" />
-        <link rel="preload" href="/assets/happy.png" as="image" type="image/png" />
-        <link rel="preload" href="/assets/thirsty.png" as="image" type="image/png" />
-        <link rel="preload" href="/assets/mad.png" as="image" type="image/png" />
+        {/* Removed preload links to prevent CORS and loading issues on Netlify */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

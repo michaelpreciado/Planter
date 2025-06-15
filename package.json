@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:netlify": "next build && next export",
+    "build:netlify": "next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
