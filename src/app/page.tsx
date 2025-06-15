@@ -141,7 +141,7 @@ export default function HomePage() {
           ) : (
             <motion.button
               onClick={() => setShowAuthModal(true)}
-              className="bg-card/80 backdrop-blur-md border border-border hover:bg-card text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl border-0"
               whileTap={{ scale: 0.95 }}
               disabled={authLoading}
             >
@@ -161,7 +161,7 @@ export default function HomePage() {
         className="text-center px-4 sm:px-6 pb-6 sm:pb-8"
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Plant Tracker</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Keep your plants happy and healthy</p>
+        <p className="text-sm sm:text-base text-muted-foreground/80">Keep your plants happy and healthy</p>
       </motion.header>
 
       {/* Tamagotchi Section */}
@@ -169,13 +169,14 @@ export default function HomePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-nav-safe overflow-y-auto"
+        className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-nav-safe overflow-visible"
       >
-        <div className="max-w-sm w-full space-y-6">
-          {/* Plant Character */}
+        <div className="max-w-sm w-full space-y-8">
+          {/* Plant Character - Remove container boundaries to allow glow effect */}
           <motion.div 
             variants={blobVariants}
-            className="flex justify-center"
+            className="flex justify-center py-8 overflow-visible"
+            style={{ filter: 'none' }}
           >
             <TamagotchiBlob size={160} showAnimation={true} />
           </motion.div>
@@ -184,17 +185,18 @@ export default function HomePage() {
           {!user && (
             <motion.div
               variants={itemVariants}
-              className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-4 sm:p-6 text-center shadow-lg"
+              className="bg-card/40 backdrop-blur-md rounded-2xl p-4 sm:p-6 text-center shadow-lg border-0"
+              style={{ backdropFilter: 'blur(20px)' }}
             >
               <div className="text-foreground text-sm font-medium mb-2">
                 🌱 Welcome to Plant Tracker
               </div>
-              <p className="text-muted-foreground text-sm mb-4">
+              <p className="text-muted-foreground/80 text-sm mb-4">
                 Sign in to save your plants and sync across devices
               </p>
               <motion.button
                 onClick={() => setShowAuthModal(true)}
-                className="bg-card/80 backdrop-blur-md border border-border hover:bg-card text-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0"
                 whileTap={{ scale: 0.95 }}
               >
                 Get Started
@@ -206,16 +208,17 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <motion.div
               variants={itemVariants}
-              className="bg-card/80 backdrop-blur rounded-2xl p-4 sm:p-6 shadow-lg"
+              className="bg-card/40 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border-0"
+              style={{ backdropFilter: 'blur(20px)' }}
             >
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div className="text-center">
                   <div className="text-xl sm:text-2xl font-bold text-green-600">{healthyPlants}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Healthy Plants</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground/80">Healthy Plants</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xl sm:text-2xl font-bold text-orange-600">{plantsNeedingWater}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Need Water</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground/80">Need Water</div>
                 </div>
               </div>
             </motion.div>
@@ -225,18 +228,19 @@ export default function HomePage() {
           {user && !isDbConfigured && (
             <motion.div
               variants={itemVariants}
-              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 text-center"
+              className="bg-blue-50/40 dark:bg-blue-900/20 backdrop-blur-md rounded-2xl p-4 text-center border-0"
+              style={{ backdropFilter: 'blur(20px)' }}
             >
               <div className="text-center">
                 <div className="text-blue-600 dark:text-blue-400 text-sm font-medium mb-2">
                   📱 Enable Cross-Device Sync
                 </div>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mb-3">
+                <p className="text-xs text-blue-600/80 dark:text-blue-400/80 mb-3">
                   Your plants are saved locally. Set up cloud sync to access them from any device!
                 </p>
                 <Link
                   href="/test"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors inline-block"
+                  className="bg-blue-500/90 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600/90 transition-colors inline-block border-0"
                 >
                   View Setup Guide
                 </Link>
@@ -253,13 +257,14 @@ export default function HomePage() {
             {user && plants.length === 0 && (
               <motion.div 
                 variants={itemVariants}
-                className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4 text-center"
+                className="bg-yellow-50/40 dark:bg-yellow-900/20 backdrop-blur-md rounded-2xl p-4 text-center border-0"
+                style={{ backdropFilter: 'blur(20px)' }}
               >
                 <div className="text-center">
                   <div className="text-yellow-600 dark:text-yellow-400 text-sm font-medium mb-2">No plants yet?</div>
                   <button
                     onClick={handleInitializeSampleData}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors"
+                    className="bg-yellow-500/90 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600/90 transition-colors border-0"
                   >
                     Add Sample Plants for Testing
                   </button>

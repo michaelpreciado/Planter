@@ -37,6 +37,7 @@ export interface PlantFormData {
   notes?: string;
   wateringFrequency: number;
   noteAttachments?: string[];
+  imageUrl?: string;
 }
 
 // Theme types

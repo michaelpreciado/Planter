@@ -40,6 +40,7 @@ export default function AddPlantPage() {
     wateringFrequency: 7,
     notes: '',
     noteAttachments: [] as string[],
+    imageUrl: '',
   });
   const [selectedType, setSelectedType] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,6 +73,7 @@ export default function AddPlantPage() {
         wateringFrequency: formData.wateringFrequency,
         notes: formData.notes.trim(),
         noteAttachments: formData.noteAttachments,
+        imageUrl: formData.imageUrl,
         plantingDate: new Date().toISOString(),
       });
 
@@ -111,6 +113,14 @@ export default function AddPlantPage() {
       noteAttachments: prev.noteAttachments.filter((_, i) => i !== index)
     }));
     haptic.lightImpact();
+  };
+
+  const handlePlantImageCapture = (imageUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrl: imageUrl
+    }));
+    haptic.success();
   };
 
   // Show professional loader while page is preparing
@@ -243,15 +253,32 @@ export default function AddPlantPage() {
             </div>
           </motion.div>
 
-          {/* Notes */}
+          {/* Plant Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="scroll-card"
           >
+            <label className="block text-sm font-medium text-foreground mb-4">
+              Plant Photo (Optional)
+            </label>
+            <ImageCapture
+              onImageCapture={handlePlantImageCapture}
+              currentImage={formData.imageUrl}
+              placeholder="Add a photo of your plant"
+            />
+          </motion.div>
+
+          {/* Notes */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="scroll-card"
+          >
             <label htmlFor="notes" className="block text-sm font-medium text-foreground mb-2">
-              Notes & Photos (Optional)
+              Notes & Additional Photos (Optional)
             </label>
             <div className="space-y-4">
               <textarea
@@ -345,7 +372,7 @@ export default function AddPlantPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="pt-4 pb-nav-safe"
           >
             <motion.button
