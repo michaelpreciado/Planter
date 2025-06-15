@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
-import { ImageCapture } from '@/components/ImageCapture';
 import { ImageDisplay } from '@/components/ImageDisplay';
 import { ImageCaptureWithStorage } from '@/components/ImageCaptureWithStorage';
 import { NightModeToggle } from '@/components/NightModeToggle';
@@ -84,6 +83,7 @@ export default function AddPlantPage() {
     } catch (error) {
       console.error('Error in handleSubmit:', error);
       haptic.error();
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -99,20 +99,13 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-  const handleAddNoteImage = async (imageUrl: string) => {
-    if (imageUrl) {
-      try {
-        // Store the image and get an ID back
-        const imageId = await storeImage(imageUrl, undefined, Date.now().toString());
-        setFormData(prev => ({
-          ...prev,
-          noteAttachments: [...prev.noteAttachments, imageId]
-        }));
-        haptic.success();
-      } catch (error) {
-        console.error('Failed to store note image:', error);
-        haptic.error();
-      }
+  const handleAddNoteImage = async (imageId: string) => {
+    if (imageId) {
+      setFormData(prev => ({
+        ...prev,
+        noteAttachments: [...prev.noteAttachments, imageId]
+      }));
+      haptic.success();
     }
   };
 
@@ -354,7 +347,7 @@ export default function AddPlantPage() {
                 {/* Add New Image */}
                 {formData.noteAttachments.length < 5 && (
                   <div className="w-full" style={{ aspectRatio: '3/2' }}>
-                    <ImageCapture
+                    <ImageCaptureWithStorage
                       onImageCapture={handleAddNoteImage}
                       placeholder="Add Note Photo"
                     />
