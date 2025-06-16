@@ -26,13 +26,25 @@ function ImageDisplayCore({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { getImage } = usePlants();
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!imageId) {
       setImageData(null);
       setLoading(false);
       setError(null);
+      return;
+    }
+
+    // Skip loading until hydrated
+    if (!isHydrated) {
+      setLoading(true);
       return;
     }
 
@@ -43,7 +55,12 @@ function ImageDisplayCore({
         
         const data = await getImage(imageId);
         if (data) {
-          setImageData(data);
+          // Validate that the data is a proper image URL
+          if (data.startsWith('data:image/') || data.startsWith('http')) {
+            setImageData(data);
+          } else {
+            throw new Error('Invalid image data format');
+          }
         } else {
           throw new Error('Image not found');
         }
@@ -66,20 +83,21 @@ function ImageDisplayCore({
     };
 
     loadImage();
-  }, [imageId, getImage, retryCount]);
+  }, [imageId, getImage, retryCount, isHydrated]);
 
   // Reset retry count when imageId changes
   useEffect(() => {
     setRetryCount(0);
   }, [imageId]);
 
-  if (loading) {
+  // Show loading state during SSR or before hydration
+  if (!isHydrated || loading) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm text-gray-500">
-            {retryCount > 0 ? `Retrying... (${retryCount}/2)` : 'Loading...'}
+            {!isHydrated ? 'Loading...' : (retryCount > 0 ? `Retrying... (${retryCount}/2)` : 'Loading...')}
           </span>
         </div>
       </div>

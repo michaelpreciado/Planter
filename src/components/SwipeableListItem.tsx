@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Plant } from '@/lib/plant-store';
 import { WaterAnimation } from './WaterAnimation';
+import { ImageDisplay } from './ImageDisplay';
 import { format } from 'date-fns';
 
 interface SwipeableListItemProps {
@@ -57,10 +58,20 @@ export function SwipeableListItem({
             {/* Plant Image/Icon */}
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
               {plant.imageUrl ? (
-                <img
-                  src={plant.imageUrl}
+                <ImageDisplay
+                  imageId={plant.imageUrl}
                   alt={plant.name}
-                  className="w-full h-full object-cover"
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover rounded-full"
+                  fallback={
+                    <div 
+                      className="w-full h-full rounded-full flex items-center justify-center text-2xl"
+                      style={{ backgroundColor: plant.iconColor + '20', color: plant.iconColor }}
+                    >
+                      {plant.icon}
+                    </div>
+                  }
                 />
               ) : (
                 <div 

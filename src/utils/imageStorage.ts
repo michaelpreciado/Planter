@@ -192,10 +192,22 @@ class ImageStorageManager {
       return null;
     }
 
+    // Check if localStorage is available
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage not available, cannot retrieve image');
+      return null;
+    }
+
     try {
       const imageData = this.images.get(id);
       if (!imageData) {
-        return null;
+        // Try to reload from localStorage in case of memory loss
+        await this._loadStoredData();
+        const reloadedData = this.images.get(id);
+        if (!reloadedData) {
+          return null;
+        }
+        return reloadedData;
       }
 
       // Update last accessed time
@@ -473,6 +485,45 @@ class ImageStorageManager {
       throw error;
     }
   }
+
+  /**
+   * Debug utility to diagnose image loading issues
+   */
+  async debugImageSystem(): Promise<void> {
+    console.log('=== Image Storage Debug ===');
+    console.log('Initialized:', this.initialized);
+    console.log('Window available:', typeof window !== 'undefined');
+    console.log('LocalStorage available:', typeof window !== 'undefined' && !!window.localStorage);
+    
+    if (typeof window !== 'undefined' && window.localStorage) {
+      console.log('Total images in memory:', this.images.size);
+      console.log('Total metadata entries:', this.metadata.size);
+      
+      const stats = this.getStats();
+      console.log('Storage stats:', stats);
+      
+      // Check for corrupted data
+      let corruptedImages = 0;
+      for (const [id, data] of this.images.entries()) {
+        if (!data.startsWith('data:image/')) {
+          console.warn(`Corrupted image data for ID: ${id}`);
+          corruptedImages++;
+        }
+      }
+      console.log('Corrupted images found:', corruptedImages);
+      
+      // Check metadata consistency
+      const imageIds = new Set(this.images.keys());
+      const metadataIds = new Set(this.metadata.keys());
+      const orphanedImages = [...imageIds].filter(id => !metadataIds.has(id));
+      const orphanedMetadata = [...metadataIds].filter(id => !imageIds.has(id));
+      
+      console.log('Orphaned images (no metadata):', orphanedImages);
+      console.log('Orphaned metadata (no image):', orphanedMetadata);
+    }
+    
+    console.log('=========================');
+  }
 }
 
 // Export singleton instance
@@ -527,4 +578,8 @@ export const removePlantImages = async (plantId: string): Promise<void> => {
   for (const imageId of toRemove) {
     await removeImage(imageId);
   }
+};
+
+export const debugImageSystem = async (): Promise<void> => {
+  await imageStorageManager.debugImageSystem();
 }; 
