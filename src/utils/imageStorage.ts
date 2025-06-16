@@ -186,15 +186,41 @@ class ImageStorageManager {
    * Get an image by ID with better error handling
    */
   async getImage(id: string): Promise<string | null> {
-    await this.init();
+    try {
+      await this.init();
 
-    if (!id || typeof id !== 'string') {
-      return null;
-    }
+      if (!id || typeof id !== 'string') {
+        console.warn('Invalid image ID provided:', id);
+        return null;
+      }
 
-    // Check if localStorage is available
-    if (typeof window === 'undefined' || !window.localStorage) {
-      console.warn('localStorage not available, cannot retrieve image');
+      // Check if localStorage is available
+      if (typeof window === 'undefined' || !window.localStorage) {
+        console.warn('localStorage not available, cannot retrieve image');
+        return null;
+      }
+
+      console.log('Getting image with ID:', id, 'from storage');
+      const image = this.images.get(id);
+      
+      if (image !== undefined) {
+        // Update last accessed time
+        const metadata = this.metadata.get(id);
+        if (metadata !== undefined) {
+          metadata.lastAccessed = Date.now();
+          this.metadata.set(id, metadata);
+          // Don't await this to avoid blocking image display
+          this.persist().catch(err => console.warn('Failed to update access time:', err));
+        }
+        console.log('Image found in storage:', id);
+        return image as string;
+      } else {
+        console.warn('Image not found in storage:', id);
+        console.log('Available image IDs:', Array.from(this.images.keys()));
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting image:', id, error);
       return null;
     }
 

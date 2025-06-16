@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePlants } from '@/lib/plant-store';
 import { debugImageSystem, getStorageStats, getAllImageMetadata } from '@/utils/imageStorage';
 import { ImageDisplay } from '@/components/ImageDisplay';
+import { ImageDiagnostic } from '@/components/ImageDiagnostic';
 
 export default function TestPage() {
   const [diagnostics, setDiagnostics] = useState<any>(null);
@@ -44,15 +45,20 @@ export default function TestPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Image System Diagnostics</h1>
         
         <div className="space-y-6">
+          {/* New Interactive Diagnostic Tool */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <ImageDiagnostic />
+          </div>
+
           {/* Diagnostic Controls */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Run Diagnostics</h2>
+            <h2 className="text-xl font-semibold mb-4">Advanced Diagnostics</h2>
             <button
               onClick={runDiagnostics}
               disabled={loading}
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
-              {loading ? 'Running...' : 'Run Image Diagnostics'}
+              {loading ? 'Running...' : 'Run Advanced Diagnostics'}
             </button>
             <p className="text-sm text-gray-600 mt-2">
               Check browser console for detailed logs

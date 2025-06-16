@@ -44,7 +44,6 @@ function ImageDisplayCore({
 
     // Skip loading until hydrated
     if (!isHydrated) {
-      setLoading(true);
       return;
     }
 
@@ -53,22 +52,29 @@ function ImageDisplayCore({
         setLoading(true);
         setError(null);
         
+        console.log('Loading image with ID:', imageId);
         const data = await getImage(imageId);
+        
         if (data) {
           // Validate that the data is a proper image URL
-          if (data.startsWith('data:image/') || data.startsWith('http')) {
+          if (data.startsWith('data:image/') || data.startsWith('http') || data.startsWith('blob:')) {
+            console.log('Image loaded successfully:', imageId);
             setImageData(data);
+            setLoading(false);
           } else {
+            console.error('Invalid image data format for ID:', imageId, 'Data starts with:', data.substring(0, 50));
             throw new Error('Invalid image data format');
           }
         } else {
+          console.error('Image not found for ID:', imageId);
           throw new Error('Image not found');
         }
       } catch (err) {
-        console.error('Failed to load image:', err);
+        console.error('Failed to load image:', imageId, err);
         
         // Retry logic for deployment issues
         if (retryCount < 2) {
+          console.log(`Retrying image load for ${imageId}, attempt ${retryCount + 1}`);
           setTimeout(() => {
             setRetryCount(prev => prev + 1);
           }, 1000 * (retryCount + 1)); // Exponential backoff
@@ -77,7 +83,6 @@ function ImageDisplayCore({
         
         setError('Failed to load image');
         setImageData(null);
-      } finally {
         setLoading(false);
       }
     };
