@@ -159,7 +159,7 @@ export function ImageDiagnostic() {
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <p><strong>Troubleshooting Tips:</strong></p>
           <ul className="list-disc list-inside space-y-1 mt-1">
-            <li>If images show as "Missing", try clearing storage and re-adding them</li>
+            <li>If images show as &quot;Missing&quot;, try clearing storage and re-adding them</li>
             <li>If storage status shows errors, there may be corrupted data</li>
             <li>Check browser console for additional error messages</li>
             <li>Try refreshing the page after clearing storage</li>

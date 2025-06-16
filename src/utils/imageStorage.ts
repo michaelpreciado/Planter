@@ -203,17 +203,17 @@ class ImageStorageManager {
       console.log('Getting image with ID:', id, 'from storage');
       const image = this.images.get(id);
       
-      if (image !== undefined) {
+      if (image) {
         // Update last accessed time
         const metadata = this.metadata.get(id);
-        if (metadata !== undefined) {
+        if (metadata) {
           metadata.lastAccessed = Date.now();
           this.metadata.set(id, metadata);
           // Don't await this to avoid blocking image display
           this.persist().catch(err => console.warn('Failed to update access time:', err));
         }
         console.log('Image found in storage:', id);
-        return image as string;
+        return image;
       } else {
         console.warn('Image not found in storage:', id);
         console.log('Available image IDs:', Array.from(this.images.keys()));
@@ -221,35 +221,6 @@ class ImageStorageManager {
       }
     } catch (error) {
       console.error('Error getting image:', id, error);
-      return null;
-    }
-
-    try {
-      const imageData = this.images.get(id);
-      if (!imageData) {
-        // Try to reload from localStorage in case of memory loss
-        await this._loadStoredData();
-        const reloadedData = this.images.get(id);
-        if (!reloadedData) {
-          return null;
-        }
-        return reloadedData;
-      }
-
-      // Update last accessed time
-      const metadata = this.metadata.get(id);
-      if (metadata) {
-        metadata.lastAccessed = Date.now();
-        this.metadata.set(id, metadata);
-        // Persist updated metadata asynchronously
-        this._persistWithRetry().catch(error => {
-          console.warn('Failed to update access time:', error);
-        });
-      }
-
-      return imageData;
-    } catch (error) {
-      console.error('Failed to get image:', error);
       return null;
     }
   }
