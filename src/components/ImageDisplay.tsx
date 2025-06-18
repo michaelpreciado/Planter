@@ -42,6 +42,18 @@ function ImageDisplayCore({
       return;
     }
 
+    // If a full data URL or remote URL is provided, display it directly
+    if (
+      imageId.startsWith('data:image/') ||
+      imageId.startsWith('http') ||
+      imageId.startsWith('blob:')
+    ) {
+      setImageData(imageId);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     // Skip loading until hydrated
     if (!isHydrated) {
       return;
