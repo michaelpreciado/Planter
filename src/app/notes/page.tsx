@@ -4,8 +4,8 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
+import { ImageDisplay } from '@/components/ImageDisplay';
 import { useListScrollOptimization } from '@/hooks/useScrollOptimization';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { NightModeToggle } from '@/components/NightModeToggle';
@@ -269,13 +269,13 @@ export default function NotesPage() {
                           {/* Note Images */}
                           {note.images.length > 0 && (
                             <div className="grid grid-cols-2 gap-2 mt-3">
-                              {note.images.slice(0, 2).map((imageUrl, imgIndex) => (
+                              {note.images.slice(0, 2).map((imageId, imgIndex) => (
                                 <div
                                   key={imgIndex}
                                   className="relative bg-muted rounded-lg overflow-hidden aspect-square"
                                 >
-                                  <Image
-                                    src={imageUrl}
+                                  <ImageDisplay
+                                    imageId={imageId}
                                     alt={`Note image ${imgIndex + 1}`}
                                     width={150}
                                     height={150}
