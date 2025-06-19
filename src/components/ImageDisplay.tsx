@@ -63,7 +63,7 @@ export function ImageDisplay({
       setState({ status: 'error', imageUrl: null, error: errorMessage });
       onError?.(errorMessage);
     }
-  }, []);
+  }, [onLoad, onError]);
 
   useEffect(() => {
     if (!imageId) {
@@ -80,7 +80,7 @@ export function ImageDisplay({
 
     // Load from storage
     loadImage(imageId);
-  }, [imageId, loadImage]);
+  }, [imageId, loadImage, onLoad]);
 
   // Loading state
   if (state.status === 'loading') {

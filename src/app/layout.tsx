@@ -31,9 +31,9 @@ export const metadata = {
     siteName: 'Simmys Plant Diary',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
+        url: '/apple-touch-icon.png',
+        width: 180,
+        height: 180,
         alt: 'Simmys Plant Diary App'
       }
     ]
@@ -42,7 +42,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Simmys Plant Diary',
     description: 'A beautiful plant care app with a Tamagotchi-style companion.',
-    images: ['/twitter-image.png'],
+    images: ['/apple-touch-icon.png'],
   },
   manifest: '/manifest.json',
   icons: {

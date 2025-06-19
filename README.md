@@ -1,169 +1,163 @@
-# Plant Tracker 🌱
+# 🌱 Simmys Plant Diary
 
-A sleek **Next.js** web application for tracking your plants with a cute Tamagotchi-style interface. Built with TypeScript and Tailwind CSS.
+A beautiful plant care app with a Tamagotchi-style companion to help you nurture your green friends.
 
-## Features
+## ✨ Features
 
-- 🌿 **Beautiful UI**: Pixel-perfect recreation of the Plant Tracker mockup
-- 🎨 **Customizable**: Change your Tamagotchi's color and toggle dark mode
-- 📱 **Cross-platform**: iOS, Android, and Web (PWA) support
-- ⚡ **60fps Performance**: Smooth animations with Moti and Reanimated
-- 🎯 **Modern Stack**: Expo 50+, React Navigation v6, NativeWind, TypeScript
+- 🌿 **Plant Management**: Track your plants with custom names, species, and care schedules
+- 💧 **Watering Reminders**: Smart watering frequency tracking with visual indicators
+- 📱 **PWA Support**: Install on mobile devices for native app experience
+- 🎨 **Beautiful UI**: Modern, responsive design with smooth animations
+- 📸 **Image Storage**: Capture and store plant photos locally
+- 🔄 **Offline First**: Works completely offline with optional cloud sync
+- 🌙 **Dark Mode**: Automatic theme switching based on system preferences
 
-## Tech Stack
-
-- **Next.js 14** with React 18
-- **TypeScript** with strict mode
-- **Tailwind CSS** for utility-first styling
-- **Radix UI** for accessible components
-- **Framer Motion** for animations
-- **React Hook Form** for form management
-- **Zustand** for state management
-- **Supabase** (ready for backend integration)
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ and npm/yarn
-- Expo CLI: `npm install -g @expo/cli`
-- iOS Simulator (macOS) or Android Studio
+- Node.js 18+ 
+- npm 9+
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd plant-tracker
+git clone https://github.com/yourusername/planter.git
+cd planter
 
 # Install dependencies
 npm install
 
-# Start the development server
+# Start development server
+npm run dev
+```
+
+### Environment Configuration (Optional)
+
+The app works fully offline without any configuration. For cloud sync features, create a `.env.local` file:
+
+```bash
+# Supabase Configuration (Optional - app works offline without these)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Build Configuration
+NEXT_TELEMETRY_DISABLED=1
+```
+
+### Build for Production
+
+```bash
+# Build the application
+npm run build
+
+# Start production server
 npm start
+
+# Or deploy to Netlify
+npm run build:netlify
 ```
 
-### Running on Different Platforms
+## 🧪 Testing
 
 ```bash
-# iOS Simulator
-npm run ios
+# Run tests
+npm test
 
-# Android Emulator  
-npm run android
-
-# Web Browser
-npm run web
-```
-
-### Building for Production
-
-```bash
-# Install EAS CLI
-npm install -g eas-cli
-
-# Configure EAS (first time only)
-eas login
-eas build:configure
-
-# Build for iOS
-npm run build:ios
-
-# Build for Android
-npm run build:android
-
-# Build for both platforms
-npm run build:all
-```
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── TamagotchiBlob.tsx    # Animated SVG character
-│   └── IconButton.tsx        # Touchable icon component
-├── context/            # React Context providers
-│   └── ThemeContext.tsx     # Theme & settings management
-├── navigation/         # Navigation configuration
-│   ├── RootNavigator.tsx    # Drawer navigator
-│   └── HomeStackNavigator.tsx # Bottom tabs
-├── screens/           # Main app screens
-│   ├── HomeScreen.tsx       # Main screen with Tamagotchi
-│   ├── ListScreen.tsx       # Plant list (TODO)
-│   ├── AddPlantModal.tsx    # Add plant form
-│   └── SettingsScreen.tsx   # App settings
-└── types/             # TypeScript type definitions
-```
-
-## Design Tokens
-
-The app uses consistent design tokens defined in `tailwind.config.js`:
-
-```css
---color-bg: #FFFFFF
---color-primary: #4CAF50
---color-primary-light: #A5D6A7  
---color-text: #000000
---font-heading: "SF Pro Rounded"
---font-body: "SF Pro Text"
-```
-
-## Development
-
-### Code Quality
-
-```bash
-# Lint TypeScript files
+# Run linting
 npm run lint
 
-# Fix linting issues
-npm run lint:fix
-
-# Format code with Prettier
-npm run format
-
-# Type checking
+# Type check
 npm run type-check
 ```
 
-### Git Hooks
+## 📦 Deployment
 
-The project uses Husky for pre-commit hooks:
+### Netlify (Recommended)
 
-- **ESLint**: Checks for code quality issues
-- **Prettier**: Ensures consistent formatting
-- **TypeScript**: Validates type safety
+The project is configured for Netlify deployment with:
+- Automatic builds from Git
+- Edge functions support
+- PWA optimization
+- Performance headers
 
-## TODOs & Stretch Goals
+### Environment Variables for Production
 
-### Core Features (TODO)
-- [ ] Plant data persistence with Supabase
-- [ ] Plant list with CRUD operations  
-- [ ] Watering log functionality
-- [ ] Plant care reminders
+Set these in your deployment platform:
 
-### Stretch Goals (Commented Code Available)
-- [ ] Lottie watering animations
-- [ ] Push notifications with `expo-notifications`
-- [ ] Offline mode with SQLite + Drizzle ORM
-- [ ] Plant identification via camera
-- [ ] Social features (share plants)
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-key
+NEXT_TELEMETRY_DISABLED=1
+```
 
-## Contributing
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **Database**: Supabase (Optional)
+- **Storage**: IndexedDB/LocalStorage
+- **Animations**: Framer Motion
+- **Testing**: Jest + React Testing Library
+- **Deployment**: Netlify
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+├── components/          # Reusable React components
+├── lib/                 # State management (Zustand stores)
+├── utils/              # Utility functions
+├── types/              # TypeScript type definitions
+├── hooks/              # Custom React hooks
+└── contexts/           # React contexts
+```
+
+## 🎯 Performance Features
+
+- **Code Splitting**: Automatic route-based splitting
+- **Image Optimization**: Next.js Image component with lazy loading
+- **Bundle Analysis**: Built-in bundle analyzer
+- **Caching**: Aggressive caching for static assets
+- **Compression**: Gzip compression enabled
+- **PWA**: Service worker for offline functionality
+
+## 🔒 Security Features
+
+- **CSP Headers**: Content Security Policy implemented
+- **XSS Protection**: Built-in XSS protection
+- **HTTPS Only**: Secure headers for production
+- **Input Validation**: Client and server-side validation
+- **Error Boundaries**: Graceful error handling
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if needed
+5. Run the test suite
+6. Submit a pull request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## 🐛 Bug Reports
 
-- Design inspired by modern plant care apps
-- Tamagotchi character design with React Native SVG
-- Built with ❤️ using Expo and React Native
+If you find a bug, please create an issue with:
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
+- Screenshots if applicable
+
+## 📞 Support
+
+For support, please open an issue or contact the development team.
+
+---
+
+Made with ❤️ for plant lovers everywhere 🌱

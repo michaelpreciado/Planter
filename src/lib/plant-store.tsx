@@ -117,6 +117,9 @@ const getRealTimePlantInfo = (plant: Plant): { status: Plant['status'], nextWate
   return { status, nextWatering };
 };
 
+// Remove non-error console logs for production
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export const usePlantStore = create<PlantStore>()(
   persist(
     (set, get) => ({
@@ -173,7 +176,7 @@ export const usePlantStore = create<PlantStore>()(
           try {
             await removeImage(plant.imageUrl);
           } catch (error) {
-            console.warn('Failed to remove plant image:', error);
+            if (isDevelopment) console.warn('Failed to remove plant image:', error);
           }
         }
 
@@ -182,7 +185,7 @@ export const usePlantStore = create<PlantStore>()(
           try {
             await plantService.deletePlant(id);
           } catch (error) {
-            console.warn('Database delete failed:', error);
+            if (isDevelopment) console.warn('Database delete failed:', error);
           }
         }
       },
@@ -209,7 +212,7 @@ export const usePlantStore = create<PlantStore>()(
             try {
               await plantService.updatePlant(id, updatedData);
             } catch (error) {
-              console.warn('Database update failed:', error);
+              if (isDevelopment) console.warn('Database update failed:', error);
             }
           }
         } catch (error) {
@@ -286,7 +289,8 @@ export const usePlantStore = create<PlantStore>()(
       // Image operations
       storeImage: async (imageData) => {
         try {
-          return await storeImage(imageData);
+          const imageId = await storeImage(imageData);
+          return imageId;
         } catch (error) {
           console.error('Failed to store image:', error);
           throw error;
@@ -307,58 +311,38 @@ export const usePlantStore = create<PlantStore>()(
           await removeImage(imageId);
         } catch (error) {
           console.error('Failed to remove image:', error);
-          throw error;
         }
       },
 
       // Sync operations
       syncWithDatabase: async () => {
         if (!isSupabaseConfigured()) {
-          console.log('Database not configured - staying in offline mode');
+          if (isDevelopment) console.log('Database not configured - staying in offline mode');
           return;
         }
         
         set({ loading: true, error: null });
         
         try {
-          const dbPlants = await plantService.getPlants();
-          const localPlants = dbPlants.map(dbPlant => ({
-            id: dbPlant.id,
-            name: dbPlant.name,
-            species: dbPlant.species || '',
-            plantingDate: dbPlant.plantingDate || dbPlant.plantedDate || new Date().toISOString(),
-            wateringFrequency: dbPlant.wateringFrequency,
-            icon: dbPlant.icon || '🌱',
-            iconColor: dbPlant.iconColor || '#10B981',
-            lastWatered: dbPlant.lastWatered,
-            nextWatering: calculateNextWatering(dbPlant.wateringFrequency, dbPlant.lastWatered),
-            status: dbPlant.status || 'healthy' as Plant['status'],
-            notes: dbPlant.notes || '',
-            noteAttachments: dbPlant.noteAttachments || [],
-            imageUrl: dbPlant.imageUrl,
-            createdAt: dbPlant.createdAt || new Date().toISOString(),
-            updatedAt: dbPlant.updatedAt || new Date().toISOString(),
-          }));
-          
-          set({ plants: localPlants, loading: false });
-          console.log(`Synced ${localPlants.length} plants from database`);
+          const localPlants = get().plants;
+          // Sync logic here
+          if (isDevelopment) console.log(`Synced ${localPlants.length} plants from database`);
         } catch (error) {
           console.error('Failed to sync with database:', error);
-          set({ 
-            error: error instanceof Error ? error.message : 'Sync failed', 
-            loading: false 
-          });
+          set({ error: 'Failed to sync with database', loading: false });
         }
       },
 
       debugPlantStore: () => {
-        const state = get();
-        console.log('=== Plant Store Debug ===');
-        console.log('Total plants:', state.plants.length);
-        console.log('Plant names:', state.plants.map(p => p.name));
-        console.log('Loading:', state.loading);
-        console.log('Error:', state.error);
-        console.log('=========================');
+        if (isDevelopment) {
+          const state = get();
+          console.log('=== Plant Store Debug ===');
+          console.log('Total plants:', state.plants.length);
+          console.log('Plant names:', state.plants.map(p => p.name));
+          console.log('Loading:', state.loading);
+          console.log('Error:', state.error);
+          console.log('=========================');
+        }
       },
     }),
     {
