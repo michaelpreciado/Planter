@@ -47,13 +47,16 @@ const imageUtils = {
         
         img.onload = () => {
           try {
+            console.log('🖼️ Image loaded, creating canvas...');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
             if (!ctx) {
+              console.error('❌ Canvas context not available');
               reject(new Error('Canvas not supported'));
               return;
             }
+            console.log('✅ Canvas context created');
             
             // Calculate optimal dimensions
             const maxSize = 800;
@@ -80,10 +83,13 @@ const imageUtils = {
             ctx.drawImage(img, 0, 0, width, height);
             
             // Convert to compressed JPEG
+            console.log('🎨 Converting canvas to data URL...');
             const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            console.log('✅ Data URL created, length:', compressedDataUrl.length);
             
             // Clean up
             canvas.remove();
+            console.log('🧹 Canvas cleaned up');
             
             // Check if compressed image is reasonable size (< 200KB as base64)
             if (compressedDataUrl.length > 300000) {
@@ -137,6 +143,13 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
     setError(null);
     setShowOptions(false);
 
+    // Add a timeout to prevent infinite processing state
+    const timeoutId = setTimeout(() => {
+      console.error('❌ Image processing timeout');
+      setError('Image processing timed out. Please try again.');
+      setIsCapturing(false);
+    }, 30000); // 30 second timeout
+
     try {
       // Validate file
       if (!imageUtils.isValidImage(file)) {
@@ -148,9 +161,12 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       }
 
       // Process image
+      console.log('🔄 Starting image processing...');
       const processedImage = await imageUtils.processImage(file);
+      console.log('✨ Image processing complete, result length:', processedImage.length);
       
       // Store the image and get ID
+      console.log('💾 Attempting to store image...');
       const imageId = await storeImage(processedImage);
       console.log('✅ Image stored successfully with ID:', imageId);
       
@@ -172,6 +188,7 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       console.error('Image processing error:', error);
       setError(error instanceof Error ? error.message : 'Failed to process image');
     } finally {
+      clearTimeout(timeoutId);
       setIsCapturing(false);
     }
   }, [onImageCapture, currentImageId, storeImage, removeImage]);
@@ -259,9 +276,21 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
             animate={{ opacity: 1 }}
             className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
           >
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Processing image...</span>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Processing image...</span>
+              </div>
+              <button 
+                onClick={() => {
+                  console.log('🔄 Force reset processing state');
+                  setIsCapturing(false);
+                  setError('Processing cancelled');
+                }}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
+                Cancel
+              </button>
             </div>
           </motion.div>
         )}
