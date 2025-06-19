@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { usePlants } from '@/lib/plant-store';
+import { getImage } from '@/utils/imageStorage';
 import { ImageErrorBoundary } from './ImageErrorBoundary';
 
 interface ImageDisplayProps {
@@ -12,168 +12,131 @@ interface ImageDisplayProps {
   height?: number;
   className?: string;
   fallback?: React.ReactNode;
+  onLoad?: () => void;
+  onError?: (error: string) => void;
 }
 
-function ImageDisplayCore({ 
-  imageId, 
-  alt = "Image", 
-  width = 400, 
-  height = 300, 
-  className = "",
-  fallback
-}: ImageDisplayProps) {
-  const [imageData, setImageData] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const { getImage } = usePlants();
+interface ImageState {
+  status: 'loading' | 'loaded' | 'error' | 'not-found';
+  imageUrl: string | null;
+  error: string | null;
+}
 
-  // Handle hydration
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+export function ImageDisplay({
+  imageId,
+  alt = "Image",
+  width = 400,
+  height = 300,
+  className = "",
+  fallback,
+  onLoad,
+  onError,
+}: ImageDisplayProps) {
+  const [state, setState] = useState<ImageState>({
+    status: 'loading',
+    imageUrl: null,
+    error: null,
+  });
+
+  const loadImage = useCallback(async (id: string) => {
+    setState({ status: 'loading', imageUrl: null, error: null });
+
+    try {
+      const imageData = await getImage(id);
+      
+      if (!imageData) {
+        setState({ status: 'not-found', imageUrl: null, error: 'Image not found' });
+        onError?.('Image not found');
+        return;
+      }
+
+      // Validate image data
+      if (!imageData.startsWith('data:image/')) {
+        throw new Error('Invalid image format');
+      }
+
+      setState({ status: 'loaded', imageUrl: imageData, error: null });
+      onLoad?.();
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load image';
+      setState({ status: 'error', imageUrl: null, error: errorMessage });
+      onError?.(errorMessage);
+    }
+  }, [onLoad, onError]);
 
   useEffect(() => {
     if (!imageId) {
-      setImageData(null);
-      setLoading(false);
-      setError(null);
+      setState({ status: 'not-found', imageUrl: null, error: null });
       return;
     }
 
-    // If a full data URL or remote URL is provided, display it directly
-    if (
-      imageId.startsWith('data:image/') ||
-      imageId.startsWith('http') ||
-      imageId.startsWith('blob:')
-    ) {
-      setImageData(imageId);
-      setLoading(false);
-      setError(null);
+    // Handle direct URLs
+    if (imageId.startsWith('data:') || imageId.startsWith('http') || imageId.startsWith('blob:')) {
+      setState({ status: 'loaded', imageUrl: imageId, error: null });
+      onLoad?.();
       return;
     }
 
-    // Skip loading until hydrated
-    if (!isHydrated) {
-      return;
-    }
+    // Load from storage
+    loadImage(imageId);
+  }, [imageId, loadImage]);
 
-    const loadImage = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        console.log('Loading image with ID:', imageId);
-        const data = await getImage(imageId);
-        
-        if (data) {
-          // Validate that the data is a proper image URL
-          console.log('Image data received:', data.substring(0, 50) + '...');
-          if (data.startsWith('data:image/') || data.startsWith('http') || data.startsWith('blob:')) {
-            console.log('Image loaded successfully:', imageId);
-            setImageData(data);
-            setLoading(false);
-          } else {
-            console.error('Invalid image data format for ID:', imageId, 'Data starts with:', data.substring(0, 50));
-            console.error('Full data type:', typeof data, 'Length:', data.length);
-            throw new Error(`Invalid image data format: expected data:image/, http, or blob: but got "${data.substring(0, 20)}..."`);
-          }
-        } else {
-          console.error('Image not found for ID:', imageId);
-          throw new Error('Image not found');
-        }
-      } catch (err) {
-        console.error('Failed to load image:', imageId, err);
-        
-        // Retry logic for deployment issues
-        if (retryCount < 2) {
-          console.log(`Retrying image load for ${imageId}, attempt ${retryCount + 1}`);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, 1000 * (retryCount + 1)); // Exponential backoff
-          return;
-        }
-        
-        setError('Failed to load image');
-        setImageData(null);
-        setLoading(false);
-      }
-    };
-
-    loadImage();
-  }, [imageId, getImage, retryCount, isHydrated]);
-
-  // Reset retry count when imageId changes
-  useEffect(() => {
-    setRetryCount(0);
-  }, [imageId]);
-
-  // Show loading state during SSR or before hydration
-  if (!isHydrated || loading) {
+  // Loading state
+  if (state.status === 'loading') {
     return (
       <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm text-gray-500">
-            {!isHydrated ? 'Loading...' : (retryCount > 0 ? `Retrying... (${retryCount}/2)` : 'Loading...')}
-          </span>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs text-gray-500">Loading...</span>
         </div>
       </div>
     );
   }
 
-  if (error || !imageData) {
+  // Error or not found state
+  if (state.status === 'error' || state.status === 'not-found') {
     if (fallback) {
       return <div className={className}>{fallback}</div>;
     }
-    
+
     return (
-      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
-        <div className="text-center">
-          <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <p className="text-xs text-gray-400">{error || 'No image'}</p>
-          {error && retryCount >= 2 && (
-            <button 
-              onClick={() => setRetryCount(0)}
-              className="text-xs text-blue-500 hover:text-blue-600 mt-1"
-            >
-              Try again
-            </button>
-          )}
-        </div>
+      <div className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
+        <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p className="text-xs text-gray-400 text-center">
+          {state.status === 'not-found' ? 'No image' : 'Failed to load'}
+        </p>
       </div>
     );
   }
 
-  return (
-    <Image
-      src={imageData}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      onError={(e) => {
-        console.error('Image render error:', e);
-        setError('Failed to display image');
-        setImageData(null);
-      }}
-      onLoad={() => {
-        // Image loaded successfully, reset any error states
-        setError(null);
-      }}
-      // Add loading strategy for better performance
-      loading="lazy"
-      placeholder="blur"
-      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyxxxP2xbYp8CfHPH/PiGd+6v0wn/PQ/9k="
-    />
-  );
+  // Success state
+  if (state.status === 'loaded' && state.imageUrl) {
+    return (
+      <Image
+        src={state.imageUrl}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        onError={() => {
+          setState(prev => ({ ...prev, status: 'error', error: 'Image render failed' }));
+          onError?.('Image render failed');
+        }}
+        loading="lazy"
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyxxxP2xbYp8CfHPH/PiGd+6v0wn/PQ/9k="
+      />
+    );
+  }
+
+  return null;
 }
 
 // Export wrapped component with error boundary
-export function ImageDisplay(props: ImageDisplayProps) {
+export function ImageDisplayWrapper(props: ImageDisplayProps) {
   return (
     <ImageErrorBoundary
       fallback={
@@ -187,7 +150,7 @@ export function ImageDisplay(props: ImageDisplayProps) {
         </div>
       }
     >
-      <ImageDisplayCore {...props} />
+      <ImageDisplay {...props} />
     </ImageErrorBoundary>
   );
 } 

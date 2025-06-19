@@ -7,8 +7,7 @@ import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
-import { ImageDisplay } from '@/components/ImageDisplay';
-import { ImageCaptureWithStorage } from '@/components/ImageCaptureWithStorage';
+import { ImageUpload } from '@/components/ImageUpload';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { usePageBasic } from '@/hooks/usePageReady';
@@ -251,8 +250,8 @@ export default function AddPlantPage() {
             <label className="block text-sm font-medium text-foreground mb-4">
               Plant Photo (Optional)
             </label>
-            <ImageCaptureWithStorage
-              onImageCapture={handlePlantImageCapture}
+            <ImageUpload
+              onImageChange={handlePlantImageCapture}
               currentImageId={formData.imageUrl}
               placeholder="Add a photo of your plant"
             />
