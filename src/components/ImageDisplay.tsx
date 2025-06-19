@@ -69,13 +69,15 @@ function ImageDisplayCore({
         
         if (data) {
           // Validate that the data is a proper image URL
+          console.log('Image data received:', data.substring(0, 50) + '...');
           if (data.startsWith('data:image/') || data.startsWith('http') || data.startsWith('blob:')) {
             console.log('Image loaded successfully:', imageId);
             setImageData(data);
             setLoading(false);
           } else {
             console.error('Invalid image data format for ID:', imageId, 'Data starts with:', data.substring(0, 50));
-            throw new Error('Invalid image data format');
+            console.error('Full data type:', typeof data, 'Length:', data.length);
+            throw new Error(`Invalid image data format: expected data:image/, http, or blob: but got "${data.substring(0, 20)}..."`);
           }
         } else {
           console.error('Image not found for ID:', imageId);

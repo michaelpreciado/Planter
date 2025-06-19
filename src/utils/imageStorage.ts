@@ -159,6 +159,7 @@ class ImageStorageManager {
 
       // Store the image
       this.images.set(id, imageData);
+      console.log('💾 Image data stored in memory with ID:', id);
       this.metadata.set(id, {
         id,
         size,
@@ -167,9 +168,11 @@ class ImageStorageManager {
         plantId,
         noteId,
       });
+      console.log('📝 Image metadata created:', { id, size, plantId, noteId });
 
       // Save to localStorage with retry logic
       await this._persistWithRetry();
+      console.log('💿 Image persisted to localStorage successfully');
 
       return id;
     } catch (error) {

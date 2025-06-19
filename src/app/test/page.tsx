@@ -9,7 +9,8 @@ import { ImageDiagnostic } from '@/components/ImageDiagnostic';
 export default function TestPage() {
   const [diagnostics, setDiagnostics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const { plants, debugPlantStore } = usePlants();
+  const [testImageId, setTestImageId] = useState<string>('');
+  const { plants, debugPlantStore, storeImage, getImage } = usePlants();
 
   const runDiagnostics = async () => {
     setLoading(true);
@@ -39,6 +40,45 @@ export default function TestPage() {
     }
   };
 
+  const testImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    console.log('🧪 Starting image upload test...');
+    try {
+      // Create a simple data URL
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        console.log('📄 File read as data URL, length:', dataUrl.length);
+        
+        try {
+          const imageId = await storeImage(dataUrl);
+          console.log('✅ Image stored with ID:', imageId);
+          setTestImageId(imageId);
+          
+          // Try to retrieve it immediately
+          const retrievedImage = await getImage(imageId);
+          console.log('🔍 Retrieved image:', retrievedImage ? 'SUCCESS' : 'FAILED');
+        } catch (error) {
+          console.error('❌ Storage error:', error);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('❌ Upload test failed:', error);
+    }
+  };
+
+  const clearLocalStorage = () => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('plant-app-images');
+      localStorage.removeItem('plant-app-image-metadata');
+      localStorage.removeItem('plant-store'); // Also clear plant store
+      window.location.reload(); // Reload to reset everything
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -50,16 +90,63 @@ export default function TestPage() {
             <ImageDiagnostic />
           </div>
 
+          {/* Image Upload Test */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">🧪 Image Upload Test</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Test Image Upload:
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={testImageUpload}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                />
+              </div>
+              
+              {testImageId && (
+                <div className="border rounded p-4">
+                  <h3 className="font-medium mb-2">Test Result:</h3>
+                  <p className="text-sm text-gray-600 mb-2">Image ID: {testImageId}</p>
+                  <div className="w-32 h-32 border rounded">
+                    <ImageDisplay
+                      imageId={testImageId}
+                      alt="Test image"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover rounded"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Diagnostic Controls */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Advanced Diagnostics</h2>
-            <button
-              onClick={runDiagnostics}
-              disabled={loading}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            >
-              {loading ? 'Running...' : 'Run Advanced Diagnostics'}
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={runDiagnostics}
+                disabled={loading}
+                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              >
+                {loading ? 'Running...' : 'Run Advanced Diagnostics'}
+              </button>
+              <button
+                onClick={clearLocalStorage}
+                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
+              >
+                🗑️ Clear All Storage
+              </button>
+            </div>
             <p className="text-sm text-gray-600 mt-2">
               Check browser console for detailed logs
             </p>

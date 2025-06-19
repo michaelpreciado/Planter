@@ -152,11 +152,13 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       
       // Store the image and get ID
       const imageId = await storeImage(processedImage);
+      console.log('✅ Image stored successfully with ID:', imageId);
       
       // Remove old image if exists
       if (currentImageId) {
         try {
           await removeImage(currentImageId);
+          console.log('🗑️ Old image removed:', currentImageId);
         } catch (error) {
           console.warn('Failed to remove old image:', error);
         }
@@ -164,6 +166,7 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       
       // Call the callback with new image ID
       onImageCapture(imageId);
+      console.log('📤 Image capture callback called with ID:', imageId);
       
     } catch (error) {
       console.error('Image processing error:', error);
