@@ -23,89 +23,91 @@ const imageUtils = {
     return file.size <= 5 * 1024 * 1024;
   },
 
-  // Resize and compress image with proper error handling
+  // Simplified image processing that's more reliable
   processImage: async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+      console.log('📁 Starting file processing...');
+      
       const reader = new FileReader();
       
       reader.onerror = () => {
+        console.error('❌ FileReader error');
         reject(new Error('Failed to read file'));
       };
       
       reader.onload = (e) => {
+        console.log('📄 File read successfully');
         const result = e.target?.result as string;
+        
         if (!result) {
+          console.error('❌ No result from FileReader');
           reject(new Error('Failed to read image data'));
           return;
         }
-        
-        const img = new window.Image();
-        
-        img.onerror = () => {
-          reject(new Error('Invalid image file'));
-        };
-        
-        img.onload = () => {
-          try {
-            console.log('🖼️ Image loaded, creating canvas...');
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            if (!ctx) {
-              console.error('❌ Canvas context not available');
-              reject(new Error('Canvas not supported'));
-              return;
-            }
-            console.log('✅ Canvas context created');
-            
-            // Calculate optimal dimensions
-            const maxSize = 800;
-            let { width, height } = img;
-            
-            if (width > height) {
-              if (width > maxSize) {
-                height = (height * maxSize) / width;
-                width = maxSize;
+
+        // For now, let's skip the canvas compression and just use the original
+        // This will help us identify if the issue is in canvas processing
+        if (file.size > 2 * 1024 * 1024) { // Only compress if > 2MB
+          console.log('🔄 File is large, attempting compression...');
+          
+          const img = new Image();
+          img.onerror = () => {
+            console.error('❌ Image load error');
+            reject(new Error('Invalid image file'));
+          };
+          
+          img.onload = () => {
+            try {
+              console.log('🖼️ Image loaded for compression');
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              
+              if (!ctx) {
+                console.error('❌ Canvas not supported');
+                // Fallback to original image
+                console.log('🔄 Falling back to original image');
+                resolve(result);
+                return;
               }
-            } else {
-              if (height > maxSize) {
-                width = (width * maxSize) / height;
-                height = maxSize;
+              
+              // Simple compression - max 800px width/height
+              const maxSize = 800;
+              let { width, height } = img;
+              
+              if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                  height = (height * maxSize) / width;
+                  width = maxSize;
+                } else {
+                  width = (width * maxSize) / height;
+                  height = maxSize;
+                }
               }
+              
+              canvas.width = width;
+              canvas.height = height;
+              
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              const compressed = canvas.toDataURL('image/jpeg', 0.8);
+              console.log('✅ Compression complete');
+              
+              // Cleanup
+              canvas.remove();
+              
+              resolve(compressed);
+            } catch (error) {
+              console.error('❌ Compression failed:', error);
+              // Fallback to original
+              resolve(result);
             }
-            
-            // Set canvas size
-            canvas.width = width;
-            canvas.height = height;
-            
-            // Clear canvas and draw image
-            ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            // Convert to compressed JPEG
-            console.log('🎨 Converting canvas to data URL...');
-            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            console.log('✅ Data URL created, length:', compressedDataUrl.length);
-            
-            // Clean up
-            canvas.remove();
-            console.log('🧹 Canvas cleaned up');
-            
-            // Check if compressed image is reasonable size (< 200KB as base64)
-            if (compressedDataUrl.length > 300000) {
-              // If still too large, compress more
-              const moreCompressed = canvas.toDataURL('image/jpeg', 0.5);
-              resolve(moreCompressed);
-            } else {
-              resolve(compressedDataUrl);
-            }
-            
-          } catch (error) {
-            reject(new Error('Failed to process image'));
-          }
-        };
-        
-        img.src = result;
+          };
+          
+          img.src = result;
+        } else {
+          console.log('📁 File size OK, using original');
+          resolve(result);
+        }
       };
       
       reader.readAsDataURL(file);
@@ -146,9 +148,9 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
     // Add a timeout to prevent infinite processing state
     const timeoutId = setTimeout(() => {
       console.error('❌ Image processing timeout');
-      setError('Image processing timed out. Please try again.');
+      setError('Image processing timed out. Try a smaller image or different format.');
       setIsCapturing(false);
-    }, 30000); // 30 second timeout
+    }, 10000); // 10 second timeout
 
     try {
       // Validate file
@@ -162,8 +164,22 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
 
       // Process image
       console.log('🔄 Starting image processing...');
-      const processedImage = await imageUtils.processImage(file);
-      console.log('✨ Image processing complete, result length:', processedImage.length);
+      let processedImage: string;
+      
+      try {
+        processedImage = await imageUtils.processImage(file);
+        console.log('✨ Image processing complete, result length:', processedImage.length);
+      } catch (processingError) {
+        console.warn('⚠️ Image processing failed, using simple fallback:', processingError);
+        
+        // Simple fallback - just read the file as data URL
+        processedImage = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = () => reject(new Error('Failed to read file'));
+          reader.readAsDataURL(file);
+        });
+      }
       
       // Store the image and get ID
       console.log('💾 Attempting to store image...');
