@@ -3,7 +3,7 @@
  * Handles image upload, compression, and validation with clean error handling
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 
 interface ImageProcessorConfig {
   maxSizeMB?: number;
@@ -40,7 +40,7 @@ export function useImageProcessor(config: ImageProcessorConfig = {}) {
     error: null,
   });
 
-  const finalConfig = { ...defaultConfig, ...config };
+  const finalConfig = useMemo(() => ({ ...defaultConfig, ...config }), [config]);
 
   const processImage = useCallback(async (file: File): Promise<ProcessedImage> => {
     setState({ isProcessing: true, progress: 0, error: null });

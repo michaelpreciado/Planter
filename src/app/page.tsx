@@ -15,7 +15,7 @@ import { PageLoader } from '@/components/PageLoader';
 import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function HomePage() {
-  const { plants, initializeSampleData, syncWithDatabase, loading, error } = usePlants();
+  const { plants, syncWithDatabase, loading, error } = usePlants();
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
@@ -72,13 +72,7 @@ export default function HomePage() {
     },
   };
 
-  const handleInitializeSampleData = () => {
-    initializeSampleData();
-    haptic.success();
-    setTimeout(() => {
-      router.push('/list');
-    }, 500);
-  };
+  // Sample data functionality removed - users can add plants manually
 
   const handleSignOut = async () => {
     haptic.mediumImpact();
@@ -243,21 +237,21 @@ export default function HomePage() {
             variants={itemVariants}
             className="space-y-4"
           >
-            {/* Debug Tools */}
+            {/* Getting Started Guide */}
             {user && plants.length === 0 && (
               <motion.div 
                 variants={itemVariants}
-                className="bg-yellow-50/40 dark:bg-yellow-900/20 backdrop-blur-md rounded-2xl p-4 text-center border-0"
+                className="bg-green-50/40 dark:bg-green-900/20 backdrop-blur-md rounded-2xl p-4 text-center border-0"
                 style={{ backdropFilter: 'blur(20px)' }}
               >
                 <div className="text-center">
-                  <div className="text-yellow-600 dark:text-yellow-400 text-sm font-medium mb-2">No plants yet?</div>
-                  <button
-                    onClick={handleInitializeSampleData}
-                    className="bg-yellow-500/90 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600/90 transition-colors border-0"
+                  <div className="text-green-600 dark:text-green-400 text-sm font-medium mb-2">Ready to start growing?</div>
+                  <Link
+                    href="/add-plant"
+                    className="bg-green-500/90 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600/90 transition-colors inline-block border-0"
                   >
-                    Add Sample Plants for Testing
-                  </button>
+                    🌱 Add Your First Plant
+                  </Link>
                 </div>
               </motion.div>
             )}

@@ -63,7 +63,7 @@ export function ImageDisplay({
       setState({ status: 'error', imageUrl: null, error: errorMessage });
       onError?.(errorMessage);
     }
-  }, [onLoad, onError]);
+  }, []);
 
   useEffect(() => {
     if (!imageId) {

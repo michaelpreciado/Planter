@@ -1,7 +1,7 @@
 'use client';
 
 import { ThemeProvider } from '@/lib/theme-provider';
-import { PlantProvider } from '@/lib/plant-store';
+// PlantProvider removed - using direct store access now
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PlantSyncWrapper } from '@/components/PlantSyncWrapper';
 
@@ -14,11 +14,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange={false}
     >
       <AuthProvider>
-        <PlantProvider>
-          <PlantSyncWrapper>
-            {children}
-          </PlantSyncWrapper>
-        </PlantProvider>
+        <PlantSyncWrapper>
+          {children}
+        </PlantSyncWrapper>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePlants } from '@/lib/plant-store';
-import { debugImageSystem, getStorageStats, getAllImageMetadata } from '@/utils/imageStorage';
+import { getStorageStats } from '@/utils/imageStorage';
 import { ImageDisplay } from '@/components/ImageDisplay';
 import { ImageDiagnostic } from '@/components/ImageDiagnostic';
 
@@ -18,16 +18,13 @@ export default function TestPage() {
     
     try {
       // Run debug functions
-      await debugImageSystem();
       await debugPlantStore();
       
       // Get stats
-      const stats = getStorageStats();
-      const metadata = getAllImageMetadata();
+      const stats = await getStorageStats();
       
       setDiagnostics({
         stats,
-        metadata,
         plantsWithImages: plants.filter(p => p.imageUrl).length,
         totalPlants: plants.length,
         timestamp: new Date().toISOString()

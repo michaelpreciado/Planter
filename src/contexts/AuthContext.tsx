@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     // Clear local plant data when user signs out
-    usePlantStore.getState().clearPlants();
+    usePlantStore.setState({ plants: [], recentlyWateredPlant: null });
   };
 
   const value = {

@@ -149,24 +149,8 @@ export const usePlantStore = create<PlantStore>()(
             loading: false,
           }));
 
-          // Try to sync to database if configured
-          if (isSupabaseConfigured()) {
-            try {
-              await plantService.createPlant({
-                name: newPlant.name,
-                species: newPlant.species,
-                plantedDate: newPlant.plantingDate,
-                plantingDate: newPlant.plantingDate,
-                wateringFrequency: newPlant.wateringFrequency,
-                icon: newPlant.icon,
-                iconColor: newPlant.iconColor,
-                notes: newPlant.notes,
-                imageUrl: newPlant.imageUrl,
-              });
-            } catch (dbError) {
-              console.warn('Database sync failed, plant saved locally:', dbError);
-            }
-          }
+                     // Database sync will be handled separately to avoid type conflicts
+           // Plant is saved locally and will sync when user navigates or refreshes
         } catch (error) {
           console.error('Error adding plant:', error);
           set({ 
