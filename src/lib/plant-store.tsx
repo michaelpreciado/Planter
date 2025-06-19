@@ -358,7 +358,8 @@ export const usePlantStore = create<PlantStore>()(
           console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
         }
         if (state) {
-          state.hasHydrated = true;
+          // Use set to ensure re-render after hydration
+          set({ hasHydrated: true });
         }
       },
     }
