@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,16 +14,18 @@ import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useListScrollOptimization, useHorizontalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { format } from 'date-fns';
 import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
-import { usePageWithPlants } from '@/hooks/usePageReady';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export default function ListPage() {
-  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered } = usePlants();
+  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered, hasHydrated, loading } = usePlants();
   const [filter, setFilter] = useState<'all' | 'healthy' | 'needs_water' | 'overdue'>('all');
+  const [isClientReady, setIsClientReady] = useState(false);
   const haptic = useHapticFeedback();
   
-  // Use professional page loading pattern
-  const { isReady } = usePageWithPlants(500);
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   // Scroll optimizations
   const { scrollRef: mainScrollRef, scrollToTop } = useListScrollOptimization();
@@ -48,9 +50,17 @@ export default function ListPage() {
     haptic.mediumImpact();
   };
 
-  // Pull to refresh functionality removed - users must use buttons instead
-
-  // Mobile gestures removed - users must use buttons for filter navigation
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading your plants...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -69,11 +79,6 @@ export default function ListPage() {
       default: return status;
     }
   };
-
-  // Show professional loader while page is preparing
-  if (!isReady) {
-    return <PageLoader message="Loading your plants..." showProgress={true} />;
-  }
 
   return (
     <AuthGuard message="Please sign in to view and manage your plants">

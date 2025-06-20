@@ -1,16 +1,18 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePlants } from '@/lib/plant-store';
-import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
-import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function SettingsPage() {
-  const { plants } = usePlants();
-  
-  // Use professional page loading pattern
-  const { isReady } = usePageWithPlants(400);
+  const [isClientReady, setIsClientReady] = useState(false);
+  const { hasHydrated, loading, plants } = usePlants();
+
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const stats = {
     totalPlants: plants.length,
@@ -18,9 +20,16 @@ export default function SettingsPage() {
     plantsNeedingWater: plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length,
   };
 
-  // Show professional loader while page is preparing
-  if (!isReady) {
-    return <PageLoader message="Loading settings..." showProgress={true} />;
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading settings...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

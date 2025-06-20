@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -28,12 +28,29 @@ interface NoteEntry {
 
 export default function NotesPage() {
   const router = useRouter();
-  const { plants } = usePlants();
+  const { plants, hasHydrated, loading } = usePlants();
+  const [isClientReady, setIsClientReady] = useState(false);
+  const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'with_notes' | 'with_images'>('all');
   const haptic = useHapticFeedback();
   const { scrollRef, scrollToTop } = useListScrollOptimization();
-  const { isReady } = usePageWithPlants(300);
-  
-  const [filter, setFilter] = useState<'all' | 'recent' | 'with-photos'>('all');
+
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
+
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Extract and sort all notes from all plants
   const allNotes = useMemo(() => {
@@ -126,10 +143,6 @@ export default function NotesPage() {
     haptic.lightImpact();
     setTimeout(() => scrollToTop(), 100);
   };
-
-  if (!isReady) {
-    return <PageLoader message="Loading plant notes..." showProgress={true} />;
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col pb-16">
