@@ -11,30 +11,36 @@ import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
-import { PageLoader } from '@/components/PageLoader';
-import { usePageWithPlants } from '@/hooks/usePageReady';
 
 export default function HomePage() {
-  const { plants, syncWithDatabase, loading, error } = usePlants();
+  const { plants, syncWithDatabase, loading, error, hasHydrated } = usePlants();
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
   const [showDebugTools, setShowDebugTools] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [isClientReady, setIsClientReady] = useState(false);
   
-  // Use professional page loading pattern
-  const { isReady } = usePageWithPlants(600);
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const healthyPlants = plants.filter(p => p.status === 'healthy').length;
   const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
   const isDbConfigured = isSupabaseConfigured();
 
-  // Mobile gestures removed - users must use buttons for navigation
-
-  // Show professional loader while page is preparing
-  if (!isReady) {
-    return <PageLoader message="Welcome to Plant Tracker" showProgress={true} />;
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading Plant Tracker...</p>
+        </div>
+      </div>
+    );
   }
 
   const containerVariants = {

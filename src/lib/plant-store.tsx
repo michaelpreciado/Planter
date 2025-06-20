@@ -350,19 +350,25 @@ export const usePlantStore = create<PlantStore>()(
     }),
     {
       name: 'plant-store',
-      version: 2, // Increment version for the new system
+      version: 2,
       partialize: (state) => ({ 
         plants: state.plants,
       }),
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (state: any, error?: Error) => {
         if (error) {
           console.error('Failed to rehydrate plant store:', error);
         } else {
-          console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
+          if (isDevelopment) {
+            console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
+          }
         }
-        if (state) {
-          state.hasHydrated = true;
-        }
+        // Always set hydrated to true, even on error
+        return (state: any) => {
+          if (state) {
+            state.hasHydrated = true;
+            state.loading = false;
+          }
+        };
       },
     }
   )
