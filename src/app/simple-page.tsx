@@ -148,7 +148,7 @@ export default function SimplePage() {
         <h3 style={{ fontSize: '16px', marginBottom: '10px' }}>Emergency Mode</h3>
         <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
           This is a simplified version of the app that works without complex loading logic.
-          If you're experiencing issues with the main app, you can use this page as a backup.
+          If you&apos;re experiencing issues with the main app, you can use this page as a backup.
         </p>
       </div>
     </div>
