@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -9,8 +9,6 @@ import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures'
 import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { ImageUpload } from '@/components/ImageUpload';
 import { NightModeToggle } from '@/components/NightModeToggle';
-import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
-import { usePageBasic } from '@/hooks/usePageReady';
 import { AuthGuard } from '@/components/AuthGuard';
 
 const plantTypes = [
@@ -26,11 +24,14 @@ const plantTypes = [
 
 export default function AddPlantPage() {
   const router = useRouter();
-  const { addPlant, error, loading, storeImage, removeImage } = usePlants();
+  const { addPlant, error, loading, storeImage, removeImage, hasHydrated } = usePlants();
   const haptic = useHapticFeedback();
+  const [isClientReady, setIsClientReady] = useState(false);
   
-  // Use professional page loading pattern
-  const { isReady } = usePageBasic(400);
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   // Scroll optimization
   const { scrollRef: formScrollRef, scrollToTop } = useVerticalScrollOptimization();
@@ -97,8 +98,6 @@ export default function AddPlantPage() {
     haptic.lightImpact();
   };
 
-
-
   const handlePlantImageCapture = (imageId: string) => {
     setFormData(prev => ({
       ...prev,
@@ -109,9 +108,16 @@ export default function AddPlantPage() {
     }
   };
 
-  // Show professional loader while page is preparing
-  if (!isReady) {
-    return <PageLoader message="Preparing plant form..." showProgress={true} />;
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Preparing plant form...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

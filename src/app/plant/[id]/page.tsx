@@ -17,19 +17,29 @@ import { usePageWithPlants } from '@/hooks/usePageReady';
 export default function PlantDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, storeImage, removeImage } = usePlants();
+  const { getPlantById, waterPlant, updatePlant, recentlyWateredPlant, clearRecentlyWatered, plants, storeImage, removeImage, hasHydrated, loading } = usePlants();
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [noteImages, setNoteImages] = useState<string[]>([]);
+  const [isClientReady, setIsClientReady] = useState(false);
   
-  // Use professional page loading pattern
-  const { isReady } = usePageWithPlants(500);
+  // Simple client-side ready state
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const plant = getPlantById(params.id as string);
 
-  // Show professional loader while page is preparing
-  if (!isReady) {
-    return <PageLoader message="Loading plant details..." showProgress={true} />;
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading plant details...</p>
+        </div>
+      </div>
+    );
   }
 
   // Show error only after hydration is complete

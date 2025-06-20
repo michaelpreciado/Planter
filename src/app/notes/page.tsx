@@ -31,7 +31,7 @@ export default function NotesPage() {
   const { plants, hasHydrated, loading } = usePlants();
   const [isClientReady, setIsClientReady] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'with_notes' | 'with_images'>('all');
+  const [filter, setFilter] = useState<'all' | 'recent' | 'with-photos'>('all');
   const haptic = useHapticFeedback();
   const { scrollRef, scrollToTop } = useListScrollOptimization();
 
@@ -40,19 +40,7 @@ export default function NotesPage() {
     setIsClientReady(true);
   }, []);
 
-  // Show simple loading only on initial hydration
-  if (!isClientReady || (!hasHydrated && loading)) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Loading notes...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Extract and sort all notes from all plants
+  // Extract and sort all notes from all plants - MUST be before early return
   const allNotes = useMemo(() => {
     const notes: NoteEntry[] = [];
     
@@ -124,7 +112,7 @@ export default function NotesPage() {
     return notes.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [plants]);
 
-  // Filter notes based on selected filter
+  // Filter notes based on selected filter - MUST be before early return
   const filteredNotes = useMemo(() => {
     switch (filter) {
       case 'recent':
@@ -137,6 +125,18 @@ export default function NotesPage() {
         return allNotes;
     }
   }, [allNotes, filter]);
+
+  // Show simple loading only on initial hydration
+  if (!isClientReady || (!hasHydrated && loading)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleFilterChange = (newFilter: typeof filter) => {
     setFilter(newFilter);
