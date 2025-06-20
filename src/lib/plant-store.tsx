@@ -1,5 +1,8 @@
 'use client';
 
+// Plant Store - Production Ready v2.0
+// Fixed for deployment - ensuring proper Zustand store structure
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
