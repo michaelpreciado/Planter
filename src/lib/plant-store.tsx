@@ -133,7 +133,7 @@ export const usePlantStore = create<PlantStore>()(
       hasHydrated: false,
       
       // Core operations
-      addPlant: async (plantData) => {
+      addPlant: async (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => {
         set({ loading: true, error: null });
         
         try {
@@ -155,8 +155,8 @@ export const usePlantStore = create<PlantStore>()(
             loading: false,
           }));
 
-                     // Database sync will be handled separately to avoid type conflicts
-           // Plant is saved locally and will sync when user navigates or refreshes
+          // Database sync will be handled separately to avoid type conflicts
+          // Plant is saved locally and will sync when user navigates or refreshes
         } catch (error) {
           console.error('Error adding plant:', error);
           set({ 
@@ -166,12 +166,12 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      removePlant: async (id) => {
-        const plant = get().plants.find(p => p.id === id);
+      removePlant: async (id: string) => {
+        const plant = get().plants.find((p) => p.id === id);
         
         // Remove from local state
         set((state) => ({
-          plants: state.plants.filter(p => p.id !== id),
+          plants: state.plants.filter((p) => p.id !== id),
         }));
 
         // Clean up associated images
@@ -193,7 +193,7 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      updatePlant: async (id, updates) => {
+      updatePlant: async (id: string, updates: Partial<Plant>) => {
         set({ loading: true, error: null });
         
         try {
@@ -204,7 +204,7 @@ export const usePlantStore = create<PlantStore>()(
 
           // Update locally
           set((state) => ({
-            plants: state.plants.map(plant => 
+            plants: state.plants.map((plant) => 
               plant.id === id ? { ...plant, ...updatedData } : plant
             ),
             loading: false,
@@ -227,7 +227,7 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      waterPlant: async (id) => {
+      waterPlant: async (id: string) => {
         const today = new Date().toISOString();
         const plant = get().plants.find(p => p.id === id);
         
@@ -250,7 +250,7 @@ export const usePlantStore = create<PlantStore>()(
       },
 
       // Utility functions
-      getPlantById: (id) => {
+      getPlantById: (id: string) => {
         return get().plants.find(plant => plant.id === id);
       },
 
@@ -290,7 +290,7 @@ export const usePlantStore = create<PlantStore>()(
       },
 
       // Image operations
-      storeImage: async (imageData) => {
+      storeImage: async (imageData: string) => {
         try {
           const imageId = await storeImage(imageData);
           return imageId;
@@ -300,7 +300,7 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      getImage: async (imageId) => {
+      getImage: async (imageId: string) => {
         try {
           return await getImage(imageId);
         } catch (error) {
@@ -309,7 +309,7 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      removeImage: async (imageId) => {
+      removeImage: async (imageId: string) => {
         try {
           await removeImage(imageId);
         } catch (error) {
@@ -354,16 +354,8 @@ export const usePlantStore = create<PlantStore>()(
       partialize: (state) => ({ 
         plants: state.plants,
       }),
-      onRehydrateStorage: () => (state: any, error?: Error) => {
-        if (error) {
-          console.error('Failed to rehydrate plant store:', error);
-        } else {
-          if (isDevelopment) {
-            console.log('Plant store rehydrated with', state?.plants?.length || 0, 'plants');
-          }
-        }
-        // Always set hydrated to true, even on error
-        return (state: any) => {
+      onRehydrateStorage: () => {
+        return (state) => {
           if (state) {
             state.hasHydrated = true;
             state.loading = false;
