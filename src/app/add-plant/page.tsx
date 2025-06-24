@@ -196,13 +196,13 @@ export default function AddPlantPage() {
             <label className="block text-sm font-medium text-foreground mb-4">
               Plant Type *
             </label>
-            <div className="grid grid-cols-2 gap-3 scroll-card">
+            <div className="grid grid-cols-2 gap-2 scroll-card">
               {plantTypes.map((type, index) => (
                 <motion.button
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeSelect(type.id)}
-                  className={`p-4 rounded-xl border-2 transition-all duration-200 btn-mobile touch-feedback ${
+                  className={`p-2 rounded-lg border-2 transition-all duration-200 btn-mobile touch-feedback ${
                     selectedType === type.id
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-card text-foreground active:bg-accent'
@@ -212,8 +212,8 @@ export default function AddPlantPage() {
                   transition={{ delay: 0.3 + index * 0.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="text-3xl mb-2">{type.icon}</div>
-                  <div className="text-sm font-medium">{type.name}</div>
+                  <div className="text-xl mb-1">{type.icon}</div>
+                  <div className="text-xs font-medium">{type.name}</div>
                 </motion.button>
               ))}
             </div>
