@@ -47,9 +47,9 @@ export function BottomNavigation() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-white/10 dark:bg-gray-900/30 backdrop-blur-xl border-t border-white/20 dark:border-white/10 z-50 safe-area-bottom"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 4px)' }}
     >
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-2 py-1 sm:py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           
@@ -58,7 +58,7 @@ export function BottomNavigation() {
               key={item.href}
               href={item.href}
               onClick={handleNavClick}
-              className="relative flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1"
+              className="relative flex flex-col items-center justify-center py-1 sm:py-2 px-2 sm:px-3 min-w-0 flex-1"
             >
               {/* Active indicator dot */}
               {isActive && (

@@ -66,32 +66,32 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background flex flex-col pb-safe">
       {/* Top Controls */}
-      <FadeIn delay={0.1} className="flex justify-end items-center pt-safe px-4 sm:px-6 py-4 sm:py-6">
+      <FadeIn delay={0.1} className="flex justify-end items-center pt-safe padding-responsive">
         {/* Auth and Night Mode Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-responsive">
           {/* User Menu */}
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-responsive">
               <div className="text-right">
-                <div className="text-sm font-medium text-foreground">
+                <div className="text-responsive-sm font-medium text-foreground">
                   {user.user_metadata?.username || user.email?.split('@')[0]}
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                  className="text-responsive-sm text-muted-foreground hover:text-red-500 transition-colors"
                 >
                   Sign Out
                 </button>
               </div>
-              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                <span className="text-lg">🌱</span>
+              <div className="avatar-responsive bg-primary/20 flex items-center justify-center">
+                <span className="text-responsive-base">🌱</span>
               </div>
             </div>
           ) : (
             <ScaleIn>
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
+                className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground btn-responsive font-medium transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
                 disabled={authLoading}
               >
                 {authLoading ? '...' : '🌱 Sign In'}
@@ -104,38 +104,40 @@ export default function HomePage() {
       </FadeIn>
 
       {/* Header Title */}
-      <SlideUp delay={0.2} className="text-center px-4 sm:px-6 pb-6 sm:pb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Plant Tracker</h1>
-        <p className="text-sm sm:text-base text-muted-foreground/80">Keep your plants happy and healthy</p>
+      <SlideUp delay={0.2} className="text-center padding-responsive">
+        <h1 className="text-responsive-lg font-bold text-foreground mb-2">Plant Tracker</h1>
+        <p className="text-responsive-base text-muted-foreground/80">Keep your plants happy and healthy</p>
       </SlideUp>
 
       {/* Tamagotchi Section */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-nav-safe overflow-visible">
-        <div className="max-w-sm w-full space-y-8">
+      <div className="flex-1 flex items-center justify-center pb-nav-safe overflow-visible">
+        <div className="container-responsive space-responsive">
           {/* Plant Character - Remove container boundaries to allow glow effect */}
           <FadeIn 
             delay={0.4}
-            className="flex justify-center py-8 overflow-visible"
+            className="flex justify-center padding-responsive overflow-visible"
           >
-            <TamagotchiBlob size={240} showAnimation={true} />
+            <div className="scale-75 xs:scale-90 sm:scale-100">
+              <TamagotchiBlob size={240} showAnimation={true} />
+            </div>
           </FadeIn>
 
           {/* User Welcome / Login Prompt */}
           {!user && (
             <SlideUp
               delay={0.6}
-              className="bg-card/40 backdrop-blur-md rounded-2xl p-4 sm:p-6 text-center shadow-lg border-0"
+              className="bg-card/40 backdrop-blur-md card-responsive text-center shadow-lg border-0"
             >
-              <div className="text-foreground text-sm font-medium mb-2">
+              <div className="text-foreground text-responsive-sm font-medium mb-2">
                 🌱 Welcome to Plant Tracker
               </div>
-              <p className="text-muted-foreground/80 text-sm mb-4">
+              <p className="text-muted-foreground/80 text-responsive-sm mb-4">
                 Sign in to save your plants and sync across devices
               </p>
               <ScaleIn>
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
+                  className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground btn-responsive font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
                 >
                   Get Started
                 </button>
@@ -147,16 +149,16 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <SlideUp
               delay={0.8}
-              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-white/10"
+              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl card-responsive shadow-lg border border-white/20 dark:border-white/10"
             >
-              <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="grid grid-cols-2 gap-responsive text-center">
                 <div>
-                  <div className="text-2xl font-bold text-green-500">{healthyPlants}</div>
-                  <div className="text-xs text-muted-foreground">Healthy</div>
+                  <div className="text-responsive-lg font-bold text-green-500">{healthyPlants}</div>
+                  <div className="text-responsive-sm text-muted-foreground">Healthy</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-yellow-500">{plantsNeedingWater}</div>
-                  <div className="text-xs text-muted-foreground">Need Water</div>
+                  <div className="text-responsive-lg font-bold text-yellow-500">{plantsNeedingWater}</div>
+                  <div className="text-responsive-sm text-muted-foreground">Need Water</div>
                 </div>
               </div>
             </SlideUp>

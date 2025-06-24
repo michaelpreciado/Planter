@@ -454,6 +454,25 @@
     padding-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
   }
 
+  /* Responsive safe padding for smaller screens */
+  @media screen and (max-height: 700px) {
+    .pb-safe {
+      padding-bottom: max(calc(env(safe-area-inset-bottom) + 3rem), 3rem);
+    }
+    .pb-nav-safe {
+      padding-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
+    }
+  }
+  
+  @media screen and (max-height: 600px) {
+    .pb-safe {
+      padding-bottom: max(calc(env(safe-area-inset-bottom) + 2rem), 2rem);
+    }
+    .pb-nav-safe {
+      padding-bottom: max(calc(env(safe-area-inset-bottom) + 3.5rem), 3.5rem);
+    }
+  }
+
   .pl-safe {
     padding-left: max(env(safe-area-inset-left), 1rem);
   }
@@ -512,10 +531,404 @@
     @apply m-4 sm:m-6;
   }
 
+  /* Compact layouts for small screens */
+  .compact-layout {
+    @apply space-y-4;
+  }
+  
+  @media screen and (max-height: 700px) {
+    .compact-layout {
+      @apply space-y-3;
+    }
+    .compact-padding {
+      @apply py-3 px-4;
+    }
+  }
+  
+  @media screen and (max-height: 600px) {
+    .compact-layout {
+      @apply space-y-2;
+    }
+    .compact-padding {
+      @apply py-2 px-3;
+    }
+  }
+
   /* Backdrop blur for mobile performance */
   .backdrop-blur-mobile {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Responsive container utilities */
+  .container-responsive {
+    @apply w-full max-w-xs mx-auto px-4;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .container-responsive {
+      @apply max-w-sm px-5;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .container-responsive {
+      @apply max-w-md px-6;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .container-responsive {
+      @apply max-w-lg px-8;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .container-responsive {
+      @apply max-w-xl px-10;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .container-responsive {
+      @apply max-w-2xl px-12;
+    }
+  }
+
+  /* Responsive button utilities */
+  .btn-responsive {
+    @apply px-3 py-2 text-sm rounded-lg font-medium transition-all duration-200;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .btn-responsive {
+      @apply px-4 py-2.5 text-sm;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .btn-responsive {
+      @apply px-5 py-3 text-base;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .btn-responsive {
+      @apply px-6 py-3 text-base rounded-xl;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .btn-responsive {
+      @apply px-7 py-3.5 text-lg rounded-xl;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .btn-responsive {
+      @apply px-8 py-4 text-lg rounded-xl;
+    }
+  }
+
+  /* Responsive text utilities */
+  .text-responsive-sm {
+    @apply text-xs;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .text-responsive-sm {
+      @apply text-sm;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .text-responsive-sm {
+      @apply text-sm;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .text-responsive-sm {
+      @apply text-base;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .text-responsive-sm {
+      @apply text-base;
+    }
+  }
+  
+  .text-responsive-base {
+    @apply text-sm;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .text-responsive-base {
+      @apply text-base;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .text-responsive-base {
+      @apply text-base;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .text-responsive-base {
+      @apply text-lg;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .text-responsive-base {
+      @apply text-lg;
+    }
+  }
+  
+  .text-responsive-lg {
+    @apply text-base;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .text-responsive-lg {
+      @apply text-lg;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .text-responsive-lg {
+      @apply text-xl;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .text-responsive-lg {
+      @apply text-2xl;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .text-responsive-lg {
+      @apply text-2xl;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .text-responsive-lg {
+      @apply text-3xl;
+    }
+  }
+
+  /* Responsive spacing utilities */
+  .space-responsive {
+    @apply space-y-3;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .space-responsive {
+      @apply space-y-4;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .space-responsive {
+      @apply space-y-5;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .space-responsive {
+      @apply space-y-6;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .space-responsive {
+      @apply space-y-7;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .space-responsive {
+      @apply space-y-8;
+    }
+  }
+
+  /* Responsive padding utilities */
+  .padding-responsive {
+    @apply p-3;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .padding-responsive {
+      @apply p-4;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .padding-responsive {
+      @apply p-5;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .padding-responsive {
+      @apply p-6;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .padding-responsive {
+      @apply p-7;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .padding-responsive {
+      @apply p-8;
+    }
+  }
+
+  /* Responsive card utilities */
+  .card-responsive {
+    @apply rounded-lg p-3 space-y-2;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .card-responsive {
+      @apply rounded-xl p-4 space-y-3;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .card-responsive {
+      @apply rounded-xl p-5 space-y-4;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .card-responsive {
+      @apply rounded-2xl p-6 space-y-5;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .card-responsive {
+      @apply rounded-2xl p-7 space-y-6;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .card-responsive {
+      @apply rounded-2xl p-8 space-y-7;
+    }
+  }
+
+  /* Responsive icon utilities */
+  .icon-responsive {
+    @apply w-4 h-4;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .icon-responsive {
+      @apply w-5 h-5;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .icon-responsive {
+      @apply w-5 h-5;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .icon-responsive {
+      @apply w-6 h-6;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .icon-responsive {
+      @apply w-6 h-6;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .icon-responsive {
+      @apply w-7 h-7;
+    }
+  }
+
+  /* Responsive avatar/image utilities */
+  .avatar-responsive {
+    @apply w-10 h-10 rounded-full;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .avatar-responsive {
+      @apply w-12 h-12;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .avatar-responsive {
+      @apply w-14 h-14;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .avatar-responsive {
+      @apply w-16 h-16;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .avatar-responsive {
+      @apply w-18 h-18;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .avatar-responsive {
+      @apply w-20 h-20;
+    }
+  }
+
+  /* Responsive gap utilities */
+  .gap-responsive {
+    @apply gap-2;
+  }
+  
+  @media screen and (min-width: 380px) {
+    .gap-responsive {
+      @apply gap-3;
+    }
+  }
+  
+  @media screen and (min-width: 640px) {
+    .gap-responsive {
+      @apply gap-4;
+    }
+  }
+  
+  @media screen and (min-width: 768px) {
+    .gap-responsive {
+      @apply gap-5;
+    }
+  }
+  
+  @media screen and (min-width: 1024px) {
+    .gap-responsive {
+      @apply gap-6;
+    }
+  }
+  
+  @media screen and (min-width: 1280px) {
+    .gap-responsive {
+      @apply gap-7;
+    }
   }
 
   /* Performance-optimized animations - CSS instead of framer-motion */
