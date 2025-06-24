@@ -100,9 +100,24 @@ export function SwipeableListItem({
               </div>
 
               {/* Notes Preview */}
-              {plant.notes && (
-                <p className="text-sm text-gray-600 mt-2 line-clamp-1">{plant.notes}</p>
-              )}
+              {plant.notes && (() => {
+                try {
+                  const notes = JSON.parse(plant.notes);
+                  if (Array.isArray(notes) && notes.length > 0) {
+                    const latestNote = notes[notes.length - 1];
+                    return latestNote.text ? (
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-1">{latestNote.text}</p>
+                    ) : null;
+                  }
+                } catch {
+                  // Fallback for legacy format
+                  const firstLine = plant.notes.split('\n')[0];
+                  return firstLine ? (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-1">{firstLine}</p>
+                  ) : null;
+                }
+                return null;
+              })()}
             </div>
           </div>
         </div>
