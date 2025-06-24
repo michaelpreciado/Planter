@@ -69,6 +69,20 @@
     /* Ensure proper height on mobile browsers */
     min-height: 100vh;
     min-height: 100dvh; /* Dynamic viewport height for modern browsers */
+
+    /* Global radial glow overlay */
+    position: relative;
+  }
+
+  /* Pseudo-element for the glow */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background: radial-gradient(circle at center 30%, rgba(59, 130, 246, 0.15), transparent 70%);
+    filter: blur(100px);
   }
 
   html {
@@ -328,7 +342,7 @@
   }
 
   .card-glass {
-    @apply bg-white/10 backdrop-blur-md rounded-lg border border-white/20;
+    @apply bg-white/5 dark:bg-gray-900/10 backdrop-blur-md rounded-lg border border-white/20 dark:border-white/10;
   }
 
   .card-neo {

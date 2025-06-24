@@ -91,7 +91,7 @@ export default function HomePage() {
             <ScaleIn>
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground btn-responsive font-medium transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
+                className="bg-card/30 backdrop-blur-md hover:bg-card/40 text-foreground btn-responsive font-medium transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
                 disabled={authLoading}
               >
                 {authLoading ? '...' : '🌱 Sign In'}
@@ -110,15 +110,15 @@ export default function HomePage() {
       </SlideUp>
 
       {/* Tamagotchi Section */}
-      <div className="flex-1 flex items-center justify-center pb-nav-safe overflow-visible">
-        <div className="container-responsive space-responsive">
+      <div className="flex-1 flex flex-col justify-center pb-nav-safe overflow-visible">
+        <div className="container-responsive space-y-4">
           {/* Plant Character - Remove container boundaries to allow glow effect */}
           <FadeIn 
             delay={0.4}
             className="flex justify-center padding-responsive overflow-visible"
           >
-            <div className="scale-75 xs:scale-90 sm:scale-100">
-              <TamagotchiBlob size={240} showAnimation={true} />
+            <div className="scale-100 xs:scale-125 sm:scale-150 md:scale-175 lg:scale-200">
+              <TamagotchiBlob size={320} showAnimation={true} />
             </div>
           </FadeIn>
 
@@ -126,7 +126,7 @@ export default function HomePage() {
           {!user && (
             <SlideUp
               delay={0.6}
-              className="bg-card/40 backdrop-blur-md card-responsive text-center shadow-lg border-0"
+              className="bg-card/20 backdrop-blur-md card-responsive text-center shadow-lg border-0 mx-4"
             >
               <div className="text-foreground text-responsive-sm font-medium mb-2">
                 🌱 Welcome to Plant Tracker
@@ -137,7 +137,7 @@ export default function HomePage() {
               <ScaleIn>
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="bg-card/60 backdrop-blur-md hover:bg-card/80 text-foreground btn-responsive font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
+                  className="bg-card/30 backdrop-blur-md hover:bg-card/40 text-foreground btn-responsive font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-0 hover:scale-105"
                 >
                   Get Started
                 </button>
@@ -149,7 +149,7 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <SlideUp
               delay={0.8}
-              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl card-responsive shadow-lg border border-white/20 dark:border-white/10"
+              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl card-responsive shadow-lg border border-white/20 dark:border-white/10 mx-4"
             >
               <div className="grid grid-cols-2 gap-responsive text-center">
                 <div>

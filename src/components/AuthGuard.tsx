@@ -44,7 +44,7 @@ export function AuthGuard({
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
+        className="bg-card/30 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
       >
         <Link href="/" className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ export function AuthGuard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-card/40 backdrop-blur-md rounded-2xl p-6 shadow-lg border-0"
+            className="bg-card/20 backdrop-blur-md rounded-2xl p-6 shadow-lg border-0"
             style={{ backdropFilter: 'blur(20px)' }}
           >
             <h2 className="text-2xl font-bold text-foreground mb-3">

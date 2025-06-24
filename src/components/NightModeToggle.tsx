@@ -23,7 +23,7 @@ export function NightModeToggle({ className = '' }: NightModeToggleProps) {
   return (
     <motion.button
       onClick={handleToggle}
-      className={`p-2 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg hover:bg-white/90 transition-colors dark:bg-gray-800/80 dark:border-gray-700 dark:hover:bg-gray-800/90 ${className}`}
+      className={`p-2 rounded-full bg-white/40 backdrop-blur border border-white/20 shadow-lg hover:bg-white/50 transition-colors dark:bg-gray-800/40 dark:border-white/20 dark:hover:bg-gray-800/50 ${className}`}
       aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       whileTap={{ scale: 0.95 }}
     >

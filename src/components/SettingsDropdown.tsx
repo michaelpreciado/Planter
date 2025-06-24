@@ -61,7 +61,7 @@ export function SettingsDropdown({ className = '' }: SettingsDropdownProps) {
       {/* Gear Icon Button */}
       <button
         onClick={toggleDropdown}
-        className="p-2 rounded-full bg-white/80 backdrop-blur border border-gray-200 shadow-lg hover:bg-white/90 transition-colors"
+        className="p-2 rounded-full bg-white/40 backdrop-blur border border-white/20 shadow-lg hover:bg-white/50 transition-colors"
         aria-label="Settings"
       >
         <motion.svg
