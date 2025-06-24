@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -9,10 +9,30 @@ import { useHapticFeedback } from '@/hooks/useMobileGestures';
 export function BottomNavigation() {
   const pathname = usePathname();
   const haptic = useHapticFeedback();
+  const navRef = useRef<HTMLElement>(null);
 
   const handleNavClick = () => {
     haptic.lightImpact();
   };
+
+  // Auto-detect and update nav height
+  useEffect(() => {
+    const updateNavHeight = () => {
+      const height = navRef.current?.offsetHeight ?? 64;
+      document.documentElement.style.setProperty('--nav-height', `${height}px`);
+    };
+    
+    updateNavHeight();
+    
+    // Update on resize to handle orientation changes
+    window.addEventListener('resize', updateNavHeight);
+    window.addEventListener('orientationchange', updateNavHeight);
+    
+    return () => {
+      window.removeEventListener('resize', updateNavHeight);
+      window.removeEventListener('orientationchange', updateNavHeight);
+    };
+  }, []);
 
   const navItems = [
     {
@@ -46,8 +66,12 @@ export function BottomNavigation() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-white/10 dark:bg-gray-900/30 backdrop-blur-xl border-t border-white/20 dark:border-white/10 z-50 safe-area-bottom"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 4px)' }}
+      ref={navRef}
+      className="fixed bottom-0 left-0 right-0 h-[var(--nav-height)] bg-white/10 dark:bg-gray-900/30 backdrop-blur-xl border-t border-white/20 dark:border-white/10 z-50"
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        minHeight: 'calc(var(--nav-height) + env(safe-area-inset-bottom, 0px))'
+      }}
     >
       <div className="flex items-center justify-around px-2 py-1 sm:py-2">
         {navItems.map((item) => {

@@ -97,11 +97,19 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden mobile-scroll-container`}>
+      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden mobile-scroll-container flex flex-col`}>
         <Providers>
-          <PageTransition>
-            {children}
-          </PageTransition>
+          <main 
+            className="flex-grow"
+            style={{
+              minHeight: "calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom, 0px))",
+              paddingBottom: "calc(var(--nav-height) + env(safe-area-inset-bottom, 0px))",
+            }}
+          >
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </main>
           <BottomNavigation />
           <Toaster />
         </Providers>
