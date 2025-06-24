@@ -670,4 +670,22 @@ export const cleanupImages = () =>
   imageStorage.cleanup();
 
 export const syncImagesToCloud = () => 
-  imageStorage.syncToCloud(); 
+  imageStorage.syncToCloud();
+
+// Expose functions to window for debugging (development only)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  (window as any).storeImage = storeImage;
+  (window as any).getImage = getImage;
+  (window as any).removeImage = removeImage;
+  (window as any).getStorageStats = getStorageStats;
+  (window as any).cleanupImages = cleanupImages;
+  (window as any).syncImagesToCloud = syncImagesToCloud;
+  
+  console.log('🔧 Image storage functions exposed to window for debugging:');
+  console.log('- window.storeImage(imageData, plantId?, noteId?)'); 
+  console.log('- window.getImage(id)');
+  console.log('- window.removeImage(id)');
+  console.log('- window.getStorageStats()');
+  console.log('- window.cleanupImages()');
+  console.log('- window.syncImagesToCloud()');
+} 
