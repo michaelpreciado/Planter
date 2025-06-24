@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlants } from '@/lib/plant-store';
 import { isSupabaseConfigured } from '@/utils/supabase';
@@ -9,41 +9,84 @@ export function PlantSyncWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { syncWithDatabase } = usePlants();
   const [hasInitialSynced, setHasInitialSynced] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
-  // Only sync once when user is authenticated, but don't block the UI
-  useEffect(() => {
-    // Don't sync if still loading auth or already synced
-    if (authLoading || hasInitialSynced) {
+  // Enhanced sync function with retry logic
+  const performSync = useCallback(async (forceSync = false) => {
+    // Don't sync if still loading auth or user not authenticated
+    if (authLoading || !user || !isSupabaseConfigured()) {
       return;
     }
 
-    // If user is authenticated and Supabase is configured, sync in background
-    if (user && isSupabaseConfigured()) {
-      // Use setTimeout to make sync non-blocking
-      const syncTimer = setTimeout(() => {
-        syncWithDatabase()
-          .then(() => {
-            setHasInitialSynced(true);
-          })
-          .catch(() => {
-            // Silently fail - app should work without sync
-            setHasInitialSynced(true);
-          });
-      }, 100); // Small delay to ensure UI renders first
+    // Avoid excessive syncing (unless forced)
+    if (!forceSync && lastSyncTime && Date.now() - lastSyncTime.getTime() < 30000) {
+      return;
+    }
 
-      return () => clearTimeout(syncTimer);
-    } else {
-      // No auth or no Supabase - mark as synced so app continues
+    try {
+      await syncWithDatabase();
+      setLastSyncTime(new Date());
+      setHasInitialSynced(true);
+    } catch (error) {
+      console.warn('Sync failed:', error);
+      // Don't block the app if sync fails
       setHasInitialSynced(true);
     }
-  }, [user, authLoading, syncWithDatabase, hasInitialSynced]);
+  }, [user, authLoading, syncWithDatabase, lastSyncTime]);
 
-  // Reset sync status when user changes
+  // Initial sync when user authenticates
   useEffect(() => {
-    if (!user) {
+    if (!hasInitialSynced && user && isSupabaseConfigured()) {
+      // Use setTimeout to make sync non-blocking
+      const syncTimer = setTimeout(() => {
+        performSync(true);
+      }, 100);
+
+      return () => clearTimeout(syncTimer);
+    } else if (!user) {
+      // Reset sync status when user logs out
       setHasInitialSynced(false);
+      setLastSyncTime(null);
     }
-  }, [user]);
+  }, [user, hasInitialSynced, performSync]);
+
+  // Sync when user returns to the app (visibility change)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && isSupabaseConfigured()) {
+        // Sync when app becomes visible again
+        performSync();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user, performSync]);
+
+  // Sync when window gains focus (user switches back to tab/app)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user && isSupabaseConfigured()) {
+        performSync();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, performSync]);
+
+  // Periodic sync every 5 minutes when app is active
+  useEffect(() => {
+    if (!user || !isSupabaseConfigured()) return;
+
+    const periodicSync = setInterval(() => {
+      if (!document.hidden) {
+        performSync();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(periodicSync);
+  }, [user, performSync]);
 
   // Always render children immediately - don't wait for sync
   return <>{children}</>;

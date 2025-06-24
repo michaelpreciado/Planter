@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
 
 export default function HomePage() {
-  const { plants, syncWithDatabase, loading, error, hasHydrated } = usePlants();
+  const { plants, triggerManualSync, loading, error, hasHydrated } = usePlants();
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
@@ -90,7 +90,7 @@ export default function HomePage() {
     
     haptic.mediumImpact();
     try {
-      await syncWithDatabase();
+      await triggerManualSync();
       setLastSyncTime(new Date().toLocaleTimeString());
       haptic.success();
     } catch (error) {

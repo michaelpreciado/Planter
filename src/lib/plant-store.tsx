@@ -57,6 +57,7 @@ interface PlantStore {
   
   // Sync operations
   syncWithDatabase: () => Promise<void>;
+  triggerManualSync: () => Promise<void>;
   debugPlantStore: () => void;
 }
 
@@ -155,8 +156,32 @@ export const usePlantStore = create<PlantStore>()(
             loading: false,
           }));
 
-          // Database sync will be handled separately to avoid type conflicts
-          // Plant is saved locally and will sync when user navigates or refreshes
+          // Try to sync to database immediately
+          if (isSupabaseConfigured()) {
+            try {
+              const dbPlant = {
+                name: newPlant.name,
+                species: newPlant.species,
+                plantedDate: newPlant.plantingDate,
+                plantingDate: newPlant.plantingDate,
+                wateringFrequency: newPlant.wateringFrequency,
+                icon: newPlant.icon,
+                iconColor: newPlant.iconColor,
+                lastWatered: newPlant.lastWatered,
+                                 nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
+                status: newPlant.status,
+                notes: newPlant.notes,
+                noteAttachments: newPlant.noteAttachments,
+                imageUrl: newPlant.imageUrl,
+                userId: '', // Will be set by plantService.createPlant
+              };
+              await plantService.createPlant(dbPlant);
+              if (isDevelopment) console.log(`Successfully synced new plant: ${newPlant.name}`);
+            } catch (error) {
+              // Don't fail the local save if database sync fails
+              if (isDevelopment) console.warn('Failed to sync new plant to database:', error);
+            }
+          }
         } catch (error) {
           console.error('Error adding plant:', error);
           set({ 
@@ -328,11 +353,154 @@ export const usePlantStore = create<PlantStore>()(
         
         try {
           const localPlants = get().plants;
-          // Sync logic here
-          if (isDevelopment) console.log(`Synced ${localPlants.length} plants from database`);
+          
+          // Step 1: Fetch all plants from database
+          const remotePlants = await plantService.getPlants();
+          
+          // Step 2: Create maps for efficient comparison
+          const localPlantsMap = new Map(localPlants.map(p => [p.id, p]));
+          const remotePlantsMap = new Map(remotePlants.map(p => [p.id, p]));
+          
+          // Step 3: Find plants that exist locally but not remotely (need to upload)
+          const plantsToUpload = localPlants.filter(localPlant => 
+            !remotePlantsMap.has(localPlant.id)
+          );
+          
+          // Step 4: Upload local plants to database
+          for (const plant of plantsToUpload) {
+            try {
+                             // Convert local plant to database format
+               const dbPlant = {
+                 name: plant.name,
+                 species: plant.species,
+                 plantedDate: plant.plantingDate, // Map plantingDate to plantedDate for DB
+                 plantingDate: plant.plantingDate,
+                 wateringFrequency: plant.wateringFrequency,
+                 icon: plant.icon,
+                 iconColor: plant.iconColor,
+                 lastWatered: plant.lastWatered,
+                 nextWatering: plant.nextWatering || calculateNextWatering(plant.wateringFrequency, plant.lastWatered),
+                 status: plant.status,
+                 notes: plant.notes,
+                 noteAttachments: plant.noteAttachments,
+                 imageUrl: plant.imageUrl,
+                 userId: '', // Will be set by plantService.createPlant
+               };
+              
+              await plantService.createPlant(dbPlant);
+              if (isDevelopment) console.log(`Uploaded plant: ${plant.name}`);
+            } catch (error) {
+              console.error(`Failed to upload plant ${plant.name}:`, error);
+            }
+          }
+          
+          // Step 5: Find plants that exist remotely but not locally (need to download)
+          const plantsToDownload = remotePlants.filter(remotePlant => 
+            !localPlantsMap.has(remotePlant.id)
+          );
+          
+          // Step 6: Update plants that exist in both but have different update times
+          const plantsToUpdate = remotePlants.filter(remotePlant => {
+            const localPlant = localPlantsMap.get(remotePlant.id);
+            if (!localPlant) return false;
+            
+            const remoteUpdatedAt = new Date(remotePlant.updatedAt || remotePlant.createdAt);
+            const localUpdatedAt = new Date(localPlant.updatedAt);
+            
+            return remoteUpdatedAt > localUpdatedAt;
+          });
+          
+          // Step 7: Merge all changes into local state
+          const updatedPlants = [...localPlants];
+          
+          // Add downloaded plants
+          for (const remotePlant of plantsToDownload) {
+            const localPlant: Plant = {
+              id: remotePlant.id,
+              name: remotePlant.name || '',
+              species: remotePlant.species || '',
+              plantingDate: remotePlant.plantingDate || new Date().toISOString(),
+              wateringFrequency: remotePlant.wateringFrequency || 7,
+              icon: remotePlant.icon || '🌱',
+              iconColor: remotePlant.iconColor || '#10B981',
+              lastWatered: remotePlant.lastWatered,
+              nextWatering: remotePlant.nextWatering,
+              status: remotePlant.status || 'healthy',
+              notes: remotePlant.notes,
+              noteAttachments: remotePlant.noteAttachments,
+              imageUrl: remotePlant.imageUrl,
+              createdAt: remotePlant.createdAt || new Date().toISOString(),
+              updatedAt: remotePlant.updatedAt || remotePlant.createdAt || new Date().toISOString(),
+            };
+            updatedPlants.push(localPlant);
+          }
+          
+          // Update existing plants with newer remote data
+          for (const remotePlant of plantsToUpdate) {
+            const index = updatedPlants.findIndex(p => p.id === remotePlant.id);
+            if (index !== -1) {
+              updatedPlants[index] = {
+                id: remotePlant.id,
+                name: remotePlant.name || '',
+                species: remotePlant.species || '',
+                plantingDate: remotePlant.plantingDate || new Date().toISOString(),
+                wateringFrequency: remotePlant.wateringFrequency || 7,
+                icon: remotePlant.icon || '🌱',
+                iconColor: remotePlant.iconColor || '#10B981',
+                lastWatered: remotePlant.lastWatered,
+                nextWatering: remotePlant.nextWatering,
+                status: remotePlant.status || 'healthy',
+                notes: remotePlant.notes,
+                noteAttachments: remotePlant.noteAttachments,
+                imageUrl: remotePlant.imageUrl,
+                createdAt: remotePlant.createdAt || new Date().toISOString(),
+                updatedAt: remotePlant.updatedAt || remotePlant.createdAt || new Date().toISOString(),
+              };
+            }
+          }
+          
+          // Step 8: Update local state with merged data
+          set({ 
+            plants: updatedPlants,
+            loading: false,
+            error: null
+          });
+          
+          if (isDevelopment) {
+            console.log(`Sync completed:`);
+            console.log(`- Uploaded: ${plantsToUpload.length} plants`);
+            console.log(`- Downloaded: ${plantsToDownload.length} plants`);
+            console.log(`- Updated: ${plantsToUpdate.length} plants`);
+            console.log(`- Total plants: ${updatedPlants.length}`);
+          }
+          
         } catch (error) {
           console.error('Failed to sync with database:', error);
-          set({ error: 'Failed to sync with database', loading: false });
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to sync with database', 
+            loading: false 
+          });
+          throw error; // Re-throw to allow components to handle sync failures
+        }
+      },
+
+      triggerManualSync: async () => {
+        if (!isSupabaseConfigured()) {
+          if (isDevelopment) console.log('Database not configured - staying in offline mode');
+          return;
+        }
+        
+        set({ loading: true, error: null });
+        
+        try {
+          await get().syncWithDatabase();
+          if (isDevelopment) console.log('Manual sync completed');
+        } catch (error) {
+          console.error('Failed to trigger manual sync:', error);
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to trigger manual sync', 
+            loading: false 
+          });
         }
       },
 

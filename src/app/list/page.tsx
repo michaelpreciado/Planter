@@ -7,8 +7,7 @@ import Image from 'next/image';
 import { ImageDisplay } from '@/components/ImageDisplay';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
-// SwipeableCard removed - users must use buttons instead
-// PullToRefreshIndicator removed - no more gesture-based refresh
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { NightModeToggle } from '@/components/NightModeToggle';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useListScrollOptimization, useHorizontalScrollOptimization } from '@/hooks/useScrollOptimization';
@@ -17,9 +16,10 @@ import { PageLoader, PageHeader, PageContent } from '@/components/PageLoader';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export default function ListPage() {
-  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered, hasHydrated, loading } = usePlants();
+  const { plants, waterPlant, removePlant, recentlyWateredPlant, clearRecentlyWatered, hasHydrated, loading, triggerManualSync } = usePlants();
   const [filter, setFilter] = useState<'all' | 'healthy' | 'needs_water' | 'overdue'>('all');
   const [isClientReady, setIsClientReady] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const haptic = useHapticFeedback();
   
   // Simple client-side ready state
@@ -48,6 +48,20 @@ export default function ListPage() {
   const handleRemovePlant = (plantId: string) => {
     removePlant(plantId);
     haptic.mediumImpact();
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    haptic.lightImpact();
+    try {
+      await triggerManualSync();
+      haptic.success();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+      haptic.error();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Show simple loading only on initial hydration
@@ -93,6 +107,31 @@ export default function ListPage() {
         <h1 className="text-xl font-bold text-foreground">My Plants</h1>
         <div className="flex items-center gap-2">
           <NightModeToggle />
+          {/* Sync Button */}
+          <motion.button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="text-muted-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors disabled:opacity-50"
+            whileTap={{ scale: 0.9 }}
+            title="Sync plants"
+          >
+            <motion.div
+              animate={{ rotate: isRefreshing ? 360 : 0 }}
+              transition={{
+                rotate: isRefreshing ? {
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "linear"
+                } : {
+                  duration: 0.2
+                }
+              }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </motion.div>
+          </motion.button>
           <Link href="/add-plant" className="text-primary p-2 -m-2 rounded-lg active:bg-primary/20 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -144,14 +183,17 @@ export default function ListPage() {
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-hidden">
-
-        <div 
-          ref={mainScrollRef}
-          className="h-full overflow-y-auto px-6 py-4 mobile-scroll-container"
-          style={{
-            touchAction: 'pan-y',
-          }}
+        <PullToRefresh
+          onRefresh={handleRefresh}
+          threshold={100}
         >
+          <div 
+            ref={mainScrollRef}
+            className="h-full overflow-y-auto px-6 py-4 mobile-scroll-container"
+            style={{
+              touchAction: 'pan-y',
+            }}
+          >
           {filteredPlants.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -292,7 +334,8 @@ export default function ListPage() {
               ))}
             </div>
           )}
-        </div>
+          </div>
+        </PullToRefresh>
       </div>
       </div>
     </AuthGuard>
