@@ -306,15 +306,15 @@
 @layer components {
   /* Button variants */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-ring rounded-lg px-4 py-2 font-medium transition-colors;
+    @apply bg-primary text-white hover:bg-primary/90 rounded-lg px-4 py-2 font-medium transition-colors;
   }
 
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-ring rounded-lg px-4 py-2 font-medium transition-colors;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-lg px-4 py-2 font-medium transition-colors;
   }
 
   .btn-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground focus-ring rounded-lg px-4 py-2 font-medium transition-colors;
+    @apply hover:bg-gray-100 hover:text-gray-900 rounded-lg px-4 py-2 font-medium transition-colors;
   }
 
   /* Mobile-optimized buttons */
@@ -324,7 +324,7 @@
 
   /* Card styles */
   .card {
-    @apply bg-card text-card-foreground rounded-lg border shadow-soft;
+    @apply bg-white rounded-lg border shadow-sm;
   }
 
   .card-glass {
@@ -342,7 +342,7 @@
 
   /* Input styles */
   .input {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   /* Mobile-optimized input */
@@ -352,12 +352,19 @@
 
   /* Loading skeleton */
   .skeleton {
-    @apply animate-pulse bg-muted rounded;
+    @apply animate-pulse bg-gray-200 rounded;
   }
 
   .skeleton::after {
-    @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent;
     content: '';
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   /* Custom range slider for mobile */
@@ -367,7 +374,7 @@
     background: transparent;
     cursor: pointer;
     height: 6px;
-    background: rgb(var(--muted));
+    background: #e5e7eb;
     border-radius: 3px;
     outline: none;
   }

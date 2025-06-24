@@ -15,8 +15,8 @@ module.exports = {
     // Keep only essential plugins
     animation: true,
     backdropBlur: true,
-    backgroundImage: false, // Use CSS custom properties instead
-    gradientColorStops: false,
+    backgroundImage: true, // Need gradients for skeleton loading
+    gradientColorStops: true,
     ringWidth: true,
     ringColor: true,
     divideWidth: false,
@@ -57,14 +57,22 @@ module.exports = {
       destructive: 'rgb(var(--destructive) / <alpha-value>)',
       border: 'rgb(var(--border) / <alpha-value>)',
       ring: 'rgb(var(--ring) / <alpha-value>)',
+      secondary: 'rgb(var(--secondary) / <alpha-value>)',
+      'secondary-foreground': 'rgb(var(--secondary-foreground) / <alpha-value>)',
+      'primary-foreground': 'rgb(var(--primary-foreground) / <alpha-value>)',
+      accent: 'rgb(var(--accent) / <alpha-value>)',
+      'accent-foreground': 'rgb(var(--accent-foreground) / <alpha-value>)',
       // Keep essential grays
       gray: {
         100: '#f3f4f6',
         200: '#e5e7eb',
         300: '#d1d5db',
         400: '#9ca3af',
+        500: '#6b7280',
+        600: '#4b5563',
         700: '#374151',
         800: '#1f2937',
+        900: '#111827',
       },
       // Essential colors only
       red: {
@@ -77,6 +85,7 @@ module.exports = {
       },
       green: {
         500: '#10b981',
+        600: '#059669',
       },
       yellow: {
         400: '#fbbf24',

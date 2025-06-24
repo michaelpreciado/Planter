@@ -157,7 +157,7 @@ export function ConfirmationDialog({
                 {message}
                 {plantName && (
                   <span className="block mt-2 font-medium text-foreground">
-                    "{plantName}"
+                    &ldquo;{plantName}&rdquo;
                   </span>
                 )}
               </motion.p>

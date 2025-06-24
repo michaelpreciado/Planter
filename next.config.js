@@ -44,8 +44,7 @@ const nextConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         '@gsap': 'gsap/dist/gsap.min.js',
-        // Replace framer-motion with lighter alternatives where possible
-        'framer-motion$': 'framer-motion/dist/framer-motion.es.js',
+        // Note: framer-motion alias removed due to export issues
       };
       
       // Optimize bundle splitting for better caching
