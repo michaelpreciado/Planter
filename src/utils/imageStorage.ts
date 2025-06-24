@@ -4,6 +4,8 @@
  */
 
 import { supabase, isSupabaseConfigured } from './supabase';
+import imageCompression from 'browser-image-compression';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ImageMetadata {
   id: string;
@@ -671,5 +673,90 @@ export const cleanupImages = () =>
 
 export const syncImagesToCloud = () => 
   imageStorage.syncToCloud();
+
+// ----------------------------
+// New Supabase upload helpers
+// ----------------------------
+
+/**
+ * Compresses & uploads a user image to the private `plant-images` Supabase bucket.
+ * Automatically stores DB linkage in `images` table (if present).
+ * Returns the storage path as well as a freshly-minted signed URL.
+ */
+export async function uploadPlantImage(
+  file: File,
+  plantId: string,
+  userId: string
+): Promise<{ path: string; width: number; height: number; mimeType: string; signedUrl: string }> {
+  if (!file) throw new Error('No file provided');
+  if (!plantId || !userId) throw new Error('plantId & userId are required');
+
+  // 1. Compress + orientation-safe transform (max 2 MB / 2048px)
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 2,
+    maxWidthOrHeight: 2048,
+    useWebWorker: true,
+    fileType: file.type.startsWith('image/') ? file.type : undefined,
+  });
+
+  // 2. Derive dimensions from compressed blob
+  const bitmap = await createImageBitmap(compressed);
+  const width = bitmap.width;
+  const height = bitmap.height;
+  bitmap.close(); // free memory
+
+  // 3. Build storage path → userId/plantId/uuid.ext
+  const ext = compressed.type.split('/')[1] || 'jpg';
+  const path = `${userId}/${plantId}/${uuidv4()}.${ext}`;
+
+  // 4. Upload to Supabase Storage (private bucket)
+  const { error: uploadError } = await supabase.storage
+    .from('plant-images')
+    .upload(path, compressed, {
+      contentType: compressed.type,
+      upsert: false,
+    });
+  if (uploadError) throw uploadError;
+
+  // 5. Create signed URL (24h default)
+  const signedUrl = await getSignedImageUrl(path);
+
+  // 6. Upsert DB linkage if table exists (ignore error silently)
+  try {
+    await supabase.from('images').upsert({
+      plant_id: plantId,
+      user_id: userId,
+      storage_path: path,
+      width,
+      height,
+      mime_type: compressed.type,
+    });
+  } catch {
+    /* table might not exist – ignore */
+  }
+
+  return {
+    path,
+    width,
+    height,
+    mimeType: compressed.type,
+    signedUrl,
+  };
+}
+
+/**
+ * Generates (or refreshes) a signed URL for an object in `plant-images` bucket.
+ * @param path  Object path within the bucket
+ * @param expiresIn  Expiry in seconds (default 24 h)
+ */
+export async function getSignedImageUrl(path: string, expiresIn = 60 * 60 * 24): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('plant-images')
+    .createSignedUrl(path, expiresIn);
+  if (error || !data?.signedUrl) {
+    throw error || new Error('Could not generate signed URL');
+  }
+  return data.signedUrl;
+}
 
 // Debug functions removed for production 

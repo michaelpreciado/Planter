@@ -158,6 +158,23 @@ If you find a bug, please create an issue with:
 
 For support, please open an issue or contact the development team.
 
+## 📸 Storage Configuration
+
+To enable cross-device image sync, create a **private** Storage bucket in Supabase and add a simple RLS policy:
+
+```sql
+-- Run in Supabase SQL editor
+select storage.create_bucket('plant-images', public := false);
+
+create or replace policy "User can read own images"
+  on storage.objects for select
+  using (
+    bucket_id = 'plant-images' and auth.uid() = (storage_filename::json ->> 'user_id')::uuid
+  );
+```
+
+Why this works: the bucket stays locked down, but a short-lived **signed URL** acts like a temporary, globally-valid HTTPS link. Each device fetches a fresh URL, so cached or revoked links never break what the user sees.
+
 ---
 
 Made with ❤️ for plant lovers everywhere 🌱
