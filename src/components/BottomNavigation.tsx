@@ -18,7 +18,18 @@ export function BottomNavigation() {
   // Auto-detect and update nav height
   useEffect(() => {
     const updateNavHeight = () => {
-      const height = navRef.current?.offsetHeight ?? 64;
+      const navEl = navRef.current;
+      if (!navEl) return;
+
+      // Get the rendered height (including padding) and subtract bottom padding (safe-area inset)
+      const computed = window.getComputedStyle(navEl);
+      const paddingBottom = parseFloat(computed.paddingBottom) || 0;
+      const heightWithoutInset = navEl.offsetHeight - paddingBottom;
+
+      // Fallback to default height if calculation fails
+      const height = heightWithoutInset > 0 ? heightWithoutInset : 64;
+
+      // Persist for the rest of the app
       document.documentElement.style.setProperty('--nav-height', `${height}px`);
     };
     

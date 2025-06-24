@@ -153,7 +153,7 @@ export function ListPageClient() {
                   key={key}
                   onClick={() => handleFilterChange(key as FilterType)}
                   variant={filter === key ? 'primary' : 'secondary'}
-                  className="btn-responsive font-medium whitespace-nowrap min-w-fit"
+                  className="btn-responsive font-medium whitespace-nowrap min-w-fit !px-3 !py-1.5 !text-sm"
                   disabled={isPending}
                 >
                   {label} ({count})
@@ -304,4 +304,4 @@ export function ListPageClient() {
       </div>
     </AuthGuard>
   );
-} 
+}
