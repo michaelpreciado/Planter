@@ -55,7 +55,7 @@ class ModernImageStorage {
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('✅ IndexedDB initialized successfully');
+        // IndexedDB initialized
         resolve();
       };
 
@@ -242,7 +242,7 @@ class ModernImageStorage {
    */
   async syncToCloud(): Promise<{ uploaded: number; errors: number }> {
     if (!isSupabaseConfigured()) {
-      console.log('Cloud storage not configured');
+      // Cloud storage not configured
       return { uploaded: 0, errors: 0 };
     }
 
@@ -271,14 +271,14 @@ class ModernImageStorage {
           }
           
           uploaded++;
-          console.log('✅ Synced image to cloud:', image.id);
+          // Synced to cloud
         } catch (error) {
-          console.error('❌ Failed to sync image to cloud:', image.id, error);
+          // Failed to sync to cloud
           errors++;
         }
       }
     } catch (error) {
-      console.error('❌ Failed to sync images to cloud:', error);
+      // Failed to sync images
       errors++;
     }
 

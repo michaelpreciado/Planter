@@ -151,7 +151,6 @@ export function ImageCapture({ onImageCapture, currentImage, placeholder = "Add 
       onImageCapture(processedImage);
       
     } catch (error) {
-      console.error('Image processing error:', error);
       setError(error instanceof Error ? error.message : 'Failed to process image');
     } finally {
       setIsCapturing(false);

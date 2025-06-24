@@ -97,15 +97,14 @@ const imageUtils = {
               
               resolve(compressed);
             } catch (error) {
-              console.error('❌ Compression failed:', error);
-              // Fallback to original
+              // Compression failed, fallback to original
               resolve(result);
             }
           };
           
           img.src = result;
         } else {
-          console.log('📁 File size OK, using original');
+          // File size OK, using original
           resolve(result);
         }
       };
@@ -147,9 +146,8 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
 
     // Add a timeout to prevent infinite processing state
     const timeoutId = setTimeout(() => {
-      console.error('❌ Image processing timeout');
-      setError('Image processing timed out. Try a smaller image or different format.');
-      setIsCapturing(false);
+              setError('Image processing timed out. Try a smaller image or different format.');
+        setIsCapturing(false);
     }, 10000); // 10 second timeout
 
     try {
@@ -163,14 +161,12 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       }
 
       // Process image
-      console.log('🔄 Starting image processing...');
       let processedImage: string;
       
       try {
         processedImage = await imageUtils.processImage(file);
-        console.log('✨ Image processing complete, result length:', processedImage.length);
       } catch (processingError) {
-        console.warn('⚠️ Image processing failed, using simple fallback:', processingError);
+        // Image processing failed, using simple fallback
         
         // Simple fallback - just read the file as data URL
         processedImage = await new Promise<string>((resolve, reject) => {
@@ -182,26 +178,21 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
       }
       
       // Store the image and get ID
-      console.log('💾 Attempting to store image...');
       const imageId = await storeImage(processedImage);
-      console.log('✅ Image stored successfully with ID:', imageId);
       
       // Remove old image if exists
       if (currentImageId) {
         try {
           await removeImage(currentImageId);
-          console.log('🗑️ Old image removed:', currentImageId);
         } catch (error) {
-          console.warn('Failed to remove old image:', error);
+          // Failed to remove old image
         }
       }
       
       // Call the callback with new image ID
       onImageCapture(imageId);
-      console.log('📤 Image capture callback called with ID:', imageId);
       
     } catch (error) {
-      console.error('Image processing error:', error);
       setError(error instanceof Error ? error.message : 'Failed to process image');
     } finally {
       clearTimeout(timeoutId);
@@ -215,7 +206,6 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
         await removeImage(currentImageId);
         onImageCapture('');
       } catch (error) {
-        console.error('Failed to remove image:', error);
         setError('Failed to remove image');
       }
     }

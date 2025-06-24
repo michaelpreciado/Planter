@@ -27,21 +27,12 @@ export function ImageSyncWrapper({ children }: { children: React.ReactNode }) {
     setIsSyncing(true);
 
     try {
-      console.log('🔄 Starting image sync...');
       const stats = await syncImagesToCloud();
       setSyncStats(stats);
       setLastSyncTime(new Date());
       setHasInitialSynced(true);
-      
-      if (stats.uploaded > 0) {
-        console.log(`✅ Image sync completed: ${stats.uploaded} images uploaded`);
-      }
-      if (stats.errors > 0) {
-        console.warn(`⚠️ Image sync had ${stats.errors} errors`);
-      }
     } catch (error) {
-      console.warn('Image sync failed:', error);
-      // Don't block the app if sync fails - set as synced to avoid retry loops
+      // Image sync failed - don't block the app
       setHasInitialSynced(true);
     } finally {
       setIsSyncing(false);
