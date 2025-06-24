@@ -240,7 +240,7 @@ export default function ListPage() {
                         />
                         
                         <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3 flex-1">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
                             {/* Plant Image/Icon */}
                             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                               {plant.imageUrl ? (
@@ -287,45 +287,47 @@ export default function ListPage() {
 
                               {/* Notes */}
                               {plant.notes && (
-                                <p className="text-xs text-muted-foreground mt-1">{plant.notes}</p>
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{plant.notes}</p>
                               )}
                             </div>
                           </div>
+                        </div>
 
-                          {/* Actions - smaller for mobile */}
-                          <div className="flex items-center gap-1 ml-2">
-                            {/* Water Button */}
-                            <motion.button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleWaterPlant(plant.id);
-                              }}
-                              className="p-3 text-primary active:bg-primary/20 rounded-lg transition-colors"
-                              whileTap={{ scale: 0.9 }}
-                              title="Water plant"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-                              </svg>
-                            </motion.button>
+                        {/* Mobile-Optimized Action Buttons - Full width bottom section */}
+                        <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-border/50">
+                          {/* Water Button */}
+                          <motion.button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleWaterPlant(plant.id);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-4 py-3 rounded-lg font-medium transition-colors min-h-[48px] touch-manipulation"
+                            whileTap={{ scale: 0.96 }}
+                            title="Water plant"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                            <span className="text-sm">Water</span>
+                          </motion.button>
 
-                            {/* Delete Button */}
-                            <motion.button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleRemovePlant(plant.id);
-                              }}
-                              className="p-3 text-destructive active:bg-destructive/20 rounded-lg transition-colors"
-                              whileTap={{ scale: 0.9 }}
-                              title="Remove plant"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                              </svg>
-                            </motion.button>
-                          </div>
+                          {/* Delete Button */}
+                          <motion.button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleRemovePlant(plant.id);
+                            }}
+                            className="flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 px-4 py-3 rounded-lg font-medium transition-colors min-h-[48px] min-w-[48px] touch-manipulation"
+                            whileTap={{ scale: 0.96 }}
+                            title="Remove plant"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            <span className="sr-only">Delete</span>
+                          </motion.button>
                         </div>
                       </div>
                     </Link>
