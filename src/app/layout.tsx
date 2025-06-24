@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
 import { ImageSyncDiagnostic } from '@/components/ImageSyncDiagnostic';
+import { DebugPanel } from '@/components/DebugPanel';
 import './globals.css';
 
 const inter = Inter({
@@ -121,12 +122,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
-        <link 
-          rel="preload" 
-          href="/assets/tamagotchi.png" 
-          as="image" 
-          type="image/png"
-        />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden mobile-scroll-container`}>
         <Providers>
@@ -136,6 +134,7 @@ export default function RootLayout({
           <BottomNavigation />
           <Toaster />
           <ImageSyncDiagnostic />
+          <DebugPanel />
         </Providers>
       </body>
     </html>
