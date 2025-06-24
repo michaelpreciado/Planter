@@ -4,12 +4,23 @@ const nextConfig = {
   trailingSlash: true,
   
   experimental: {
+    // Enable TurboPack for faster builds
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
     // Re-enable optimizeCss for critical CSS inlining
     optimizeCss: true,
     serverComponentsExternalPackages: ['canvas'],
     scrollRestoration: true,
     webpackBuildWorker: true,
-    // appDir and fontLoaders removed - no longer needed in Next.js 14
+    // Enable new React features
+    ppr: true, // Partial prerendering
+    reactCompiler: true, // React compiler for automatic optimizations
   },
   
   // Performance optimizations
@@ -18,17 +29,25 @@ const nextConfig = {
   generateEtags: false,
   swcMinify: true,
   
-  // Re-enable Image optimization for better performance
+  // Optimized Image configuration for better Core Web Vitals
   images: {
-    // Enable optimization for better Core Web Vitals
+    // Enable optimization - CRITICAL for LCP
     unoptimized: false,
     formats: ['image/avif', 'image/webp'],
-    // Netlify Image CDN compatibility
-    loader: 'custom',
-    loaderFile: './image-loader.js',
-    deviceSizes: [640, 768, 1024, 1280, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Use Next.js built-in optimization instead of custom loader for better performance
+    loader: 'default',
+    // Remove custom loader for better optimization
+    // loaderFile: './image-loader.js',
+    // Optimized device sizes for mobile-first
+    deviceSizes: [375, 640, 768, 1024, 1280],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Aggressive caching
     minimumCacheTTL: 31536000, // 1 year
+    // Enable experimental features for better performance
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Quality optimization
+    quality: 80, // Good balance of quality vs size
   },
   
   // Bundle analysis and optimization
@@ -69,11 +88,11 @@ const nextConfig = {
               chunks: 'all',
               priority: 30,
             },
-            // Animation libraries (lazy loaded)
-            animations: {
-              test: /[\\/]node_modules[\\/](framer-motion|gsap|lottie-react)[\\/]/,
-              name: 'animations',
-              chunks: 'async',
+            // Supabase (often used)
+            supabase: {
+              test: /[\\/]node_modules[\\/](@supabase)[\\/]/,
+              name: 'supabase',
+              chunks: 'all',
               priority: 20,
             },
             // Utilities

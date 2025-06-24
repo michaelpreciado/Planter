@@ -5,13 +5,13 @@
       "resourceSizes": [
         {
           "resourceType": "script",
-          "budget": 300,
-          "comment": "JS bundle target: 300kB (down from 820kB)"
+          "budget": 200,
+          "comment": "JS bundle target: 200kB (down from 780kB after optimizations)"
         },
         {
           "resourceType": "stylesheet",
-          "budget": 50,
-          "comment": "CSS target: 50kB (down from 100kB+)"
+          "budget": 25,
+          "comment": "CSS target: 25kB (optimized Tailwind + critical CSS)"
         },
         {
           "resourceType": "image",
