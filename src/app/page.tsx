@@ -110,7 +110,7 @@ export default function HomePage() {
       </SlideUp>
 
       {/* Tamagotchi Section */}
-      <div className="flex-1 flex flex-col justify-center pb-nav-safe overflow-visible">
+      <div className="flex-1 flex flex-col justify-start pb-nav-safe overflow-visible">
         <div className="container-responsive space-y-4 mb-nav-safe">
           {/* Plant Character - Remove container boundaries to allow glow effect */}
           <FadeIn 
