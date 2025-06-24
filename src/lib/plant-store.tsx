@@ -59,6 +59,7 @@ interface PlantStore {
   syncWithDatabase: () => Promise<void>;
   triggerManualSync: () => Promise<void>;
   debugPlantStore: () => void;
+  removeDuplicatePlants: () => number;
 }
 
 const plantIcons = ['🌱', '🍃', '🌿', '🌺', '🌻', '🌹', '🌷', '🌵', '🍅', '🥕', '🌾', '🌸', '🌼', '🪴', '🌳'];
@@ -168,15 +169,23 @@ export const usePlantStore = create<PlantStore>()(
                 icon: newPlant.icon,
                 iconColor: newPlant.iconColor,
                 lastWatered: newPlant.lastWatered,
-                                 nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
+                nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
                 status: newPlant.status,
                 notes: newPlant.notes,
                 noteAttachments: newPlant.noteAttachments,
                 imageUrl: newPlant.imageUrl,
                 userId: '', // Will be set by plantService.createPlant
               };
-              await plantService.createPlant(dbPlant);
-              if (isDevelopment) console.log(`Successfully synced new plant: ${newPlant.name}`);
+              const createdPlant = await plantService.createPlant(dbPlant);
+              
+              // Update local plant with database ID to prevent duplication
+              set((state) => ({
+                plants: state.plants.map(p => 
+                  p.id === newPlant.id ? { ...p, id: createdPlant.id, updatedAt: new Date().toISOString() } : p
+                ),
+              }));
+              
+              if (isDevelopment) console.log(`Successfully synced new plant: ${newPlant.name} (${newPlant.id} -> ${createdPlant.id})`);
             } catch (error) {
               // Don't fail the local save if database sync fails
               if (isDevelopment) console.warn('Failed to sync new plant to database:', error);
@@ -366,29 +375,32 @@ export const usePlantStore = create<PlantStore>()(
             !remotePlantsMap.has(localPlant.id)
           );
           
-          // Step 4: Upload local plants to database
+          // Step 4: Upload local plants to database and update local IDs
+          const plantIdMappings = new Map<string, string>(); // oldId -> newId
+          
           for (const plant of plantsToUpload) {
             try {
-                             // Convert local plant to database format
-               const dbPlant = {
-                 name: plant.name,
-                 species: plant.species,
-                 plantedDate: plant.plantingDate, // Map plantingDate to plantedDate for DB
-                 plantingDate: plant.plantingDate,
-                 wateringFrequency: plant.wateringFrequency,
-                 icon: plant.icon,
-                 iconColor: plant.iconColor,
-                 lastWatered: plant.lastWatered,
-                 nextWatering: plant.nextWatering || calculateNextWatering(plant.wateringFrequency, plant.lastWatered),
-                 status: plant.status,
-                 notes: plant.notes,
-                 noteAttachments: plant.noteAttachments,
-                 imageUrl: plant.imageUrl,
-                 userId: '', // Will be set by plantService.createPlant
-               };
+              // Convert local plant to database format
+              const dbPlant = {
+                name: plant.name,
+                species: plant.species,
+                plantedDate: plant.plantingDate, // Map plantingDate to plantedDate for DB
+                plantingDate: plant.plantingDate,
+                wateringFrequency: plant.wateringFrequency,
+                icon: plant.icon,
+                iconColor: plant.iconColor,
+                lastWatered: plant.lastWatered,
+                nextWatering: plant.nextWatering || calculateNextWatering(plant.wateringFrequency, plant.lastWatered),
+                status: plant.status,
+                notes: plant.notes,
+                noteAttachments: plant.noteAttachments,
+                imageUrl: plant.imageUrl,
+                userId: '', // Will be set by plantService.createPlant
+              };
               
-              await plantService.createPlant(dbPlant);
-              if (isDevelopment) console.log(`Uploaded plant: ${plant.name}`);
+              const createdPlant = await plantService.createPlant(dbPlant);
+              plantIdMappings.set(plant.id, createdPlant.id);
+              if (isDevelopment) console.log(`Uploaded plant: ${plant.name} (${plant.id} -> ${createdPlant.id})`);
             } catch (error) {
               console.error(`Failed to upload plant ${plant.name}:`, error);
             }
@@ -411,7 +423,19 @@ export const usePlantStore = create<PlantStore>()(
           });
           
           // Step 7: Merge all changes into local state
-          const updatedPlants = [...localPlants];
+          let updatedPlants = [...localPlants];
+          
+          // Update local plants with new database IDs
+          for (const [oldId, newId] of plantIdMappings) {
+            const plantIndex = updatedPlants.findIndex(p => p.id === oldId);
+            if (plantIndex !== -1) {
+              updatedPlants[plantIndex] = {
+                ...updatedPlants[plantIndex],
+                id: newId,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+          }
           
           // Add downloaded plants
           for (const remotePlant of plantsToDownload) {
@@ -459,9 +483,36 @@ export const usePlantStore = create<PlantStore>()(
             }
           }
           
-          // Step 8: Update local state with merged data
+          // Step 8: Remove any duplicate plants that might have been created
+          const deduplicatedPlants = updatedPlants.reduce((acc, plant) => {
+            // Check if a plant with the same name, species, and planting date already exists
+            const duplicate = acc.find(p => 
+              p.name === plant.name && 
+              p.species === plant.species && 
+              p.plantingDate === plant.plantingDate &&
+              p.id !== plant.id
+            );
+            
+            if (duplicate) {
+              // Keep the plant with the most recent updatedAt timestamp
+              const currentUpdated = new Date(plant.updatedAt);
+              const existingUpdated = new Date(duplicate.updatedAt);
+              
+              if (currentUpdated > existingUpdated) {
+                // Replace the duplicate with the newer plant
+                return acc.map(p => p.id === duplicate.id ? plant : p);
+              }
+              // Keep the existing plant (don't add current)
+              return acc;
+            }
+            
+            acc.push(plant);
+            return acc;
+          }, [] as Plant[]);
+          
+          // Step 9: Update local state with merged and deduplicated data
           set({ 
-            plants: updatedPlants,
+            plants: deduplicatedPlants,
             loading: false,
             error: null
           });
@@ -471,7 +522,8 @@ export const usePlantStore = create<PlantStore>()(
             console.log(`- Uploaded: ${plantsToUpload.length} plants`);
             console.log(`- Downloaded: ${plantsToDownload.length} plants`);
             console.log(`- Updated: ${plantsToUpdate.length} plants`);
-            console.log(`- Total plants: ${updatedPlants.length}`);
+            console.log(`- Deduplicated: ${updatedPlants.length - deduplicatedPlants.length} plants`);
+            console.log(`- Total plants: ${deduplicatedPlants.length}`);
           }
           
         } catch (error) {
@@ -514,6 +566,45 @@ export const usePlantStore = create<PlantStore>()(
           console.log('Error:', state.error);
           console.log('=========================');
         }
+      },
+
+      // Utility function to manually remove duplicate plants
+      removeDuplicatePlants: () => {
+        const state = get();
+        const deduplicatedPlants = state.plants.reduce((acc, plant) => {
+          // Check if a plant with the same name, species, and planting date already exists
+          const duplicate = acc.find(p => 
+            p.name === plant.name && 
+            p.species === plant.species && 
+            p.plantingDate === plant.plantingDate &&
+            p.id !== plant.id
+          );
+          
+          if (duplicate) {
+            // Keep the plant with the most recent updatedAt timestamp
+            const currentUpdated = new Date(plant.updatedAt);
+            const existingUpdated = new Date(duplicate.updatedAt);
+            
+            if (currentUpdated > existingUpdated) {
+              // Replace the duplicate with the newer plant
+              return acc.map(p => p.id === duplicate.id ? plant : p);
+            }
+            // Keep the existing plant (don't add current)
+            return acc;
+          }
+          
+          acc.push(plant);
+          return acc;
+        }, [] as Plant[]);
+        
+        const removedCount = state.plants.length - deduplicatedPlants.length;
+        
+        if (removedCount > 0) {
+          set({ plants: deduplicatedPlants });
+          if (isDevelopment) console.log(`Removed ${removedCount} duplicate plants`);
+        }
+        
+        return removedCount;
       },
     }),
     {

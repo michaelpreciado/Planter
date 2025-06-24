@@ -2,242 +2,166 @@
 
 import { useState, useEffect } from 'react';
 import { usePlants } from '@/lib/plant-store';
-import { getStorageStats } from '@/utils/imageStorage';
-import { ImageDisplay } from '@/components/ImageDisplay';
-import { ImageDiagnostic } from '@/components/ImageDiagnostic';
+import Link from 'next/link';
 
 export default function TestPage() {
-  const [diagnostics, setDiagnostics] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [testImageId, setTestImageId] = useState<string>('');
-  const { plants, debugPlantStore, storeImage, getImage } = usePlants();
+  const [mounted, setMounted] = useState(false);
+  const { 
+    plants, 
+    loading, 
+    error, 
+    debugPlantStore, 
+    removeDuplicatePlants, 
+    syncWithDatabase,
+    triggerManualSync
+  } = usePlants();
 
-  const runDiagnostics = async () => {
-    setLoading(true);
-    console.log('Running image diagnostics...');
-    
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleRemoveDuplicates = () => {
+    const removedCount = removeDuplicatePlants();
+    alert(`Removed ${removedCount} duplicate plants`);
+  };
+
+  const handleDebug = () => {
+    debugPlantStore();
+  };
+
+  const handleSync = async () => {
     try {
-      // Run debug functions
-      await debugPlantStore();
-      
-      // Get stats
-      const stats = await getStorageStats();
-      
-      setDiagnostics({
-        stats,
-        plantsWithImages: plants.filter(p => p.imageUrl).length,
-        totalPlants: plants.length,
-        timestamp: new Date().toISOString()
-      });
+      await triggerManualSync();
+      alert('Sync completed');
     } catch (error) {
-      console.error('Diagnostics failed:', error);
-      setDiagnostics({ error: error instanceof Error ? error.message : 'Unknown error' });
-    } finally {
-      setLoading(false);
+      alert(`Sync failed: ${error}`);
     }
   };
 
-  const testImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  if (!mounted) {
+    return <div className="p-4">Loading...</div>;
+  }
 
-    console.log('🧪 Starting image upload test...');
-    try {
-      // Create a simple data URL
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
-        console.log('📄 File read as data URL, length:', dataUrl.length);
-        
-        try {
-          const imageId = await storeImage(dataUrl);
-          console.log('✅ Image stored with ID:', imageId);
-          setTestImageId(imageId);
-          
-          // Try to retrieve it immediately
-          const retrievedImage = await getImage(imageId);
-          console.log('🔍 Retrieved image:', retrievedImage ? 'SUCCESS' : 'FAILED');
-        } catch (error) {
-          console.error('❌ Storage error:', error);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('❌ Upload test failed:', error);
+  // Find potential duplicates
+  const duplicateGroups = plants.reduce((groups, plant) => {
+    const key = `${plant.name}-${plant.species}-${plant.plantingDate}`;
+    if (!groups[key]) {
+      groups[key] = [];
     }
-  };
+    groups[key].push(plant);
+    return groups;
+  }, {} as Record<string, typeof plants>);
 
-  const clearLocalStorage = () => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.removeItem('plant-app-images');
-      localStorage.removeItem('plant-app-image-metadata');
-      localStorage.removeItem('plant-store'); // Also clear plant store
-      window.location.reload(); // Reload to reset everything
-    }
-  };
+  const actualDuplicates = Object.values(duplicateGroups).filter(group => group.length > 1);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Image System Diagnostics</h1>
-        
-        <div className="space-y-6">
-          {/* New Interactive Diagnostic Tool */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <ImageDiagnostic />
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Plant Store Debug Page</h1>
+        <Link 
+          href="/" 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Back to Home
+        </Link>
+      </div>
+
+      {/* Status Panel */}
+      <div className="bg-gray-100 p-4 rounded-lg mb-6">
+        <h2 className="text-lg font-semibold mb-2">Store Status</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p><strong>Total Plants:</strong> {plants.length}</p>
+            <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
+            <p><strong>Error:</strong> {error || 'None'}</p>
           </div>
-
-          {/* Image Upload Test */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">🧪 Image Upload Test</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Test Image Upload:
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={testImageUpload}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
-                />
-              </div>
-              
-              {testImageId && (
-                <div className="border rounded p-4">
-                  <h3 className="font-medium mb-2">Test Result:</h3>
-                  <p className="text-sm text-gray-600 mb-2">Image ID: {testImageId}</p>
-                  <div className="w-32 h-32 border rounded">
-                    <ImageDisplay
-                      imageId={testImageId}
-                      alt="Test image"
-                      width={128}
-                      height={128}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+          <div>
+            <p><strong>Potential Duplicates:</strong> {actualDuplicates.length} groups</p>
+            <p><strong>Duplicate Plants:</strong> {actualDuplicates.reduce((sum, group) => sum + group.length - 1, 0)}</p>
           </div>
+        </div>
+      </div>
 
-          {/* Diagnostic Controls */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Advanced Diagnostics</h2>
-            <div className="flex gap-4">
-              <button
-                onClick={runDiagnostics}
-                disabled={loading}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-              >
-                {loading ? 'Running...' : 'Run Advanced Diagnostics'}
-              </button>
-              <button
-                onClick={clearLocalStorage}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600"
-              >
-                🗑️ Clear All Storage
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mt-2">
-              Check browser console for detailed logs
-            </p>
-          </div>
+      {/* Action Buttons */}
+      <div className="flex gap-4 mb-6">
+        <button 
+          onClick={handleDebug}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        >
+          Debug Store (Check Console)
+        </button>
+        <button 
+          onClick={handleRemoveDuplicates}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Remove Duplicates
+        </button>
+        <button 
+          onClick={handleSync}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          disabled={loading}
+        >
+          {loading ? 'Syncing...' : 'Manual Sync'}
+        </button>
+      </div>
 
-          {/* Results */}
-          {diagnostics && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Diagnostic Results</h2>
-              {diagnostics.error ? (
-                <div className="text-red-600">
-                  <p>Error: {diagnostics.error}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-gray-50 p-3 rounded">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {diagnostics.totalPlants}
-                      </div>
-                      <div className="text-sm text-gray-600">Total Plants</div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <div className="text-2xl font-bold text-green-600">
-                        {diagnostics.plantsWithImages}
-                      </div>
-                      <div className="text-sm text-gray-600">Plants with Images</div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {diagnostics.stats.totalImages}
-                      </div>
-                      <div className="text-sm text-gray-600">Stored Images</div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {Math.round(diagnostics.stats.usagePercentage)}%
-                      </div>
-                      <div className="text-sm text-gray-600">Storage Used</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <h3 className="font-medium mb-2">Storage Details</h3>
-                    <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
-                      {JSON.stringify(diagnostics.stats, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Plant Images Preview */}
-          {plants.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Plant Images</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {plants.map((plant) => (
-                  <div key={plant.id} className="border rounded-lg p-3">
-                    <div className="w-full h-32 mb-2">
-                      {plant.imageUrl ? (
-                        <ImageDisplay
-                          imageId={plant.imageUrl}
-                          alt={plant.name}
-                          width={150}
-                          height={128}
-                          className="w-full h-full object-cover rounded"
-                          fallback={
-                            <div className="w-full h-full bg-gray-200 rounded flex items-center justify-center">
-                              <span className="text-2xl">{plant.icon}</span>
-                            </div>
-                          }
-                        />
-                      ) : (
-                        <div 
-                          className="w-full h-full rounded flex items-center justify-center text-3xl"
-                          style={{ backgroundColor: plant.iconColor + '20', color: plant.iconColor }}
-                        >
-                          {plant.icon}
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-medium text-sm truncate">{plant.name}</h3>
-                    <p className="text-xs text-gray-500">
-                      {plant.imageUrl ? `ID: ${plant.imageUrl}` : 'No image'}
-                    </p>
+      {/* Duplicates Section */}
+      {actualDuplicates.length > 0 && (
+        <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-3">
+            ⚠️ Duplicate Plants Found
+          </h2>
+          {actualDuplicates.map((group, groupIndex) => (
+            <div key={groupIndex} className="mb-4 last:mb-0">
+              <h3 className="font-medium text-red-700 mb-2">
+                Group {groupIndex + 1}: {group[0].name} ({group.length} duplicates)
+              </h3>
+              <div className="pl-4">
+                {group.map((plant, plantIndex) => (
+                  <div key={plant.id} className="text-sm text-gray-600 mb-1">
+                    {plantIndex + 1}. ID: {plant.id} | Created: {new Date(plant.createdAt).toLocaleString()} | Updated: {new Date(plant.updatedAt).toLocaleString()}
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          ))}
+        </div>
+      )}
+
+      {/* Plants List */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">All Plants ({plants.length})</h2>
+        <div className="space-y-2">
+          {plants.map((plant, index) => (
+            <div key={plant.id} className="bg-white border rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-medium">{index + 1}. {plant.icon} {plant.name}</span>
+                  <span className="text-gray-500 ml-2">({plant.species})</span>
+                </div>
+                <div className="text-sm text-gray-400">
+                  ID: {plant.id.slice(0, 8)}...
+                </div>
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Planted: {new Date(plant.plantingDate).toLocaleDateString()} | 
+                Status: {plant.status} | 
+                Next: {plant.nextWatering}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Created: {new Date(plant.createdAt).toLocaleString()} | 
+                Updated: {new Date(plant.updatedAt).toLocaleString()}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
+      {plants.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No plants found. Add some plants to test the duplication fix!
+        </div>
+      )}
     </div>
   );
 } 

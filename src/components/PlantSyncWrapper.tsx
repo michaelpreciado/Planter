@@ -11,15 +11,15 @@ export function PlantSyncWrapper({ children }: { children: React.ReactNode }) {
   const [hasInitialSynced, setHasInitialSynced] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
-  // Enhanced sync function with retry logic
+  // Enhanced sync function with retry logic and better deduplication
   const performSync = useCallback(async (forceSync = false) => {
     // Don't sync if still loading auth or user not authenticated
     if (authLoading || !user || !isSupabaseConfigured()) {
       return;
     }
 
-    // Avoid excessive syncing (unless forced)
-    if (!forceSync && lastSyncTime && Date.now() - lastSyncTime.getTime() < 30000) {
+    // Avoid excessive syncing (unless forced) - increased to 2 minutes
+    if (!forceSync && lastSyncTime && Date.now() - lastSyncTime.getTime() < 120000) {
       return;
     }
 
