@@ -149,9 +149,9 @@ const nextConfig = {
           }
         ]
       },
-      // Font caching - Using multiple specific patterns instead of capturing groups
+      // Font caching - Using valid Next.js route patterns
       {
-        source: '/**/*.woff',
+        source: '/(.*)\\.woff',
         headers: [
           {
             key: 'Cache-Control',
@@ -160,7 +160,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/**/*.woff2',
+        source: '/(.*)\\.woff2',
         headers: [
           {
             key: 'Cache-Control',
@@ -169,7 +169,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/**/*.eot',
+        source: '/(.*)\\.eot',
         headers: [
           {
             key: 'Cache-Control',
@@ -178,7 +178,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/**/*.ttf',
+        source: '/(.*)\\.ttf',
         headers: [
           {
             key: 'Cache-Control',
@@ -187,7 +187,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/**/*.otf',
+        source: '/(.*)\\.otf',
         headers: [
           {
             key: 'Cache-Control',
