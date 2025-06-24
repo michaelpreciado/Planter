@@ -161,47 +161,6 @@ export default function HomePage() {
               </div>
             </SlideUp>
           )}
-
-          {/* Quick Actions */}
-          {user && (
-            <StaggeredChildren delay={0.1}>
-              <div className="grid grid-cols-2 gap-3">
-                <ScaleIn>
-                  <Link
-                    href="/add-plant"
-                    className="bg-primary text-white p-4 rounded-xl text-center font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 block"
-                  >
-                    <div className="text-2xl mb-2">🌱</div>
-                    <div className="text-sm">Add Plant</div>
-                  </Link>
-                </ScaleIn>
-                <ScaleIn>
-                  <Link
-                    href="/list"
-                    className="bg-card/60 backdrop-blur-md text-foreground p-4 rounded-xl text-center font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 block"
-                  >
-                    <div className="text-2xl mb-2">📋</div>
-                    <div className="text-sm">My Plants</div>
-                  </Link>
-                </ScaleIn>
-              </div>
-            </StaggeredChildren>
-          )}
-
-          {/* Sync Controls for Database Users */}
-          {user && isDbConfigured && (
-            <SlideUp
-              delay={1.0}
-              className="text-center"
-            >
-              <button
-                onClick={handleSync}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-accent/20"
-              >
-                🔄 Sync Plants {lastSyncTime && `(${lastSyncTime})`}
-              </button>
-            </SlideUp>
-          )}
         </div>
       </div>
 
