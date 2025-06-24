@@ -149,9 +149,45 @@ const nextConfig = {
           }
         ]
       },
-      // Font caching - Fixed regex pattern
+      // Font caching - Using multiple specific patterns instead of capturing groups
       {
-        source: '/(.*\\.(woff|woff2|eot|ttf|otf))',
+        source: '/**/*.woff',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/**/*.woff2',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/**/*.eot',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/**/*.ttf',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/**/*.otf',
         headers: [
           {
             key: 'Cache-Control',
