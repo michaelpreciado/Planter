@@ -1,0 +1,139 @@
+{
+  "budget": [
+    {
+      "path": "/*",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 300,
+          "comment": "JS bundle target: 300kB (down from 820kB)"
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 50,
+          "comment": "CSS target: 50kB (down from 100kB+)"
+        },
+        {
+          "resourceType": "image",
+          "budget": 500,
+          "comment": "Images per page: 500kB max"
+        },
+        {
+          "resourceType": "font",
+          "budget": 100,
+          "comment": "Fonts: 100kB max"
+        },
+        {
+          "resourceType": "total",
+          "budget": 1000,
+          "comment": "Total page weight: 1MB max"
+        }
+      ],
+      "resourceCounts": [
+        {
+          "resourceType": "script",
+          "budget": 8,
+          "comment": "Max 8 JS files per page"
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 3,
+          "comment": "Max 3 CSS files per page"
+        },
+        {
+          "resourceType": "font",
+          "budget": 2,
+          "comment": "Max 2 font files"
+        }
+      ],
+      "timings": [
+        {
+          "metric": "first-contentful-paint",
+          "budget": 1000,
+          "comment": "FCP: 1.0s target (4G mobile)"
+        },
+        {
+          "metric": "largest-contentful-paint",
+          "budget": 2000,
+          "comment": "LCP: 2.0s target (4G mobile)"
+        },
+        {
+          "metric": "cumulative-layout-shift",
+          "budget": 0.1,
+          "comment": "CLS: 0.1 target"
+        },
+        {
+          "metric": "total-blocking-time",
+          "budget": 150,
+          "comment": "TBT: 150ms target"
+        },
+        {
+          "metric": "speed-index",
+          "budget": 2500,
+          "comment": "Speed Index: 2.5s target"
+        },
+        {
+          "metric": "interactive",
+          "budget": 3000,
+          "comment": "TTI: 3.0s target (desktop Fast 3G)"
+        }
+      ]
+    }
+  ],
+  "assertions": {
+    "categories:performance": ["error", { "minScore": 0.95 }],
+    "categories:accessibility": ["error", { "minScore": 0.90 }],
+    "categories:best-practices": ["error", { "minScore": 0.90 }],
+    "categories:seo": ["error", { "minScore": 0.90 }],
+    "categories:pwa": ["warn", { "minScore": 0.80 }],
+    
+    "first-contentful-paint": ["error", { "maxNumericValue": 1000 }],
+    "largest-contentful-paint": ["error", { "maxNumericValue": 2000 }],
+    "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+    "total-blocking-time": ["error", { "maxNumericValue": 150 }],
+    "speed-index": ["error", { "maxNumericValue": 2500 }],
+    "interactive": ["error", { "maxNumericValue": 3000 }],
+    
+    "unused-javascript": ["error", { "maxNumericValue": 30000 }],
+    "unused-css-rules": ["error", { "maxNumericValue": 10000 }],
+    "render-blocking-resources": ["error", { "maxNumericValue": 500 }],
+    "unminified-css": ["error"],
+    "unminified-javascript": ["error"],
+    
+    "modern-image-formats": ["error"],
+    "uses-optimized-images": ["error"],
+    "uses-webp-images": ["error"],
+    "uses-responsive-images": ["error"],
+    "offscreen-images": ["warn"],
+    
+    "uses-http2": ["warn"],
+    "uses-passive-event-listeners": ["error"],
+    "no-document-write": ["error"],
+    "efficient-animated-content": ["warn"],
+    
+    "font-display": ["error"],
+    "preload-fonts": ["warn"],
+    "font-face-observer": ["warn"]
+  },
+  "categories": {
+    "performance": 95,
+    "accessibility": 90,
+    "best-practices": 90,
+    "seo": 90,
+    "pwa": 80
+  },
+  "settings": {
+    "onlyCategories": ["performance", "accessibility", "best-practices", "seo"],
+    "skipAudits": ["uses-rel-preconnect", "redirects-http"],
+    "budgetPath": "./performance-budget.json",
+    "outputPath": "./lighthouse-reports",
+    "maxWaitForLoad": 45000,
+    "throttlingMethod": "simulate",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "cpuSlowdownMultiplier": 4
+    },
+    "emulatedFormFactor": "mobile"
+  }
+} 

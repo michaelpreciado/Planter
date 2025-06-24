@@ -11,6 +11,7 @@ const inter = Inter({
   display: 'swap',
   variable: '--font-inter',
   preload: true,
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
 
 export const metadata = {
@@ -79,12 +80,53 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//your-supabase-domain.supabase.co" />
-        {/* Removed preload links to prevent CORS and loading issues on Netlify */}
+        <link rel="dns-prefetch" href="//netlify.app" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS for initial render */
+            body { 
+              margin: 0; 
+              font-family: ${inter.style.fontFamily}, system-ui, -apple-system, sans-serif;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              background-color: rgb(249 250 251);
+              color: rgb(17 24 39);
+            }
+            .dark body { 
+              background-color: rgb(18 18 18);
+              color: rgb(249 250 251);
+            }
+            /* Loading state */
+            .initial-load { 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              min-height: 100vh; 
+            }
+            .spinner { 
+              width: 2rem; 
+              height: 2rem; 
+              border: 2px solid #5EB15E; 
+              border-top: 2px solid transparent; 
+              border-radius: 50%; 
+              animation: spin 1s linear infinite; 
+            }
+            @keyframes spin { 
+              to { transform: rotate(360deg); } 
+            }
+          `
+        }} />
         <meta name="format-detection" content="telephone=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
+        <link 
+          rel="preload" 
+          href="/assets/tamagotchi.png" 
+          as="image" 
+          type="image/png"
+        />
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-screen overflow-x-hidden mobile-scroll-container`}>
         <Providers>
