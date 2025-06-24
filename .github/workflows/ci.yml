@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: '8'
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint & Unit Tests
+        run: pnpm test -- --coverage
+      - name: Build
+        run: pnpm build
+      - name: Playwright Tests
+        uses: microsoft/playwright-github-action@v1
+        with:
+          install-deps: true
+      - name: Run Playwright
+        run: pnpm test:e2e
+      - name: Lighthouse CI
+        run: npx @lhci/cli autorun --upload.target=temporary-public-storage
+      - name: Semantic Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: pnpm release 

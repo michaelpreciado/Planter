@@ -1,10 +1,20 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../types';
 
 // Use environment variables for Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const offlineMode = process.env.NEXT_PUBLIC_OFFLINE_MODE === 'true';
+
+let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = null;
+
+// Reverting to static import for stability. Dynamic import handled elsewhere.
+
+// Export a getter to access the client (async)
+export const getSupabase = loadClient;
+
+// Legacy default export kept for backward compatibility (uses dynamic client under the hood)
+export const supabase: SupabaseClient<any, "public", any> = {} as any; // placeholder; use getSupabase()
 
 // Check for forced offline mode from localStorage (for debugging)
 const isForcedOffline = () => {
@@ -18,11 +28,6 @@ if (!supabaseUrl || !supabaseAnonKey ||
     supabaseAnonKey === 'your-anon-key') {
           // Supabase not configured - offline mode
 }
-
-export const supabase = createClient<Database>(
-  supabaseUrl || 'https://localhost:3000', 
-  supabaseAnonKey || 'dummy-key'
-);
 
 // Check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
@@ -65,6 +70,7 @@ export const plantService = {
     }
 
     try {
+      const supabase = await getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('🔧 User not authenticated - using offline mode');
@@ -95,6 +101,7 @@ export const plantService = {
       throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
     }
 
+    const supabase = await getSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -123,6 +130,7 @@ export const plantService = {
       throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
     }
 
+    const supabase = await getSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -150,6 +158,7 @@ export const plantService = {
       throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
     }
 
+    const supabase = await getSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -183,6 +192,7 @@ export const profileService = {
     }
 
     try {
+      const supabase = await getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('🔧 User not authenticated - profile unavailable');
@@ -225,6 +235,7 @@ export const profileService = {
       throw new Error('Database not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
     }
 
+    const supabase = await getSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -257,4 +268,13 @@ export const profileService = {
       updatedAt: data.updatedAt,
     };
   },
-}; 
+};
+
+async function loadClient(): Promise<SupabaseClient<any, "public", any>> {
+  if (!supabasePromise) {
+    supabasePromise = import('@supabase/supabase-js').then(({ createClient }) =>
+      createClient(supabaseUrl!, supabaseAnonKey!)
+    );
+  }
+  return supabasePromise;
+} 

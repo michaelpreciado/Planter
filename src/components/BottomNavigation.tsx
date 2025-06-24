@@ -92,8 +92,9 @@ export function BottomNavigation() {
             <Link
               key={item.href}
               href={item.href}
+              aria-label={item.label}
               onClick={handleNavClick}
-              className="relative flex flex-col items-center justify-center py-1 sm:py-2 px-2 sm:px-3 min-w-0 flex-1"
+              className="relative flex flex-col items-center justify-center py-1 sm:py-2 px-2 sm:px-3 min-w-0 flex-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
             >
               {/* Active indicator dot */}
               {isActive && (

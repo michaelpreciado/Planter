@@ -14,49 +14,30 @@ A beautiful plant care app with a Tamagotchi-style companion to help you nurture
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm 9+
+| Command | Purpose |
+|---------|---------|
+| `pnpm dev` | Start dev server with live Supabase |
+| `pnpm dev:mock` | Start dev server with **local** Supabase emulator |
+| `pnpm test` | Run unit tests |
+| `pnpm test:e2e` | Run Playwright e2e tests |
+| `pnpm build` | Production build |
+| `pnpm release` | Trigger semantic-release |
 
-### Installation
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/planter.git
-cd planter
+### Env Vars
 
-# Install dependencies
-npm install
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key |
+| `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | (Optional) Service key used by CI |
 
-# Start development server
-npm run dev
-```
+### Semantic Release Flow
 
-### Environment Configuration (Optional)
-
-The app works fully offline without any configuration. For cloud sync features, create a `.env.local` file:
-
-```bash
-# Supabase Configuration (Optional - app works offline without these)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# Build Configuration
-NEXT_TELEMETRY_DISABLED=1
-```
-
-### Build for Production
-
-```bash
-# Build the application
-npm run build
-
-# Start production server
-npm start
-
-# Or deploy to Netlify
-npm run build:netlify
-```
+1. Every merge must follow **Conventional Commits** (e.g. `feat: add offline cache`).
+2. GitHub Actions CI runs `pnpm release` on `main`.
+3. `semantic-release` tags & publishes `vX.Y.Z` and writes to `CHANGELOG.md`.
 
 ## 🧪 Testing
 

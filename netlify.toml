@@ -9,6 +9,9 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[[plugins]]
+  package = "netlify-plugin-analytics"
+
 [dev]
   command = "npm run dev"
   port = 3000

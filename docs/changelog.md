@@ -1,3 +1,9 @@
+## [1.0.0] – {{DATE}}
+
+### 🎉 First Stable Release
+
+Simmys Plant Diary reaches production maturity with: performance ≥95 Lighthouse, offline PWA with next-pwa, axe-core a11y zero violations, semantic-release automated versioning, and full CI (unit + e2e + LHCI).
+
 # Plant Tracker RC Changelog
 
 ## Version 1.0.0-rc.1 - Release Candidate

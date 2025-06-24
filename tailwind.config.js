@@ -119,10 +119,9 @@ module.exports = {
       },
       // Essential screen sizes only
       screens: {
-        'xs': '360px',
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
+        'sm': '480px',
+        'md': '640px',
+        'lg': '960px',
         'xl': '1280px',
       },
       // Minimal shadow palette
