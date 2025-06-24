@@ -35,12 +35,12 @@ module.exports = {
       black: '#000',
       white: '#fff',
       primary: {
-        DEFAULT: '#5EB15E',
-        50: '#E8F5E8',
-        100: '#D1EBD1',
-        500: '#4A8F4A',
-        600: '#3A6F3A',
-        900: '#0A1F0A',
+        DEFAULT: '#3B82F6',
+        50: '#EBF4FF',
+        100: '#DBEAFE',
+        500: '#2563EB',
+        600: '#1D4ED8',
+        900: '#1E3A8A',
       },
       dark: {
         DEFAULT: '#121212',
