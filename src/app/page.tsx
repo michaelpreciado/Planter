@@ -117,7 +117,7 @@ export default function HomePage() {
             delay={0.4}
             className="flex justify-center py-8 overflow-visible"
           >
-            <TamagotchiBlob size={160} showAnimation={true} />
+            <TamagotchiBlob size={240} showAnimation={true} />
           </FadeIn>
 
           {/* User Welcome / Login Prompt */}
