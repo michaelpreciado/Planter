@@ -18,9 +18,6 @@ const nextConfig = {
     serverComponentsExternalPackages: ['canvas'],
     scrollRestoration: true,
     webpackBuildWorker: true,
-    // Enable new React features
-    ppr: true, // Partial prerendering
-    reactCompiler: true, // React compiler for automatic optimizations
   },
   
   // Performance optimizations
@@ -46,8 +43,6 @@ const nextConfig = {
     // Enable experimental features for better performance
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Quality optimization
-    quality: 80, // Good balance of quality vs size
   },
   
   // Bundle analysis and optimization
