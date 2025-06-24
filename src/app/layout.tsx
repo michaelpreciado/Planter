@@ -3,6 +3,7 @@ import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
+import { ImageSyncDiagnostic } from '@/components/ImageSyncDiagnostic';
 import './globals.css';
 
 const inter = Inter({
@@ -92,6 +93,7 @@ export default function RootLayout({
           </PageTransition>
           <BottomNavigation />
           <Toaster />
+          <ImageSyncDiagnostic />
         </Providers>
       </body>
     </html>

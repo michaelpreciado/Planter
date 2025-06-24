@@ -130,8 +130,12 @@ class ModernImageStorage {
    * Retrieve image by ID - try cloud first, then local
    */
   async getImage(id: string): Promise<string | null> {
-    if (!id) return null;
+    if (!id) {
+      console.log('📦 ImageStorage: No ID provided');
+      return null;
+    }
     
+    console.log('📦 ImageStorage: Getting image with ID:', id);
     await this.init();
 
     try {
@@ -140,40 +144,60 @@ class ModernImageStorage {
       let metadata: ImageMetadata | null = null;
 
       if (this.db) {
+        console.log('📦 ImageStorage: Checking IndexedDB for image:', id);
         const localImage = await this.getFromIndexedDB(id);
         if (localImage) {
           imageData = localImage.data;
           metadata = localImage.metadata;
+          console.log('✅ ImageStorage: Found image in IndexedDB:', id);
+        } else {
+          console.log('❌ ImageStorage: Image not found in IndexedDB:', id);
         }
       } else {
+        console.log('📦 ImageStorage: Checking localStorage for image:', id);
         imageData = this.getFromLocalStorage(id);
         metadata = this.getMetadataFromLocalStorage(id);
+        if (imageData) {
+          console.log('✅ ImageStorage: Found image in localStorage:', id);
+        } else {
+          console.log('❌ ImageStorage: Image not found in localStorage:', id);
+        }
       }
 
       // If we have local data, use it
       if (imageData) {
+        console.log('✅ ImageStorage: Returning local image data for:', id);
         await this.updateLastAccessed(id);
         return imageData;
       }
 
       // If no local data but we have cloud URL, try to fetch from cloud
       if (metadata?.supabaseUrl && isSupabaseConfigured()) {
+        console.log('🌤️ ImageStorage: Attempting to fetch from cloud:', metadata.supabaseUrl);
         try {
           const cloudData = await this.downloadFromSupabase(metadata.supabaseUrl);
           if (cloudData) {
+            console.log('✅ ImageStorage: Successfully downloaded from cloud:', id);
             // Cache it locally for next time
             await this.storeImage(cloudData, metadata.plantId, metadata.noteId);
             return cloudData;
+          } else {
+            console.warn('❌ ImageStorage: Failed to download from cloud (no data):', id);
           }
         } catch (cloudError) {
-          console.warn('Failed to fetch from cloud storage:', cloudError);
+          console.error('❌ ImageStorage: Failed to fetch from cloud storage:', cloudError);
         }
+      } else if (metadata?.supabaseUrl && !isSupabaseConfigured()) {
+        console.warn('⚠️ ImageStorage: Image has cloud URL but Supabase not configured:', id);
+      } else if (!metadata?.supabaseUrl) {
+        console.log('📦 ImageStorage: No cloud URL found for image:', id);
       }
 
+      console.warn('❌ ImageStorage: Image not found anywhere:', id);
       return null;
       
     } catch (error) {
-      console.error('❌ Failed to retrieve image:', id, error);
+      console.error('❌ ImageStorage: Failed to retrieve image:', id, error);
       return null;
     }
   }

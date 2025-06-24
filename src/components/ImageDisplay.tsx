@@ -39,12 +39,15 @@ export function ImageDisplay({
   });
 
   const loadImage = useCallback(async (id: string) => {
+    console.log('🖼️ ImageDisplay: Loading image with ID:', id);
     setState({ status: 'loading', imageUrl: null, error: null });
 
     try {
       const imageData = await getImage(id);
+      console.log('🖼️ ImageDisplay: Image data received:', imageData ? `${imageData.substring(0, 50)}...` : 'null');
       
       if (!imageData) {
+        console.warn('🖼️ ImageDisplay: No image data found for ID:', id);
         setState({ status: 'not-found', imageUrl: null, error: 'Image not found' });
         onError?.('Image not found');
         return;
@@ -52,14 +55,17 @@ export function ImageDisplay({
 
       // Validate image data
       if (!imageData.startsWith('data:image/')) {
+        console.error('🖼️ ImageDisplay: Invalid image format for ID:', id, 'Data starts with:', imageData.substring(0, 20));
         throw new Error('Invalid image format');
       }
 
+      console.log('✅ ImageDisplay: Image loaded successfully for ID:', id);
       setState({ status: 'loaded', imageUrl: imageData, error: null });
       onLoad?.();
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load image';
+      console.error('❌ ImageDisplay: Failed to load image ID:', id, 'Error:', errorMessage);
       setState({ status: 'error', imageUrl: null, error: errorMessage });
       onError?.(errorMessage);
     }
@@ -67,12 +73,16 @@ export function ImageDisplay({
 
   useEffect(() => {
     if (!imageId) {
+      console.log('🖼️ ImageDisplay: No image ID provided');
       setState({ status: 'not-found', imageUrl: null, error: null });
       return;
     }
 
+    console.log('🖼️ ImageDisplay: useEffect triggered for image ID:', imageId);
+
     // Handle direct URLs
     if (imageId.startsWith('data:') || imageId.startsWith('http') || imageId.startsWith('blob:')) {
+      console.log('🖼️ ImageDisplay: Using direct URL for image ID:', imageId.substring(0, 50));
       setState({ status: 'loaded', imageUrl: imageId, error: null });
       onLoad?.();
       return;
@@ -88,7 +98,7 @@ export function ImageDisplay({
       <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
         <div className="flex flex-col items-center gap-2">
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs text-gray-500">Loading...</span>
+          <span className="text-xs text-gray-500">Loading image...</span>
         </div>
       </div>
     );
@@ -96,6 +106,8 @@ export function ImageDisplay({
 
   // Error or not found state
   if (state.status === 'error' || state.status === 'not-found') {
+    console.log('🖼️ ImageDisplay: Showing fallback for state:', state.status, 'Error:', state.error);
+    
     if (fallback) {
       return <div className={className}>{fallback}</div>;
     }
@@ -108,12 +120,18 @@ export function ImageDisplay({
         <p className="text-xs text-gray-400 text-center">
           {state.status === 'not-found' ? 'No image' : 'Failed to load'}
         </p>
+        {state.error && (
+          <p className="text-xs text-red-400 text-center mt-1">
+            {state.error}
+          </p>
+        )}
       </div>
     );
   }
 
   // Success state
   if (state.status === 'loaded' && state.imageUrl) {
+    console.log('✅ ImageDisplay: Rendering image successfully');
     return (
       <Image
         src={state.imageUrl}
@@ -121,9 +139,13 @@ export function ImageDisplay({
         width={width}
         height={height}
         className={className}
-        onError={() => {
+        onError={(e) => {
+          console.error('❌ ImageDisplay: Image render failed:', e);
           setState(prev => ({ ...prev, status: 'error', error: 'Image render failed' }));
           onError?.('Image render failed');
+        }}
+        onLoad={() => {
+          console.log('✅ ImageDisplay: Image rendered successfully');
         }}
         loading="lazy"
         placeholder="blur"
