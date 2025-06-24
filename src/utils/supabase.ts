@@ -16,7 +16,7 @@ const isForcedOffline = () => {
 if (!supabaseUrl || !supabaseAnonKey || 
     supabaseUrl === 'https://your-project.supabase.co' || 
     supabaseAnonKey === 'your-anon-key') {
-  console.warn('⚠️ Supabase environment variables not configured. Running in offline mode.');
+          // Supabase not configured - offline mode
 }
 
 export const supabase = createClient<Database>(

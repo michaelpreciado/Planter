@@ -17,7 +17,7 @@ interface SwipeFiltersProps {
 
 export function SwipeFilters({ filters, activeFilter, onFilterChange }: SwipeFiltersProps) {
   // Swipe functionality disabled - users must use buttons instead
-  console.warn('SwipeFilters swipe functionality has been disabled. Use regular buttons instead.');
+  // Swipe functionality disabled
 
   return (
     <div className="bg-white border-b border-gray-200">

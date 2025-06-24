@@ -18,7 +18,7 @@ export default function HomePage() {
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
-  const [showDebugTools, setShowDebugTools] = useState(false);
+  // Debug tools removed
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [isClientReady, setIsClientReady] = useState(false);

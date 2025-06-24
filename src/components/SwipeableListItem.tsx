@@ -23,7 +23,6 @@ export function SwipeableListItem({
   onWaterAnimationComplete 
 }: SwipeableListItemProps) {
   // Swipe functionality disabled - users must use buttons instead
-  console.warn('SwipeableListItem swipe functionality has been disabled. Use regular buttons instead.');
 
   const getStatusColor = (status: string) => {
     switch (status) {

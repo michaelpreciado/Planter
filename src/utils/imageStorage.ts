@@ -100,9 +100,9 @@ class ModernImageStorage {
           const cloudUrl = await this.uploadToSupabase(id, imageData);
           metadata.supabaseUrl = cloudUrl;
           metadata.isCloudSynced = true;
-          console.log('✅ Image uploaded to cloud storage:', id);
+          // Uploaded to cloud
         } catch (cloudError) {
-          console.warn('Cloud upload failed, falling back to local storage:', cloudError);
+          // Cloud upload failed, using local storage
           metadata.isCloudSynced = false;
         }
       } else {
@@ -112,16 +112,16 @@ class ModernImageStorage {
       // Always store locally for offline access
       if (this.db) {
         await this.storeInIndexedDB(id, imageData, metadata);
-        console.log('✅ Image stored in IndexedDB:', id);
+        // Stored in IndexedDB
       } else {
         await this.storeInLocalStorage(id, imageData, metadata);
-        console.log('✅ Image stored in localStorage:', id);
+                  // Stored in localStorage
       }
       
       return id;
       
     } catch (error) {
-      console.error('❌ Failed to store image:', error);
+      // Failed to store image
       throw new Error('Failed to store image. Storage may be full.');
     }
   }
@@ -149,55 +149,55 @@ class ModernImageStorage {
         if (localImage) {
           imageData = localImage.data;
           metadata = localImage.metadata;
-          console.log('✅ ImageStorage: Found image in IndexedDB:', id);
+          // Found in IndexedDB
         } else {
-          console.log('❌ ImageStorage: Image not found in IndexedDB:', id);
+          // Not in IndexedDB
         }
       } else {
-        console.log('📦 ImageStorage: Checking localStorage for image:', id);
+        // Checking localStorage
         imageData = this.getFromLocalStorage(id);
         metadata = this.getMetadataFromLocalStorage(id);
         if (imageData) {
-          console.log('✅ ImageStorage: Found image in localStorage:', id);
+          // Found in localStorage
         } else {
-          console.log('❌ ImageStorage: Image not found in localStorage:', id);
+          // Not in localStorage
         }
       }
 
       // If we have local data, use it
       if (imageData) {
-        console.log('✅ ImageStorage: Returning local image data for:', id);
+        // Returning local data
         await this.updateLastAccessed(id);
         return imageData;
       }
 
       // If no local data but we have cloud URL, try to fetch from cloud
       if (metadata?.supabaseUrl && isSupabaseConfigured()) {
-        console.log('🌤️ ImageStorage: Attempting to fetch from cloud:', metadata.supabaseUrl);
+        // Attempting cloud fetch
         try {
           const cloudData = await this.downloadFromSupabase(metadata.supabaseUrl);
           if (cloudData) {
-            console.log('✅ ImageStorage: Successfully downloaded from cloud:', id);
+                          // Downloaded from cloud
             // Cache it locally for next time
             await this.storeImage(cloudData, metadata.plantId, metadata.noteId);
             return cloudData;
           } else {
-            console.warn('❌ ImageStorage: Failed to download from cloud (no data):', id);
+                          // Cloud download failed (no data)
           }
         } catch (cloudError) {
-          console.error('❌ ImageStorage: Failed to fetch from cloud storage:', cloudError);
+                      // Cloud fetch failed
         }
       } else if (metadata?.supabaseUrl && !isSupabaseConfigured()) {
-        console.warn('⚠️ ImageStorage: Image has cloud URL but Supabase not configured:', id);
+                  // Cloud URL exists but Supabase not configured
       } else if (!metadata?.supabaseUrl) {
-        console.log('📦 ImageStorage: No cloud URL found for image:', id);
+                  // No cloud URL
       }
 
-      console.warn('❌ ImageStorage: Image not found anywhere:', id);
+              // Image not found
       return null;
       
     } catch (error) {
-      console.error('❌ ImageStorage: Failed to retrieve image:', id, error);
+      // Failed to retrieve image
       return null;
     }
   }
@@ -227,13 +227,13 @@ class ModernImageStorage {
       if (metadata?.supabaseUrl && isSupabaseConfigured()) {
         try {
           await this.removeFromSupabase(id);
-          console.log('✅ Image removed from cloud storage:', id);
+          // Removed from cloud
         } catch (cloudError) {
-          console.warn('Failed to remove from cloud storage:', cloudError);
+          // Failed to remove from cloud
         }
       }
     } catch (error) {
-      console.error('❌ Failed to remove image:', id, error);
+      // Failed to remove image
     }
   }
 
@@ -672,20 +672,4 @@ export const cleanupImages = () =>
 export const syncImagesToCloud = () => 
   imageStorage.syncToCloud();
 
-// Expose functions to window for debugging (development only)
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).storeImage = storeImage;
-  (window as any).getImage = getImage;
-  (window as any).removeImage = removeImage;
-  (window as any).getStorageStats = getStorageStats;
-  (window as any).cleanupImages = cleanupImages;
-  (window as any).syncImagesToCloud = syncImagesToCloud;
-  
-  console.log('🔧 Image storage functions exposed to window for debugging:');
-  console.log('- window.storeImage(imageData, plantId?, noteId?)'); 
-  console.log('- window.getImage(id)');
-  console.log('- window.removeImage(id)');
-  console.log('- window.getStorageStats()');
-  console.log('- window.cleanupImages()');
-  console.log('- window.syncImagesToCloud()');
-} 
+// Debug functions removed for production 

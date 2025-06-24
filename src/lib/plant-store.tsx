@@ -58,7 +58,6 @@ interface PlantStore {
   // Sync operations
   syncWithDatabase: () => Promise<void>;
   triggerManualSync: () => Promise<void>;
-  debugPlantStore: () => void;
   removeDuplicatePlants: () => number;
 }
 
@@ -518,12 +517,7 @@ export const usePlantStore = create<PlantStore>()(
           });
           
           if (isDevelopment) {
-            console.log(`Sync completed:`);
-            console.log(`- Uploaded: ${plantsToUpload.length} plants`);
-            console.log(`- Downloaded: ${plantsToDownload.length} plants`);
-            console.log(`- Updated: ${plantsToUpdate.length} plants`);
-            console.log(`- Deduplicated: ${updatedPlants.length - deduplicatedPlants.length} plants`);
-            console.log(`- Total plants: ${deduplicatedPlants.length}`);
+                    // Sync completed silently
           }
           
         } catch (error) {
@@ -556,17 +550,7 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
-      debugPlantStore: () => {
-        if (isDevelopment) {
-          const state = get();
-          console.log('=== Plant Store Debug ===');
-          console.log('Total plants:', state.plants.length);
-          console.log('Plant names:', state.plants.map(p => p.name));
-          console.log('Loading:', state.loading);
-          console.log('Error:', state.error);
-          console.log('=========================');
-        }
-      },
+      // Debug function removed for production
 
       // Utility function to manually remove duplicate plants
       removeDuplicatePlants: () => {

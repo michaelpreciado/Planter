@@ -3,8 +3,6 @@ import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
-import { ImageSyncDiagnostic } from '@/components/ImageSyncDiagnostic';
-import { DebugPanel } from '@/components/DebugPanel';
 import './globals.css';
 
 const inter = Inter({
@@ -76,52 +74,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="//your-supabase-domain.supabase.co" />
-        <link rel="dns-prefetch" href="//netlify.app" />
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            /* Critical CSS for initial render */
-            body { 
-              margin: 0; 
-              font-family: ${inter.style.fontFamily}, system-ui, -apple-system, sans-serif;
-              -webkit-font-smoothing: antialiased;
-              -moz-osx-font-smoothing: grayscale;
-              background-color: rgb(249 250 251);
-              color: rgb(17 24 39);
-            }
-            .dark body { 
-              background-color: rgb(18 18 18);
-              color: rgb(249 250 251);
-            }
-            /* Loading state */
-            .initial-load { 
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              min-height: 100vh; 
-            }
-            .spinner { 
-              width: 2rem; 
-              height: 2rem; 
-              border: 2px solid #5EB15E; 
-              border-top: 2px solid transparent; 
-              border-radius: 50%; 
-              animation: spin 1s linear infinite; 
-            }
-            @keyframes spin { 
-              to { transform: rotate(360deg); } 
-            }
-          `
-        }} />
-        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+        <meta name="theme-color" content="#10B981" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta httpEquiv="x-ua-compatible" content="ie=edge" />
+        <meta name="apple-mobile-web-app-title" content="Plant Diary" />
+        
+        {/* Preconnect to external domains for performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Security headers */}
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta httpEquiv="X-Frame-Options" content="DENY" />
+        <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
+        
+        {/* Favicon and app icons */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
@@ -133,8 +104,6 @@ export default function RootLayout({
           </PageTransition>
           <BottomNavigation />
           <Toaster />
-          <ImageSyncDiagnostic />
-          <DebugPanel />
         </Providers>
       </body>
     </html>

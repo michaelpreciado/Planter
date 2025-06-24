@@ -14,7 +14,7 @@ interface SwipeGestureOptions {
 
 export function useMobileGestures(options: SwipeGestureOptions = {}) {
   // Swipe gestures disabled - users must use buttons for navigation
-  console.warn('Swipe gestures have been disabled. Please use buttons for navigation.');
+  // Swipe gestures disabled
   return null;
 }
 
@@ -26,7 +26,7 @@ export function useHapticFeedback() {
     try {
       navigator.vibrate(pattern);
     } catch (error) {
-      console.warn('Vibration not supported:', error);
+      // Vibration not supported
     }
   };
 
@@ -50,7 +50,6 @@ export function useHapticFeedback() {
 
 export function usePullToRefresh(onRefresh: () => Promise<void> | void) {
   // Pull to refresh disabled - users must use buttons for refresh
-  console.warn('Pull to refresh has been disabled. Please use buttons for refresh.');
   
   const containerRef = useRef<HTMLDivElement>(null);
   return {
