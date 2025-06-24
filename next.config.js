@@ -9,12 +9,7 @@ const nextConfig = {
     serverComponentsExternalPackages: ['canvas'],
     scrollRestoration: true,
     webpackBuildWorker: true,
-    // Enable React server components
-    appDir: true,
-    // Optimize font loading
-    fontLoaders: [
-      { loader: '@next/font/google', options: { subsets: ['latin'] } },
-    ],
+    // appDir and fontLoaders removed - no longer needed in Next.js 14
   },
   
   // Performance optimizations
@@ -154,9 +149,9 @@ const nextConfig = {
           }
         ]
       },
-      // Font caching
+      // Font caching - Fixed regex pattern
       {
-        source: '/(.*\\.(woff|woff2|eot|ttf|otf))$',
+        source: '/(.*\\.(woff|woff2|eot|ttf|otf))',
         headers: [
           {
             key: 'Cache-Control',
