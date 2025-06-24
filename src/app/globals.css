@@ -807,36 +807,36 @@
 
   /* Responsive card utilities */
   .card-responsive {
-    @apply rounded-lg p-3 space-y-2;
+    @apply rounded-lg p-5 space-y-3;
   }
   
   @media screen and (min-width: 380px) {
     .card-responsive {
-      @apply rounded-xl p-4 space-y-3;
+      @apply rounded-xl p-6 space-y-4;
     }
   }
   
   @media screen and (min-width: 640px) {
     .card-responsive {
-      @apply rounded-xl p-5 space-y-4;
+      @apply rounded-xl p-7 space-y-5;
     }
   }
   
   @media screen and (min-width: 768px) {
     .card-responsive {
-      @apply rounded-2xl p-6 space-y-5;
+      @apply rounded-2xl p-8 space-y-6;
     }
   }
   
   @media screen and (min-width: 1024px) {
     .card-responsive {
-      @apply rounded-2xl p-7 space-y-6;
+      @apply rounded-2xl p-10 space-y-7;
     }
   }
   
   @media screen and (min-width: 1280px) {
     .card-responsive {
-      @apply rounded-2xl p-8 space-y-7;
+      @apply rounded-2xl p-12 space-y-8;
     }
   }
 

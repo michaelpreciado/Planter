@@ -164,7 +164,7 @@ export function ListPageClient() {
         </FadeIn>
 
         {/* Plant List */}
-        <div className="flex-1 overflow-y-auto pb-nav-safe space-responsive">
+        <div className="flex-1 overflow-y-auto pb-nav-safe space-responsive pt-6 pb-8">
           {filteredPlants.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
               <motion.div
@@ -197,11 +197,11 @@ export function ListPageClient() {
               </motion.div>
             </div>
           ) : (
-            <div className="space-y-3 px-0">
+            <div className="space-y-6 px-0">
               {filteredPlants.map((plant, index) => (
                 <SlideUp key={plant.id} delay={index * 0.05}>
                   <Link href={`/plant/${plant.id}`}>
-                    <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg card-responsive border border-white/20 dark:border-white/10 mx-4 cursor-pointer hover:bg-white/15 dark:hover:bg-gray-900/25 transition-colors">
+                    <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg card-responsive border border-white/20 dark:border-white/10 mx-6 cursor-pointer hover:bg-white/15 dark:hover:bg-gray-900/25 transition-colors">
                       <div className="flex items-start gap-responsive">
                         {/* Plant Image/Icon */}
                         <div className="avatar-responsive overflow-hidden flex-shrink-0">
