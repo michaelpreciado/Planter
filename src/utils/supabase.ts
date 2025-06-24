@@ -1,20 +1,24 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../types';
+import { createClient } from '@supabase/supabase-js';
 
 // Use environment variables for Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const offlineMode = process.env.NEXT_PUBLIC_OFFLINE_MODE === 'true';
 
-let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = null;
+// Create the Supabase client synchronously so that modules importing `supabase` immediately get a working instance.
+export const supabase: SupabaseClient<any, "public", any> = createClient(
+  supabaseUrl!,
+  supabaseAnonKey!,
+);
 
-// Reverting to static import for stability. Dynamic import handled elsewhere.
+// Async getter (kept for code that awaits dynamic import elsewhere, but now returns the already-initialized client)
+export async function getSupabase() {
+  return supabase;
+}
 
-// Export a getter to access the client (async)
-export const getSupabase = loadClient;
-
-// Legacy default export kept for backward compatibility (uses dynamic client under the hood)
-export const supabase: SupabaseClient<any, "public", any> = {} as any; // placeholder; use getSupabase()
+let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = Promise.resolve(supabase);
 
 // Check for forced offline mode from localStorage (for debugging)
 const isForcedOffline = () => {
@@ -270,11 +274,7 @@ export const profileService = {
   },
 };
 
+// keep fallback dynamic loader if ever called before initialization (defensive)
 async function loadClient(): Promise<SupabaseClient<any, "public", any>> {
-  if (!supabasePromise) {
-    supabasePromise = import('@supabase/supabase-js').then(({ createClient }) =>
-      createClient(supabaseUrl!, supabaseAnonKey!)
-    );
-  }
-  return supabasePromise;
+  return supabase;
 } 
