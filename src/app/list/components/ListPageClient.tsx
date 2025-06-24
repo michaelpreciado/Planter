@@ -117,9 +117,8 @@ export function ListPageClient() {
     <AuthGuard message="Please sign in to view and manage your plants">
       <div className="flex flex-col h-full">
         {/* Filter Tabs with refresh button */}
-        <FadeIn className="bg-card/60 backdrop-blur-md px-6 py-4 border-b border-border">
+        <FadeIn className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl px-6 py-4 border-b border-white/20 dark:border-white/10">
           <div className="flex items-center justify-between mb-4">
-            <NightModeToggle />
             <AnimatedButton
               onClick={handleRefresh}
               disabled={isRefreshing}
@@ -134,6 +133,7 @@ export function ListPageClient() {
                 </svg>
               )}
             </AnimatedButton>
+            <NightModeToggle />
           </div>
           
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -183,7 +183,7 @@ export function ListPageClient() {
             <div className="space-y-4 pb-20">
               {filteredPlants.map((plant, index) => (
                 <SlideUp key={plant.id} delay={index * 0.05}>
-                  <div className="bg-card rounded-xl border border-border p-4">
+                  <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg rounded-xl border border-white/20 dark:border-white/10 p-4">
                     <Link href={`/plant/${plant.id}`}>
                       <div className="cursor-pointer">
                         <div className="flex items-start justify-between">

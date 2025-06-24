@@ -147,7 +147,7 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <SlideUp
               delay={0.8}
-              className="bg-card/40 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border-0"
+              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-white/10"
             >
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>

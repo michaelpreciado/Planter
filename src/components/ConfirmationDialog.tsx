@@ -94,7 +94,7 @@ export function ConfirmationDialog({
               stiffness: 300,
               damping: 30
             }}
-            className="relative bg-card dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 border border-border"
+            className="relative bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 border border-white/20 dark:border-white/10"
             role="dialog"
             aria-modal="true"
             aria-labelledby="dialog-title"

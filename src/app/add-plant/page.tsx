@@ -137,7 +137,7 @@ export default function AddPlantPage() {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
+        className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10 shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
       >
         <motion.button
           type="button"
@@ -229,7 +229,7 @@ export default function AddPlantPage() {
             <label className="block text-sm font-medium text-foreground mb-4">
               Watering Frequency
             </label>
-            <div className="bg-card/80 backdrop-blur-md rounded-xl p-6 border border-border">
+            <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg rounded-xl p-6 border border-white/20 dark:border-white/10">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-muted-foreground">Every</span>
                 <span className="text-2xl font-bold text-primary">

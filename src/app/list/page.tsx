@@ -15,7 +15,7 @@ export default function ListPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col relative pb-16">
       {/* Static header - Server rendered */}
-      <FadeIn className="bg-card/60 backdrop-blur-md px-6 py-4 border-b border-border relative z-20">
+      <FadeIn className="bg-white/10 dark:bg-gray-900/30 backdrop-blur-xl px-6 py-4 border-b border-white/20 dark:border-white/10 relative z-20">
         <div className="flex items-center justify-between">
           <Link 
             href="/" 
@@ -26,14 +26,7 @@ export default function ListPage() {
             </svg>
           </Link>
           <h1 className="text-xl font-bold text-foreground">My Plants</h1>
-          <Link 
-            href="/add-plant" 
-            className="text-primary p-2 -m-2 rounded-lg active:bg-primary/20 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-          </Link>
+          <div className="w-6 h-6"></div>
         </div>
       </FadeIn>
 

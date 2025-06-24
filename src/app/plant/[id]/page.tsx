@@ -268,7 +268,7 @@ export default function PlantDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-card dark:bg-gray-800 rounded-2xl p-6 mb-6"
+          className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20 dark:border-white/10"
         >
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -412,7 +412,7 @@ export default function PlantDetailPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
-                className="bg-card dark:bg-gray-800 rounded-lg p-4 border border-border"
+                className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg rounded-lg p-4 border border-white/20 dark:border-white/10"
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-foreground">
