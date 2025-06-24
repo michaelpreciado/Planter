@@ -122,6 +122,7 @@ export function ImageUpload({
                 {uploadError || processingError}
               </p>
               <button
+                type="button"
                 onClick={() => {
                   setUploadError(null);
                   resetProcessor();
@@ -244,6 +245,7 @@ export function ImageUpload({
               
               <div className="space-y-3">
                 <button
+                  type="button"
                   onClick={() => openFileSelector(true)}
                   className="w-full flex items-center gap-3 p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
                 >
@@ -254,6 +256,7 @@ export function ImageUpload({
                 </button>
                 
                 <button
+                  type="button"
                   onClick={() => openFileSelector(false)}
                   className="w-full flex items-center gap-3 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                 >
@@ -265,6 +268,7 @@ export function ImageUpload({
                 
                 {currentImageId && (
                   <button
+                    type="button"
                     onClick={handleRemoveImage}
                     className="w-full flex items-center gap-3 p-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                   >
@@ -276,6 +280,7 @@ export function ImageUpload({
                 )}
                 
                 <button
+                  type="button"
                   onClick={() => setShowOptions(false)}
                   className="w-full p-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                 >

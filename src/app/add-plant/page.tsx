@@ -45,6 +45,7 @@ export default function AddPlantPage() {
   });
   const [selectedType, setSelectedType] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Mobile gestures for navigation
   useMobileGestures({
@@ -64,6 +65,14 @@ export default function AddPlantPage() {
       return;
     }
 
+    // Show confirmation step first
+    if (!showConfirmation) {
+      setShowConfirmation(true);
+      haptic.lightImpact();
+      return;
+    }
+
+    // Proceed with actual submission
     setIsSubmitting(true);
     haptic.mediumImpact();
 
@@ -84,6 +93,7 @@ export default function AddPlantPage() {
       haptic.error();
     } finally {
       setIsSubmitting(false);
+      setShowConfirmation(false);
     }
   };
 
@@ -130,6 +140,7 @@ export default function AddPlantPage() {
         className="bg-card/80 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
       >
         <motion.button
+          type="button"
           onClick={() => {
             router.back();
             haptic.lightImpact();
@@ -153,7 +164,7 @@ export default function AddPlantPage() {
           touchAction: 'pan-y',
         }}
       >
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
+        <form onSubmit={handleSubmit} className="p-6 space-y-8" noValidate>
           {/* Plant Name */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -307,6 +318,47 @@ export default function AddPlantPage() {
             </motion.div>
           )}
 
+          {/* Confirmation Preview */}
+          {showConfirmation && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-4"
+            >
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-3">
+                Ready to add your plant!
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">Name:</span>
+                  <span className="text-green-800 dark:text-green-100 font-medium">{formData.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">Type:</span>
+                  <span className="text-green-800 dark:text-green-100 font-medium capitalize">{selectedType}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">Watering:</span>
+                  <span className="text-green-800 dark:text-green-100 font-medium">
+                    Every {formData.wateringFrequency} {formData.wateringFrequency === 1 ? 'day' : 'days'}
+                  </span>
+                </div>
+                {formData.imageUrl && (
+                  <div className="flex justify-between">
+                    <span className="text-green-700 dark:text-green-300">Photo:</span>
+                    <span className="text-green-800 dark:text-green-100 font-medium">✓ Added</span>
+                  </div>
+                )}
+                {formData.notes && (
+                  <div className="flex justify-between">
+                    <span className="text-green-700 dark:text-green-300">Notes:</span>
+                    <span className="text-green-800 dark:text-green-100 font-medium">✓ Added</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
           {/* Submit Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -320,6 +372,8 @@ export default function AddPlantPage() {
               className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-200 btn-mobile ${
                 !formData.name.trim() || !selectedType || isSubmitting
                   ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : showConfirmation
+                  ? 'bg-green-600 text-white active:bg-green-700 shadow-lg animate-pulse'
                   : 'bg-primary text-primary-foreground active:bg-primary/90 shadow-lg'
               }`}
               whileTap={!isSubmitting ? { scale: 0.98 } : {}}
@@ -333,10 +387,28 @@ export default function AddPlantPage() {
                   />
                   Adding Plant...
                 </div>
+              ) : showConfirmation ? (
+                <>✅ Confirm Add Plant</>
               ) : (
                 <>🌱 Add Plant</>
               )}
             </motion.button>
+
+            {showConfirmation && (
+              <motion.button
+                type="button"
+                onClick={() => {
+                  setShowConfirmation(false);
+                  haptic.lightImpact();
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full py-3 rounded-xl font-medium text-base text-muted-foreground active:bg-muted transition-all duration-200 btn-mobile mt-3"
+                whileTap={{ scale: 0.98 }}
+              >
+                Cancel
+              </motion.button>
+            )}
           </motion.div>
 
           {/* Gesture Hint */}
