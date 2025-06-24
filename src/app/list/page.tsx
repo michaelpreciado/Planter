@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ImageDisplay } from '@/components/ImageDisplay';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { usePlants } from '@/lib/plant-store';
 import { WaterAnimation } from '@/components/WaterAnimation';
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -20,6 +21,15 @@ export default function ListPage() {
   const [filter, setFilter] = useState<'all' | 'healthy' | 'needs_water' | 'overdue'>('all');
   const [isClientReady, setIsClientReady] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    plantId: string | null;
+    plantName: string | null;
+  }>({
+    isOpen: false,
+    plantId: null,
+    plantName: null,
+  });
   const haptic = useHapticFeedback();
   
   // Simple client-side ready state
@@ -46,8 +56,28 @@ export default function ListPage() {
   };
 
   const handleRemovePlant = (plantId: string) => {
-    removePlant(plantId);
-    haptic.mediumImpact();
+    const plant = plants.find(p => p.id === plantId);
+    setConfirmDialog({
+      isOpen: true,
+      plantId: plantId,
+      plantName: plant?.name || null,
+    });
+    haptic.lightImpact();
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmDialog.plantId) {
+      removePlant(confirmDialog.plantId);
+      haptic.mediumImpact();
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({
+      isOpen: false,
+      plantId: null,
+      plantName: null,
+    });
   };
 
   const handleRefresh = async () => {
@@ -339,6 +369,19 @@ export default function ListPage() {
           </div>
         </PullToRefresh>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmDelete}
+        title="Delete Plant?"
+        message="This action cannot be undone. All data associated with this plant will be permanently removed."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        plantName={confirmDialog.plantName || undefined}
+      />
       </div>
     </AuthGuard>
   );
