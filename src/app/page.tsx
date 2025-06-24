@@ -111,7 +111,7 @@ export default function HomePage() {
 
       {/* Tamagotchi Section */}
       <div className="flex-1 flex flex-col justify-start pb-nav-safe overflow-visible">
-        <div className="container-responsive space-y-2 mb-nav-safe">
+        <div className="container-responsive space-y-0 mb-nav-safe">
           {/* Plant Character - Remove container boundaries to allow glow effect */}
           <FadeIn 
             delay={0.4}
@@ -149,7 +149,7 @@ export default function HomePage() {
           {user && plants.length > 0 && (
             <SlideUp
               delay={0.8}
-              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl card-responsive shadow-lg border border-white/20 dark:border-white/10 mx-4"
+              className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl card-responsive shadow-lg border border-white/20 dark:border-white/10 mx-4 -mt-6"
             >
               <div className="grid grid-cols-2 gap-responsive text-center">
                 <div>
