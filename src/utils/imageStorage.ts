@@ -1,7 +1,9 @@
 /**
- * Modern Image Storage System
- * Uses IndexedDB for efficient binary storage with fallback to localStorage
+ * Modern Image Storage System v2.0
+ * Uses Supabase Storage for cloud sync with IndexedDB/localStorage fallback
  */
+
+import { supabase, isSupabaseConfigured } from './supabase';
 
 export interface ImageMetadata {
   id: string;
@@ -13,6 +15,8 @@ export interface ImageMetadata {
   mimeType: string;
   width?: number;
   height?: number;
+  supabaseUrl?: string; // Cloud URL if synced
+  isCloudSynced?: boolean;
 }
 
 export interface StoredImage {
@@ -23,10 +27,11 @@ export interface StoredImage {
 
 class ModernImageStorage {
   private dbName = 'PlantAppImages';
-  private dbVersion = 1;
+  private dbVersion = 2; // Increment version for new cloud sync features
   private storeName = 'images';
   private db: IDBDatabase | null = null;
   private initPromise: Promise<void> | null = null;
+  private supabaseBucket = 'plant-images';
 
   /**
    * Initialize IndexedDB with proper error handling
@@ -62,6 +67,16 @@ class ModernImageStorage {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('plantId', 'plantId', { unique: false });
           store.createIndex('created', 'created', { unique: false });
+          store.createIndex('isCloudSynced', 'isCloudSynced', { unique: false });
+        } else {
+          // Update existing store for v2 features
+          const transaction = request.transaction!;
+          const store = transaction.objectStore(this.storeName);
+          
+          // Add new indexes if they don't exist
+          if (!store.indexNames.contains('isCloudSynced')) {
+            store.createIndex('isCloudSynced', 'isCloudSynced', { unique: false });
+          }
         }
       };
     });
@@ -70,25 +85,39 @@ class ModernImageStorage {
   }
 
   /**
-   * Store image with automatic optimization
+   * Store image with automatic cloud sync if available
    */
   async storeImage(imageData: string, plantId?: string, noteId?: string): Promise<string> {
     await this.init();
 
     const id = this.generateId();
-    const metadata = this.createMetadata(id, imageData, plantId, noteId);
+    let metadata = this.createMetadata(id, imageData, plantId, noteId);
     
     try {
-      // Try IndexedDB first
+      // Try cloud storage first if configured
+      if (isSupabaseConfigured()) {
+        try {
+          const cloudUrl = await this.uploadToSupabase(id, imageData);
+          metadata.supabaseUrl = cloudUrl;
+          metadata.isCloudSynced = true;
+          console.log('✅ Image uploaded to cloud storage:', id);
+        } catch (cloudError) {
+          console.warn('Cloud upload failed, falling back to local storage:', cloudError);
+          metadata.isCloudSynced = false;
+        }
+      } else {
+        metadata.isCloudSynced = false;
+      }
+
+      // Always store locally for offline access
       if (this.db) {
         await this.storeInIndexedDB(id, imageData, metadata);
         console.log('✅ Image stored in IndexedDB:', id);
-        return id;
+      } else {
+        await this.storeInLocalStorage(id, imageData, metadata);
+        console.log('✅ Image stored in localStorage:', id);
       }
       
-      // Fallback to localStorage
-      await this.storeInLocalStorage(id, imageData, metadata);
-      console.log('✅ Image stored in localStorage:', id);
       return id;
       
     } catch (error) {
@@ -98,7 +127,7 @@ class ModernImageStorage {
   }
 
   /**
-   * Retrieve image by ID
+   * Retrieve image by ID - try cloud first, then local
    */
   async getImage(id: string): Promise<string | null> {
     if (!id) return null;
@@ -106,17 +135,42 @@ class ModernImageStorage {
     await this.init();
 
     try {
-      // Try IndexedDB first
+      // Try local storage first for better performance
+      let imageData: string | null = null;
+      let metadata: ImageMetadata | null = null;
+
       if (this.db) {
-        const image = await this.getFromIndexedDB(id);
-        if (image) {
-          await this.updateLastAccessed(id);
-          return image.data;
+        const localImage = await this.getFromIndexedDB(id);
+        if (localImage) {
+          imageData = localImage.data;
+          metadata = localImage.metadata;
+        }
+      } else {
+        imageData = this.getFromLocalStorage(id);
+        metadata = this.getMetadataFromLocalStorage(id);
+      }
+
+      // If we have local data, use it
+      if (imageData) {
+        await this.updateLastAccessed(id);
+        return imageData;
+      }
+
+      // If no local data but we have cloud URL, try to fetch from cloud
+      if (metadata?.supabaseUrl && isSupabaseConfigured()) {
+        try {
+          const cloudData = await this.downloadFromSupabase(metadata.supabaseUrl);
+          if (cloudData) {
+            // Cache it locally for next time
+            await this.storeImage(cloudData, metadata.plantId, metadata.noteId);
+            return cloudData;
+          }
+        } catch (cloudError) {
+          console.warn('Failed to fetch from cloud storage:', cloudError);
         }
       }
 
-      // Fallback to localStorage
-      return this.getFromLocalStorage(id);
+      return null;
       
     } catch (error) {
       console.error('❌ Failed to retrieve image:', id, error);
@@ -125,7 +179,7 @@ class ModernImageStorage {
   }
 
   /**
-   * Remove image by ID
+   * Remove image from both local and cloud storage
    */
   async removeImage(id: string): Promise<void> {
     if (!id) return;
@@ -133,13 +187,78 @@ class ModernImageStorage {
     await this.init();
 
     try {
+      // Get metadata first to check if we need to clean up cloud storage
+      let metadata: ImageMetadata | null = null;
+      
       if (this.db) {
+        const image = await this.getFromIndexedDB(id);
+        metadata = image?.metadata || null;
         await this.removeFromIndexedDB(id);
+      } else {
+        metadata = this.getMetadataFromLocalStorage(id);
+        this.removeFromLocalStorage(id);
       }
-      this.removeFromLocalStorage(id);
+
+      // Remove from cloud storage if it exists there
+      if (metadata?.supabaseUrl && isSupabaseConfigured()) {
+        try {
+          await this.removeFromSupabase(id);
+          console.log('✅ Image removed from cloud storage:', id);
+        } catch (cloudError) {
+          console.warn('Failed to remove from cloud storage:', cloudError);
+        }
+      }
     } catch (error) {
       console.error('❌ Failed to remove image:', id, error);
     }
+  }
+
+  /**
+   * Sync local images to cloud storage
+   */
+  async syncToCloud(): Promise<{ uploaded: number; errors: number }> {
+    if (!isSupabaseConfigured()) {
+      console.log('Cloud storage not configured');
+      return { uploaded: 0, errors: 0 };
+    }
+
+    await this.init();
+
+    let uploaded = 0;
+    let errors = 0;
+
+    try {
+      // Get all images that aren't cloud synced
+      const unSyncedImages = await this.getUnSyncedImages();
+      
+      for (const image of unSyncedImages) {
+        try {
+          const cloudUrl = await this.uploadToSupabase(image.id, image.data);
+          
+          // Update metadata
+          image.metadata.supabaseUrl = cloudUrl;
+          image.metadata.isCloudSynced = true;
+          
+          // Update in storage
+          if (this.db) {
+            await this.storeInIndexedDB(image.id, image.data, image.metadata);
+          } else {
+            await this.storeInLocalStorage(image.id, image.data, image.metadata);
+          }
+          
+          uploaded++;
+          console.log('✅ Synced image to cloud:', image.id);
+        } catch (error) {
+          console.error('❌ Failed to sync image to cloud:', image.id, error);
+          errors++;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to sync images to cloud:', error);
+      errors++;
+    }
+
+    return { uploaded, errors };
   }
 
   /**
@@ -148,6 +267,7 @@ class ModernImageStorage {
   async getStats(): Promise<{
     totalImages: number;
     totalSize: number;
+    cloudSynced: number;
     storageType: 'indexeddb' | 'localstorage' | 'unavailable';
   }> {
     await this.init();
@@ -162,7 +282,7 @@ class ModernImageStorage {
       return { ...stats, storageType: 'localstorage' };
       
     } catch (error) {
-      return { totalImages: 0, totalSize: 0, storageType: 'unavailable' };
+      return { totalImages: 0, totalSize: 0, cloudSynced: 0, storageType: 'unavailable' };
     }
   }
 
@@ -181,6 +301,174 @@ class ModernImageStorage {
     } catch (error) {
       console.error('❌ Cleanup failed:', error);
     }
+  }
+
+  // Private Supabase methods
+  private async uploadToSupabase(id: string, imageData: string): Promise<string> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Convert data URL to blob
+    const response = await fetch(imageData);
+    const blob = await response.blob();
+    
+    const fileName = `${user.id}/${id}.${blob.type.split('/')[1] || 'jpg'}`;
+    
+    const { data, error } = await supabase.storage
+      .from(this.supabaseBucket)
+      .upload(fileName, blob, {
+        upsert: true,
+        contentType: blob.type
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(this.supabaseBucket)
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  }
+
+  private async downloadFromSupabase(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Failed to download from Supabase:', error);
+      return null;
+    }
+  }
+
+  private async removeFromSupabase(id: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Try different file extensions
+    const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+    
+    for (const ext of extensions) {
+      const fileName = `${user.id}/${id}.${ext}`;
+      try {
+        await supabase.storage.from(this.supabaseBucket).remove([fileName]);
+      } catch (error) {
+        // Ignore errors for non-existent files
+      }
+    }
+  }
+
+  private async getUnSyncedImages(): Promise<StoredImage[]> {
+    if (this.db) {
+      return new Promise((resolve, reject) => {
+        const transaction = this.db!.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        const index = store.index('isCloudSynced');
+        
+        const request = index.getAll(IDBKeyRange.only(false)); // Get all unsynced images
+        
+        request.onsuccess = () => {
+          const results = request.result.map(item => ({
+            id: item.id,
+            data: item.data,
+            metadata: item
+          }));
+          resolve(results);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    } else {
+      // LocalStorage implementation
+      const images: StoredImage[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('img_')) {
+          try {
+            const item = localStorage.getItem(key);
+            if (item) {
+              const parsed = JSON.parse(item);
+              if (!parsed.metadata.isCloudSynced) {
+                images.push({
+                  id: parsed.metadata.id,
+                  data: parsed.data,
+                  metadata: parsed.metadata
+                });
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to parse localStorage item:', error);
+          }
+        }
+      }
+      return images;
+    }
+  }
+
+  // Enhanced private methods for cloud sync
+  private async getIndexedDBStats(): Promise<{ totalImages: number; totalSize: number; cloudSynced: number }> {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      
+      const request = store.getAll();
+      
+      request.onsuccess = () => {
+        const results = request.result;
+        const totalImages = results.length;
+        const totalSize = results.reduce((sum, item) => sum + (item.size || 0), 0);
+        const cloudSynced = results.filter(item => item.isCloudSynced).length;
+        resolve({ totalImages, totalSize, cloudSynced });
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  private getLocalStorageStats(): { totalImages: number; totalSize: number; cloudSynced: number } {
+    let totalImages = 0;
+    let totalSize = 0;
+    let cloudSynced = 0;
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('img_')) {
+        totalImages++;
+        const item = localStorage.getItem(key);
+        if (item) {
+          totalSize += item.length;
+          try {
+            const parsed = JSON.parse(item);
+            if (parsed.metadata.isCloudSynced) {
+              cloudSynced++;
+            }
+          } catch (error) {
+            // Ignore parsing errors
+          }
+        }
+      }
+    }
+
+    return { totalImages, totalSize, cloudSynced };
+  }
+
+  private getMetadataFromLocalStorage(id: string): ImageMetadata | null {
+    try {
+      const key = `img_${id}`;
+      const item = localStorage.getItem(key);
+      if (item) {
+        const parsed = JSON.parse(item);
+        return parsed.metadata;
+      }
+    } catch (error) {
+      console.error('Failed to parse localStorage metadata:', error);
+    }
+    return null;
   }
 
   // Private IndexedDB methods
@@ -219,23 +507,6 @@ class ModernImageStorage {
       const request = store.delete(id);
       
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  private async getIndexedDBStats(): Promise<{ totalImages: number; totalSize: number }> {
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
-      
-      const request = store.getAll();
-      
-      request.onsuccess = () => {
-        const results = request.result;
-        const totalImages = results.length;
-        const totalSize = results.reduce((sum, item) => sum + (item.size || 0), 0);
-        resolve({ totalImages, totalSize });
-      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -308,24 +579,6 @@ class ModernImageStorage {
     localStorage.removeItem(key);
   }
 
-  private getLocalStorageStats(): { totalImages: number; totalSize: number } {
-    let totalImages = 0;
-    let totalSize = 0;
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('img_')) {
-        totalImages++;
-        const item = localStorage.getItem(key);
-        if (item) {
-          totalSize += item.length;
-        }
-      }
-    }
-
-    return { totalImages, totalSize };
-  }
-
   private cleanupLocalStorage(): void {
     const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
     const now = Date.now();
@@ -349,9 +602,8 @@ class ModernImageStorage {
     }
   }
 
-  // Utility methods
   private generateId(): string {
-    return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private createMetadata(id: string, imageData: string, plantId?: string, noteId?: string): ImageMetadata {
@@ -364,11 +616,12 @@ class ModernImageStorage {
       plantId,
       noteId,
       mimeType: this.extractMimeType(imageData),
+      isCloudSynced: false, // Will be updated after successful cloud upload
     };
   }
 
   private extractMimeType(dataUrl: string): string {
-    const match = dataUrl.match(/^data:([^;]+)/);
+    const match = dataUrl.match(/data:([^;]+);/);
     return match ? match[1] : 'image/jpeg';
   }
 }
@@ -376,7 +629,7 @@ class ModernImageStorage {
 // Export singleton instance
 export const imageStorage = new ModernImageStorage();
 
-// Export convenience functions
+// Export convenient functions
 export const storeImage = (imageData: string, plantId?: string, noteId?: string) => 
   imageStorage.storeImage(imageData, plantId, noteId);
 
@@ -390,4 +643,7 @@ export const getStorageStats = () =>
   imageStorage.getStats();
 
 export const cleanupImages = () => 
-  imageStorage.cleanup(); 
+  imageStorage.cleanup();
+
+export const syncImagesToCloud = () => 
+  imageStorage.syncToCloud(); 

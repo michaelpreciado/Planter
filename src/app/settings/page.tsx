@@ -4,15 +4,72 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePlants } from '@/lib/plant-store';
+import { useAuth } from '@/contexts/AuthContext';
+import { setupImageStorage, checkStoragePermissions } from '@/utils/setupStorage';
+import { syncImagesToCloud, getStorageStats } from '@/utils/imageStorage';
+import { isSupabaseConfigured } from '@/utils/supabase';
 
 export default function SettingsPage() {
   const [isClientReady, setIsClientReady] = useState(false);
+  const [storageStats, setStorageStats] = useState<any>(null);
+  const [syncStatus, setSyncStatus] = useState<string>('');
+  const [isSettingUp, setIsSettingUp] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { hasHydrated, loading, plants } = usePlants();
+  const { user } = useAuth();
 
   // Simple client-side ready state
   useEffect(() => {
     setIsClientReady(true);
+    loadStorageStats();
   }, []);
+
+  const loadStorageStats = async () => {
+    try {
+      const stats = await getStorageStats();
+      setStorageStats(stats);
+    } catch (error) {
+      console.error('Failed to load storage stats:', error);
+    }
+  };
+
+  const handleSetupStorage = async () => {
+    if (!user) {
+      setSyncStatus('Please sign in to enable image sync');
+      return;
+    }
+
+    setIsSettingUp(true);
+    try {
+      const result = await setupImageStorage();
+      setSyncStatus(result.message);
+      if (result.success) {
+        await loadStorageStats();
+      }
+    } catch (error) {
+      setSyncStatus('Failed to set up image sync');
+    } finally {
+      setIsSettingUp(false);
+    }
+  };
+
+  const handleSyncImages = async () => {
+    if (!user) {
+      setSyncStatus('Please sign in to sync images');
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const result = await syncImagesToCloud();
+      setSyncStatus(`Sync completed: ${result.uploaded} images uploaded, ${result.errors} errors`);
+      await loadStorageStats();
+    } catch (error) {
+      setSyncStatus('Image sync failed');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const stats = {
     totalPlants: plants.length,
@@ -141,6 +198,7 @@ export default function SettingsPage() {
             </div>
           </motion.div>
 
+          {/* Image Sync Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,11 +206,110 @@ export default function SettingsPage() {
             className="bg-white rounded-xl shadow-sm border border-gray-200"
           >
             <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Image Sync</h3>
+              {!isSupabaseConfigured() ? (
+                <div className="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium text-yellow-800">Cloud sync not configured</span>
+                  </div>
+                  <p className="text-yellow-700">
+                    Images are only stored locally on this device. Configure Supabase to sync images across devices.
+                  </p>
+                </div>
+              ) : !user ? (
+                <div className="text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium text-blue-800">Sign in required</span>
+                  </div>
+                  <p className="text-blue-700">
+                    Sign in to enable image syncing across your devices.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Storage Stats */}
+                  {storageStats && (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm text-gray-600 mb-2">Storage Status</div>
+                      <div className="grid grid-cols-3 gap-3 text-xs">
+                        <div className="text-center">
+                          <div className="font-semibold text-gray-900">{storageStats.totalImages}</div>
+                          <div className="text-gray-500">Total Images</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-green-600">{storageStats.cloudSynced || 0}</div>
+                          <div className="text-gray-500">Cloud Synced</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-blue-600">{storageStats.storageType}</div>
+                          <div className="text-gray-500">Storage Type</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sync Actions */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleSetupStorage}
+                      disabled={isSettingUp}
+                      className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSettingUp ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Setting up...
+                        </div>
+                      ) : (
+                        'Setup Cloud Sync'
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={handleSyncImages}
+                      disabled={isSyncing}
+                      className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSyncing ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Syncing...
+                        </div>
+                      ) : (
+                        'Sync Now'
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Status Message */}
+                  {syncStatus && (
+                    <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      {syncStatus}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-4">
               <h3 className="font-semibold text-gray-900 mb-3">About</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Version</span>
-                  <span className="text-gray-500">1.0.0</span>
+                  <span className="text-gray-500">2.0.0</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Made with</span>
@@ -166,7 +323,7 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             className="grid grid-cols-2 gap-4 mt-6"
           >
             <Link

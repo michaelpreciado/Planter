@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/lib/theme-provider';
 // PlantProvider removed - using direct store access now
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PlantSyncWrapper } from '@/components/PlantSyncWrapper';
+import { ImageSyncWrapper } from '@/components/ImageSyncWrapper';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +16,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <AuthProvider>
         <PlantSyncWrapper>
-          {children}
+          <ImageSyncWrapper>
+            {children}
+          </ImageSyncWrapper>
         </PlantSyncWrapper>
       </AuthProvider>
     </ThemeProvider>
