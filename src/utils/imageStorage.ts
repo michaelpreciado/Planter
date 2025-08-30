@@ -93,7 +93,7 @@ class ModernImageStorage {
     await this.init();
 
     const id = this.generateId();
-    let metadata = this.createMetadata(id, imageData, plantId, noteId);
+    const metadata = this.createMetadata(id, imageData, plantId, noteId);
     
     try {
       // Try cloud storage first if configured
@@ -331,6 +331,8 @@ class ModernImageStorage {
 
   // Private Supabase methods
   private async uploadToSupabase(id: string, imageData: string): Promise<string> {
+    if (!supabase) throw new Error('Supabase not configured');
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -375,6 +377,8 @@ class ModernImageStorage {
   }
 
   private async removeFromSupabase(id: string): Promise<void> {
+    if (!supabase) return;
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -688,6 +692,7 @@ export async function uploadPlantImage(
   plantId: string,
   userId: string
 ): Promise<{ path: string; width: number; height: number; mimeType: string; signedUrl: string }> {
+  if (!supabase) throw new Error('Supabase not configured');
   if (!file) throw new Error('No file provided');
   if (!plantId || !userId) throw new Error('plantId & userId are required');
 
@@ -750,6 +755,8 @@ export async function uploadPlantImage(
  * @param expiresIn  Expiry in seconds (default 24 h)
  */
 export async function getSignedImageUrl(path: string, expiresIn = 60 * 60 * 24): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  
   const { data, error } = await supabase.storage
     .from('plant-images')
     .createSignedUrl(path, expiresIn);

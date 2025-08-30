@@ -17,6 +17,7 @@ export async function setupImageStorage(): Promise<{ success: boolean; message: 
     const bucketName = 'plant-images';
     
     // Check if bucket already exists
+    if (!supabase) throw new Error('Supabase not configured');
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
@@ -69,7 +70,7 @@ export async function setupImageStorage(): Promise<{ success: boolean; message: 
 }
 
 export async function checkStoragePermissions(): Promise<{ success: boolean; message: string }> {
-  if (!isSupabaseConfigured()) {
+  if (!isSupabaseConfigured() || !supabase) {
     return {
       success: false,
       message: 'Supabase not configured'

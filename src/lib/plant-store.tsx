@@ -422,7 +422,7 @@ export const usePlantStore = create<PlantStore>()(
           });
           
           // Step 7: Merge all changes into local state
-          let updatedPlants = [...localPlants];
+          const updatedPlants = [...localPlants];
           
           // Update local plants with new database IDs
           for (const [oldId, newId] of plantIdMappings) {

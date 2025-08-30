@@ -33,7 +33,7 @@ export async function getSupabase() {
   return supabase;
 }
 
-let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = supabase ? Promise.resolve(supabase) : null;
+const supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = supabase ? Promise.resolve(supabase) : null;
 
 // Check for forced offline mode from localStorage (for debugging)
 const isForcedOffline = () => {
