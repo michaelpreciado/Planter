@@ -1,15 +1,9 @@
 import React from 'react';
-import { createClient } from '@supabase/supabase-js';
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
 }
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
-
-const supabase = createClient(supabaseUrl, supabaseAnon);
 
 export default class ErrorBoundary extends React.Component<{
   children: React.ReactNode;
@@ -20,17 +14,15 @@ export default class ErrorBoundary extends React.Component<{
     return { hasError: true, error };
   }
 
-  async componentDidCatch(error: Error, info: React.ErrorInfo) {
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // Log error to console in development
+    // eslint-disable-next-line no-console
+    console.error('[ErrorBoundary]', error, info);
+    
+    // In production, you could add other error logging services here
+    // For now, we'll just console.log since Supabase is not configured
     if (process.env.NODE_ENV === 'production') {
-      // Call edge function to log client error
-      await fetch('/api/log_client_error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: error.message, stack: info.componentStack }),
-      });
-    } else {
-      // eslint-disable-next-line no-console
-      console.error('[ErrorBoundary]', error, info);
+      console.error('[ErrorBoundary Production]', error.message, info.componentStack);
     }
   }
 

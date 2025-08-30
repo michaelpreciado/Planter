@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/utils/supabase';
+import { supabase, isSupabaseConfigured } from '@/utils/supabase';
 import { usePlantStore } from '@/lib/plant-store';
 
 interface AuthContextType {
@@ -22,11 +22,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Skip auth setup if Supabase is not configured
+    if (!isSupabaseConfigured() || !supabase) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Failed to get session:', error);
+      }
       setLoading(false);
     };
 
@@ -45,6 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Authentication not available in offline mode' };
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -62,6 +76,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Authentication not available in offline mode' };
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -84,7 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConfigured() && supabase) {
+      await supabase.auth.signOut();
+    }
     // Clear local plant data when user signs out
     usePlantStore.setState({ plants: [], recentlyWateredPlant: null });
   };

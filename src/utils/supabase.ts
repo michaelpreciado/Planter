@@ -7,18 +7,33 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const offlineMode = process.env.NEXT_PUBLIC_OFFLINE_MODE === 'true';
 
-// Create the Supabase client synchronously so that modules importing `supabase` immediately get a working instance.
-export const supabase: SupabaseClient<any, "public", any> = createClient(
-  supabaseUrl!,
-  supabaseAnonKey!,
-);
+// Create a fallback Supabase client or null if not configured
+export const supabase: SupabaseClient<any, "public", any> | null = (() => {
+  // Check if Supabase is properly configured
+  if (!supabaseUrl || !supabaseAnonKey || 
+      supabaseUrl === 'https://your-project.supabase.co' || 
+      supabaseAnonKey === 'your-anon-key') {
+    console.log('🔧 Supabase not configured - running in offline mode');
+    return null;
+  }
+  
+  try {
+    return createClient(supabaseUrl, supabaseAnonKey);
+  } catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+    return null;
+  }
+})();
 
 // Async getter (kept for code that awaits dynamic import elsewhere, but now returns the already-initialized client)
 export async function getSupabase() {
+  if (!supabase) {
+    throw new Error('Supabase not configured - running in offline mode');
+  }
   return supabase;
 }
 
-let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = Promise.resolve(supabase);
+let supabasePromise: Promise<SupabaseClient<any, "public", any>> | null = supabase ? Promise.resolve(supabase) : null;
 
 // Check for forced offline mode from localStorage (for debugging)
 const isForcedOffline = () => {
@@ -36,11 +51,7 @@ if (!supabaseUrl || !supabaseAnonKey ||
 // Check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
   if (offlineMode || isForcedOffline()) return false;
-  return !!(supabaseUrl && supabaseAnonKey && 
-    supabaseUrl !== 'https://your-project.supabase.co' && 
-    supabaseAnonKey !== 'your-anon-key' &&
-    supabaseUrl !== 'https://localhost:3000' &&
-    supabaseAnonKey !== 'dummy-key');
+  return supabase !== null;
 };
 
 // Transform database plant data to ensure consistent column names
@@ -276,5 +287,8 @@ export const profileService = {
 
 // keep fallback dynamic loader if ever called before initialization (defensive)
 async function loadClient(): Promise<SupabaseClient<any, "public", any>> {
+  if (!supabase) {
+    throw new Error('Supabase not configured - running in offline mode');
+  }
   return supabase;
 } 

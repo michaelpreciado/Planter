@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
 // Replace framer-motion with lightweight CSS animations
-import { FadeIn, SlideUp, StaggeredChildren, ScaleIn } from '@/components/OptimizedAnimations';
+import { FadeIn, SlideUp, StaggerContainer as StaggeredChildren, ScaleIn } from '@/components/AnimationReplacements';
 
 export default function HomePage() {
   const { plants, triggerManualSync, loading, error, hasHydrated } = usePlants();
@@ -64,7 +64,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-safe">
+    <div className="min-h-screen bg-background flex flex-col content-with-nav">
       {/* Top Controls */}
       <FadeIn delay={0.1} className="flex justify-end items-center pt-safe padding-responsive">
         {/* Auth and Night Mode Controls */}

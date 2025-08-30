@@ -26,10 +26,17 @@ const nextConfig = {
   },
   
   compiler: {
-    modularizeImports: {
-      '@heroicons/react': {
-        transform: '@heroicons/react/24/solid/{{member}}',
-      },
+    // Tree shaking for heroicons
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  // Modularize imports for better tree shaking
+  modularizeImports: {
+    '@heroicons/react/24/solid': {
+      transform: '@heroicons/react/24/solid/{{member}}',
+    },
+    '@heroicons/react/24/outline': {
+      transform: '@heroicons/react/24/outline/{{member}}',
     },
   },
   
