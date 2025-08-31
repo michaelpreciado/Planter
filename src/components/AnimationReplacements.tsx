@@ -10,55 +10,60 @@ interface BaseAnimationProps {
   delay?: number;
   className?: string;
   duration?: number;
+  style?: React.CSSProperties;
 }
 
 // Optimized CSS animations
-export const FadeIn = memo(({ children, delay = 0, duration = 0.3, className = '' }: BaseAnimationProps) => (
+export const FadeIn = memo(({ children, delay = 0, duration = 0.3, className = '', style = {} }: BaseAnimationProps) => (
   <div 
     className={`animate-fade-in ${className}`}
     style={{ 
       animationDelay: `${delay}s`,
       animationDuration: `${duration}s`,
-      animationFillMode: 'both'
+      animationFillMode: 'both',
+      ...style
     }}
   >
     {children}
   </div>
 ));
 
-export const SlideUp = memo(({ children, delay = 0, duration = 0.3, className = '' }: BaseAnimationProps) => (
+export const SlideUp = memo(({ children, delay = 0, duration = 0.3, className = '', style = {} }: BaseAnimationProps) => (
   <div 
     className={`animate-slide-up ${className}`}
     style={{ 
       animationDelay: `${delay}s`,
       animationDuration: `${duration}s`,
-      animationFillMode: 'both'
+      animationFillMode: 'both',
+      ...style
     }}
   >
     {children}
   </div>
 ));
 
-export const SlideDown = memo(({ children, delay = 0, duration = 0.3, className = '' }: BaseAnimationProps) => (
+export const SlideDown = memo(({ children, delay = 0, duration = 0.3, className = '', style = {} }: BaseAnimationProps) => (
   <div 
     className={`animate-slide-down ${className}`}
     style={{ 
       animationDelay: `${delay}s`,
       animationDuration: `${duration}s`,
-      animationFillMode: 'both'
+      animationFillMode: 'both',
+      ...style
     }}
   >
     {children}
   </div>
 ));
 
-export const ScaleIn = memo(({ children, delay = 0, duration = 0.2, className = '' }: BaseAnimationProps) => (
+export const ScaleIn = memo(({ children, delay = 0, duration = 0.2, className = '', style = {} }: BaseAnimationProps) => (
   <div 
     className={`animate-scale-in ${className}`}
     style={{ 
       animationDelay: `${delay}s`,
       animationDuration: `${duration}s`,
-      animationFillMode: 'both'
+      animationFillMode: 'both',
+      ...style
     }}
   >
     {children}

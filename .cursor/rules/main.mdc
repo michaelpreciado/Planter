@@ -1,0 +1,33 @@
+---
+description: >
+  Project-wide rules that enforce my style of programming, workflow, and tool use.
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# 🔹 General Coding Rules
+- Write code in a clear, minimal, and maintainable style — readability over clever one-liners.
+- Keep UI intact when optimizing performance; only suggest UX changes if explicitly requested.
+- Maintain consistent naming conventions:
+  - camelCase for JS
+  - snake_case for Python
+  - PascalCase for components
+- When debugging errors, explain step by step (cause + solution).
+- Add concise docstrings for functions and classes; avoid boilerplate.
+
+# 🔹 Web & App Development Rules
+- Prioritize performance (smooth 60–120 FPS, fast load times, efficient rendering).
+- Respect existing folder/component structure — don’t reorganize unless asked.
+- Only suggest new libraries if:
+  1. The feature cannot be done cleanly with the current stack.
+  2. The library is lightweight and widely supported.
+- Keep React/React Native components minimalistic and styled consistently (Tailwind / iOS “liquid-glass” look).
+- When converting web apps to mobile, ensure functionality parity first, polish UI second.
+
+
+
+# 🔹 Workflow Rules
+- Show diffs instead of replacing entire files when suggesting edits.
+
+# 🔹 Personal Style Rules
+- Default mindset: optimize performance without breaking aesthetics.
