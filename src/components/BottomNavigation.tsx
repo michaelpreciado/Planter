@@ -87,9 +87,15 @@ export function BottomNavigation() {
         bottom: '0',
         left: '0',
         right: '0',
-        zIndex: '9999',
+        zIndex: '10000', // Higher z-index to ensure visibility
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
+        // Force visibility and prevent hidden
+        visibility: 'visible',
+        display: 'block',
+        // Additional mobile fixes
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
       }}
     >
       <div className="flex items-center justify-around px-2 py-1 sm:py-2">

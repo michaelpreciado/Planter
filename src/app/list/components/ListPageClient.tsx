@@ -127,7 +127,8 @@ export function ListPageClient() {
     <AuthGuard message="Please sign in to view and manage your plants">
       <div className="flex flex-col h-full">
         {/* Filter Tabs with refresh button */}
-        <FadeIn className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl padding-responsive border-b border-white/20 dark:border-white/10"
+        <FadeIn 
+          className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10"
           style={{ 
             // Additional inline styles to ensure it stays fixed
             position: 'fixed',
@@ -137,33 +138,38 @@ export function ListPageClient() {
             zIndex: '9998',
             transform: 'translateZ(0)',
             WebkitTransform: 'translateZ(0)',
+            paddingTop: 'max(env(safe-area-inset-top), 0.5rem)',
+            paddingLeft: '1.5rem',
+            paddingRight: '1.5rem',
+            paddingBottom: '1rem',
           }}>
-          <div className="flex items-center justify-between gap-responsive mb-4">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <AnimatedButton
               onClick={handleRefresh}
               disabled={isRefreshing}
               variant="ghost"
-              className="btn-responsive"
+              className="p-2 rounded-lg"
             >
               {isRefreshing ? (
                 <Spinner size="sm" />
               ) : (
-                <svg className="icon-responsive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
               )}
             </AnimatedButton>
+            <h1 className="text-xl font-semibold text-foreground">My Plants</h1>
             <NightModeToggle />
           </div>
           
-          <div className="container-responsive">
-            <div className="flex gap-responsive overflow-x-auto scrollbar-hide">
+          <div className="w-full">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
               {filters.map(({ key, label, count }) => (
                 <AnimatedButton
                   key={key}
                   onClick={() => handleFilterChange(key as FilterType)}
                   variant={filter === key ? 'primary' : 'secondary'}
-                  className="btn-responsive font-medium whitespace-nowrap min-w-fit !px-3 !py-1.5 !text-sm"
+                  className="px-4 py-2 text-sm font-medium whitespace-nowrap min-w-fit rounded-full"
                   disabled={isPending}
                 >
                   {label} ({count})
@@ -174,7 +180,13 @@ export function ListPageClient() {
         </FadeIn>
 
         {/* Plant List */}
-        <div className="flex-1 overflow-y-auto pb-nav-safe space-responsive pt-6 pb-8 content-with-header">
+        <div 
+          className="flex-1 overflow-y-auto pb-nav-safe pt-6 pb-8"
+          style={{
+            paddingTop: '9rem', // Account for larger header with title + filter tabs
+            marginTop: 'max(env(safe-area-inset-top), 0px)',
+          }}
+        >
           {filteredPlants.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
               <motion.div
@@ -207,11 +219,11 @@ export function ListPageClient() {
               </motion.div>
             </div>
           ) : (
-            <div className="space-y-6 px-0">
+            <div className="space-y-6 px-6">
               {filteredPlants.map((plant, index) => (
                 <SlideUp key={plant.id} delay={index * 0.05}>
                   <Link href={`/plant/${plant.id}`}>
-                    <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg card-responsive border border-white/20 dark:border-white/10 mx-6 cursor-pointer hover:bg-white/15 dark:hover:bg-gray-900/25 transition-colors">
+                    <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl p-4 cursor-pointer hover:bg-white/15 dark:hover:bg-gray-900/25 transition-colors">
                       <div className="flex items-start gap-responsive">
                         {/* Plant Image/Icon */}
                         <div className="avatar-responsive overflow-hidden flex-shrink-0">

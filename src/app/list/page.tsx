@@ -12,7 +12,7 @@ export const metadata = {
 // Server Component - no JS shipped for static parts
 export default function ListPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col relative pb-16">
+    <div className="min-h-screen bg-background flex flex-col relative">
       {/* Client component for dynamic content */}
       <SlideUp delay={0.1} className="flex-1">
         <Suspense fallback={<ListSkeleton />}>
