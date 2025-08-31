@@ -137,7 +137,17 @@ export default function AddPlantPage() {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10 shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
+        className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10 shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+        style={{ 
+          // Additional inline styles to ensure it stays fixed
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          zIndex: '9998',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
       >
         <motion.button
           type="button"
@@ -159,7 +169,7 @@ export default function AddPlantPage() {
       {/* Form Content */}
       <div 
         ref={formScrollRef}
-        className="flex-1 overflow-y-auto mobile-scroll-container"
+        className="flex-1 overflow-y-auto mobile-scroll-container content-with-header"
         style={{
           touchAction: 'pan-y',
         }}

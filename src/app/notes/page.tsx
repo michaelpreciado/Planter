@@ -145,7 +145,7 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16">
+    <div className="min-h-screen bg-background flex flex-col pb-16 content-with-header">
       {/* Header */}
       <PageHeader title="Plant Notes">
         <button 

@@ -322,7 +322,7 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000]"
               onClick={() => setShowOptions(false)}
             />
 
@@ -331,7 +331,7 @@ export function ImageCaptureWithStorage({ onImageCapture, currentImageId, placeh
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="fixed inset-0 flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 flex items-center justify-center p-4 z-[10000]"
             >
               <div className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl p-6 shadow-2xl max-w-md w-full mx-4 border border-white/20 dark:border-white/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4 text-center">

@@ -84,7 +84,7 @@ export const ModalBackdrop = memo(({ children, isOpen, onClose }: { children: Re
 
   return (
     <div 
-      className={`fixed inset-0 z-50 transition-all duration-200 ${
+      className={`fixed inset-0 z-[10000] transition-all duration-200 ${
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >

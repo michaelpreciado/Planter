@@ -95,7 +95,17 @@ export default function SettingsPage() {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+        className="top-header-fixed bg-white shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+        style={{ 
+          // Additional inline styles to ensure it stays fixed
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          zIndex: '9998',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
       >
         <Link href="/" className="text-gray-700">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +117,7 @@ export default function SettingsPage() {
       </motion.header>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-6 pb-nav-safe">
+      <div className="flex-1 px-6 py-6 pb-nav-safe content-with-header">
         {/* Stats Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

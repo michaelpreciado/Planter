@@ -59,7 +59,7 @@ export function ConfirmationDialog({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 min-h-screen min-h-[100dvh]">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -94,7 +94,7 @@ export function ConfirmationDialog({
               stiffness: 300,
               damping: 30
             }}
-            className="relative bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 border border-white/20 dark:border-white/10"
+            className="relative bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm w-full mx-4 my-4 p-6 border border-white/20 dark:border-white/10 max-h-[calc(100vh-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-labelledby="dialog-title"

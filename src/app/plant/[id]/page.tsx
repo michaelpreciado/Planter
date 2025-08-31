@@ -245,7 +245,17 @@ export default function PlantDetailPage() {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between px-6 py-4 pt-safe flex-shrink-0"
+        className="top-header-fixed flex items-center justify-between px-6 py-4 pt-safe bg-background/80 backdrop-blur-xl border-b border-white/20 dark:border-white/10"
+        style={{ 
+          // Additional inline styles to ensure it stays fixed
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          zIndex: '9998',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
       >
         <button onClick={() => router.back()} className="text-foreground">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,7 +272,7 @@ export default function PlantDetailPage() {
       </motion.header>
 
       {/* Main Content */}
-      <div className="flex-1 px-6 pb-safe overflow-y-auto mobile-scroll momentum-scroll" style={{ touchAction: 'pan-y' }}>
+      <div className="flex-1 px-6 pb-safe overflow-y-auto mobile-scroll momentum-scroll content-with-header" style={{ touchAction: 'pan-y' }}>
         {/* Status Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

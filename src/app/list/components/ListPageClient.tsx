@@ -127,7 +127,17 @@ export function ListPageClient() {
     <AuthGuard message="Please sign in to view and manage your plants">
       <div className="flex flex-col h-full">
         {/* Filter Tabs with refresh button */}
-        <FadeIn className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl padding-responsive border-b border-white/20 dark:border-white/10">
+        <FadeIn className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl padding-responsive border-b border-white/20 dark:border-white/10"
+          style={{ 
+            // Additional inline styles to ensure it stays fixed
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            right: '0',
+            zIndex: '9998',
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
+          }}>
           <div className="flex items-center justify-between gap-responsive mb-4">
             <AnimatedButton
               onClick={handleRefresh}
@@ -164,7 +174,7 @@ export function ListPageClient() {
         </FadeIn>
 
         {/* Plant List */}
-        <div className="flex-1 overflow-y-auto pb-nav-safe space-responsive pt-6 pb-8">
+        <div className="flex-1 overflow-y-auto pb-nav-safe space-responsive pt-6 pb-8 content-with-header">
           {filteredPlants.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
               <motion.div

@@ -81,7 +81,15 @@ export function BottomNavigation() {
       className="bottom-nav-fixed h-auto min-h-16 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-white/20 dark:border-white/10 safe-area-bottom"
       style={{ 
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        paddingTop: '0.5rem'
+        paddingTop: '0.5rem',
+        // Additional inline styles to ensure it stays fixed
+        position: 'fixed',
+        bottom: '0',
+        left: '0',
+        right: '0',
+        zIndex: '9999',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
       }}
     >
       <div className="flex items-center justify-around px-2 py-1 sm:py-2">

@@ -44,7 +44,17 @@ export function AuthGuard({
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card/30 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe relative z-10"
+        className="top-header-fixed bg-card/30 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+        style={{ 
+          // Additional inline styles to ensure it stays fixed
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          zIndex: '9998',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
       >
         <Link href="/" className="text-foreground p-2 -m-2 rounded-lg active:bg-accent transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +66,7 @@ export function AuthGuard({
       </motion.header>
 
       {/* Authentication Required Message */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 content-with-header">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

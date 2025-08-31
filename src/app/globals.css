@@ -75,6 +75,11 @@
 
     /* Global radial glow overlay */
     position: relative;
+    
+    /* Prevent bottom navigation positioning issues */
+    overscroll-behavior: contain;
+    /* Ensure fixed elements stay fixed during scroll */
+    contain: style;
   }
 
   /* Pseudo-element for the glow */
@@ -94,6 +99,10 @@
     touch-action: manipulation;
     /* Ensure proper viewport height calculation on mobile */
     height: 100%;
+    /* Prevent elastic scrolling from affecting fixed elements */
+    overscroll-behavior: contain;
+    /* Additional iOS Safari fixes */
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Custom scrollbar */
@@ -187,6 +196,10 @@
       /* Ensure proper height on mobile */
       min-height: 100vh;
       min-height: 100dvh;
+      /* Prevent any positioning issues with fixed elements */
+      position: relative;
+      /* Ensure bottom nav stays fixed during scroll */
+      contain: style layout;
     }
 
     /* Optimize list items for smooth scrolling */
@@ -296,6 +309,42 @@
       position: relative;
       overflow-x: hidden;
       overflow-y: auto;
+      /* Prevent iOS Safari bottom nav jumping */
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+    
+    /* Additional iOS Safari fixes for fixed elements */
+    .top-header-fixed {
+      /* Force iOS Safari to respect fixed positioning */
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      /* Prevent Safari address bar from affecting positioning */
+      position: fixed !important;
+      top: 0 !important;
+      /* Additional webkit specific fixes */
+      -webkit-backface-visibility: hidden !important;
+      -webkit-perspective: 1000 !important;
+      /* Prevent any bounce effects */
+      -webkit-overflow-scrolling: auto !important;
+      /* Force GPU acceleration on mobile */
+      will-change: transform !important;
+    }
+
+    .bottom-nav-fixed {
+      /* Force iOS Safari to respect fixed positioning */
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      /* Prevent Safari address bar from affecting positioning */
+      position: fixed !important;
+      bottom: 0 !important;
+      /* Additional webkit specific fixes */
+      -webkit-backface-visibility: hidden !important;
+      -webkit-perspective: 1000 !important;
+      /* Prevent any bounce effects */
+      -webkit-overflow-scrolling: auto !important;
+      /* Force GPU acceleration on mobile */
+      will-change: transform !important;
     }
     
     /* Fix for plant page specific scroll issues */
@@ -523,6 +572,60 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Header utilities */
+  .pt-header-safe {
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+
+  .h-header {
+    height: 4rem;
+  }
+
+  .min-h-header-safe {
+    min-height: calc(100dvh - 4rem - env(safe-area-inset-top, 0px));
+  }
+
+  .min-h-both-safe {
+    min-height: calc(100dvh - 4rem - var(--nav-height) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Enhanced top header positioning */
+  .top-header-fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9998 !important; /* Just below modals but above content */
+    transform: translateZ(0); /* Force hardware acceleration */
+    /* Additional properties to ensure it stays locked */
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+    /* Prevent any layout shifts */
+    box-sizing: border-box;
+    /* Ensure it's not affected by parent containers */
+    contain: layout style paint;
+    /* Lock to viewport top regardless of scroll */
+    bottom: auto !important;
+    margin: 0 !important;
+    /* Prevent flex shrinking/growing */
+    flex: none !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Prevent any scroll interference */
+    pointer-events: auto !important;
+    /* Ensure it stays above all content during scroll */
+    isolation: isolate;
+    /* Prevent overscroll from affecting position */
+    overscroll-behavior: contain;
+  }
+
   /* Enhanced bottom navigation positioning */
   .bottom-nav-fixed {
     position: fixed !important;
@@ -531,12 +634,46 @@
     right: 0 !important;
     z-index: 9999 !important;
     transform: translateZ(0); /* Force hardware acceleration */
+    /* Additional properties to ensure it stays locked */
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+    /* Prevent any layout shifts */
+    box-sizing: border-box;
+    /* Ensure it's not affected by parent containers */
+    contain: layout style paint;
+    /* Lock to viewport bottom regardless of scroll */
+    top: auto !important;
+    margin: 0 !important;
+    /* Prevent flex shrinking/growing */
+    flex: none !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Prevent any scroll interference */
+    pointer-events: auto !important;
+    /* Ensure it stays above all content during scroll */
+    isolation: isolate;
+    /* Prevent overscroll from affecting position */
+    overscroll-behavior: contain;
   }
 
-  /* Ensure main content has proper spacing for bottom nav */
+  /* Ensure main content has proper spacing for fixed elements */
   .content-with-nav {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
     min-height: calc(100vh - 4rem - env(safe-area-inset-bottom, 0px));
+  }
+
+  .content-with-header {
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+    min-height: calc(100vh - 4rem - env(safe-area-inset-top, 0px));
+  }
+
+  .content-with-both {
+    padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+    min-height: calc(100vh - 8rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 
   /* Touch action utilities */
