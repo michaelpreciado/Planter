@@ -72,6 +72,8 @@
     /* Ensure proper height on mobile browsers */
     min-height: 100vh;
     min-height: 100dvh; /* Dynamic viewport height for modern browsers */
+    /* Extend to cover safe area */
+    padding-bottom: env(safe-area-inset-bottom, 0);
 
     /* Global radial glow overlay */
     position: relative;
@@ -94,11 +96,14 @@
   }
 
   html {
+    @apply bg-background;
     scroll-behavior: smooth;
     /* Prevent zoom on iOS double tap */
     touch-action: manipulation;
     /* Ensure proper viewport height calculation on mobile */
     height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for modern browsers */
     /* Prevent elastic scrolling from affecting fixed elements */
     overscroll-behavior: contain;
     /* Additional iOS Safari fixes */
@@ -302,8 +307,8 @@
     }
   }
   
-  /* Prevent mobile scroll issues from bottom navigation */
-  @media screen and (max-width: 768px) {
+  /* Prevent mobile scroll issues - Apply to all mobile devices regardless of orientation */
+  @media screen and (hover: none) and (pointer: coarse) {
     body {
       /* Ensure proper scroll behavior on mobile */
       position: relative;
@@ -312,39 +317,6 @@
       /* Prevent iOS Safari bottom nav jumping */
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
-    }
-    
-    /* Additional iOS Safari fixes for fixed elements */
-    .top-header-fixed {
-      /* Force iOS Safari to respect fixed positioning */
-      -webkit-transform: translateZ(0) !important;
-      transform: translateZ(0) !important;
-      /* Prevent Safari address bar from affecting positioning */
-      position: fixed !important;
-      top: 0 !important;
-      /* Additional webkit specific fixes */
-      -webkit-backface-visibility: hidden !important;
-      -webkit-perspective: 1000 !important;
-      /* Prevent any bounce effects */
-      -webkit-overflow-scrolling: auto !important;
-      /* Force GPU acceleration on mobile */
-      will-change: transform !important;
-    }
-
-    .bottom-nav-fixed {
-      /* Force iOS Safari to respect fixed positioning */
-      -webkit-transform: translateZ(0) !important;
-      transform: translateZ(0) !important;
-      /* Prevent Safari address bar from affecting positioning */
-      position: fixed !important;
-      bottom: 0 !important;
-      /* Additional webkit specific fixes */
-      -webkit-backface-visibility: hidden !important;
-      -webkit-perspective: 1000 !important;
-      /* Prevent any bounce effects */
-      -webkit-overflow-scrolling: auto !important;
-      /* Force GPU acceleration on mobile */
-      will-change: transform !important;
     }
     
     /* Fix for plant page specific scroll issues */
@@ -365,6 +337,32 @@
     
     .mobile-safe-nav {
       padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    }
+    
+    /* Enhanced iOS-specific handling */
+    body {
+      /* Ensure proper positioning on iOS */
+      position: relative;
+      /* Prevent address bar jumping */
+      min-height: 100vh;
+      min-height: 100dvh;
+      /* Force proper layout calculation */
+      height: 100%;
+    }
+    
+    /* Specific fixes for iOS Safari */
+    .ios-safe-layout {
+      /* Account for dynamic viewport changes */
+      min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--nav-height, 4rem));
+    }
+    
+    /* Enhanced mobile content spacing */
+    .mobile-content {
+      padding-left: max(env(safe-area-inset-left), 1rem);
+      padding-right: max(env(safe-area-inset-right), 1rem);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--nav-height, 4rem) + 2rem);
     }
   }
 }
@@ -516,6 +514,15 @@
     padding-top: max(env(safe-area-inset-top), 1rem);
   }
 
+  /* Enhanced iOS safe area utilities */
+  .pt-safe-ios {
+    padding-top: max(calc(env(safe-area-inset-top) + 1rem), 2rem);
+  }
+
+  .pt-safe-extra {
+    padding-top: max(calc(env(safe-area-inset-top) + 1.5rem), 2.5rem);
+  }
+
   .pb-safe {
     padding-bottom: max(calc(env(safe-area-inset-bottom) + 4rem), 4rem);
   }
@@ -526,7 +533,7 @@
       padding-bottom: max(calc(env(safe-area-inset-bottom) + 3rem), 3rem);
     }
     .pb-nav-safe {
-      padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
     }
   }
   
@@ -535,7 +542,7 @@
       padding-bottom: max(calc(env(safe-area-inset-bottom) + 2rem), 2rem);
     }
     .pb-nav-safe {
-      padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
     }
   }
 
@@ -553,7 +560,7 @@
 
   /* Navigation-specific safe area utilities */
   .pb-nav-safe {
-    padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
   }
 
   .mb-nav-safe {
@@ -570,6 +577,15 @@
 
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Enhanced bottom safe area utilities for navigation */
+  .pb-safe-nav {
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 0.5rem), 1rem);
+  }
+
+  .pb-safe-nav-extra {
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 1rem), 1.5rem);
   }
 
   .safe-area-top {
@@ -643,6 +659,12 @@
     /* Prevent any layout shifts */
     box-sizing: border-box;
     /* Ensure it's not affected by parent containers */
+    /* Force the navigation to stay at bottom during scroll */
+    contain: layout style;
+    /* Prevent interaction with other elements */
+    pointer-events: auto;
+    /* Ensure it doesn't scroll with content */
+    position: fixed !important;
     contain: layout style paint;
     /* Lock to viewport bottom regardless of scroll */
     top: auto !important;
@@ -660,6 +682,11 @@
     /* Force visibility on mobile */
     visibility: visible !important;
     display: block !important;
+    /* Additional iOS-specific fixes */
+    -webkit-overflow-scrolling: touch;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
 
   /* Ensure main content has proper spacing for fixed elements */
@@ -679,10 +706,67 @@
     min-height: calc(100vh - 8rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 
+  /* Liquid glass navigation styles */
+  .nav-liquid-glass {
+    background: #ffffff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .nav-liquid-glass {
+      background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.7) 100%) !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -1px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  /* Dark mode support for systems with explicit dark mode class */
+  .dark .nav-liquid-glass {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -1px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Liquid glass button styles */
+  .btn-liquid-glass {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    box-shadow: 0 2px 20px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .btn-liquid-glass {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 2px 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .dark .btn-liquid-glass {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
   /* Touch action utilities */
   .touch-none { touch-action: none; }
   .touch-pan-x { touch-action: pan-x; }
   .touch-pan-y { touch-action: pan-y; }
+
+  /* Ensure full viewport coverage in dark mode */
+  .full-viewport-bg {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: rgb(var(--background));
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
   .touch-manipulation { touch-action: manipulation; }
 
   /* Text utilities */

@@ -8,7 +8,6 @@ import { usePlants } from '@/lib/plant-store';
 import { ImageDisplay } from '@/components/ImageDisplay';
 import { useListScrollOptimization } from '@/hooks/useScrollOptimization';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
-import { NightModeToggle } from '@/components/NightModeToggle';
 import { PageLoader, PageHeader } from '@/components/PageLoader';
 import { usePageWithPlants } from '@/hooks/usePageReady';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -145,7 +144,7 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16 content-with-header">
+    <div className="min-h-screen bg-background flex flex-col ios-safe-layout mobile-content">
       {/* Header */}
       <PageHeader title="Plant Notes">
         <button 
@@ -161,7 +160,6 @@ export default function NotesPage() {
         </button>
         <h1 className="text-xl font-bold text-foreground">Plant Notes</h1>
         <div className="flex items-center gap-2">
-          <NightModeToggle />
           <span className="text-sm text-muted-foreground">
             {filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'}
           </span>
@@ -173,7 +171,7 @@ export default function NotesPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="bg-card/60 backdrop-blur-md px-6 py-4 border-b border-border relative z-20"
+        className="bg-transparent backdrop-blur-md px-6 py-4 relative z-20"
       >
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {[

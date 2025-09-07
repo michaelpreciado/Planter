@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ModalBackdrop, FadeIn } from '@/components/AnimationReplacements';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
+import { OFFLINE_ADMIN } from '@/utils/offlineMode';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,7 +19,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isOffline } = useAuth();
   const haptic = useHapticFeedback();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +57,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    haptic.lightImpact();
+  };
+
+  const fillAdminCredentials = () => {
+    setEmail(OFFLINE_ADMIN.email);
+    setPassword(OFFLINE_ADMIN.password);
     haptic.lightImpact();
   };
 
@@ -156,6 +164,34 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3"
                 >
                   <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </motion.div>
+              )}
+
+              {/* Offline Mode Hint */}
+              {isOffline && isLogin && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-orange-500">🔓</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                        Offline Mode Active
+                      </p>
+                      <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                        Use admin credentials to test: {OFFLINE_ADMIN.email} / {OFFLINE_ADMIN.password}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={fillAdminCredentials}
+                        className="text-xs text-orange-600 dark:text-orange-400 underline hover:no-underline mt-1"
+                      >
+                        Auto-fill credentials
+                      </button>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 

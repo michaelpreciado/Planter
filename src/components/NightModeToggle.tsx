@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { AnimatedButton } from '@/components/AnimationReplacements';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/lib/theme-provider';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';

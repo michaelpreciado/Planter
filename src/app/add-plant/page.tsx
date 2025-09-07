@@ -8,7 +8,6 @@ import { usePlants } from '@/lib/plant-store';
 import { useHapticFeedback, useMobileGestures } from '@/hooks/useMobileGestures';
 import { useVerticalScrollOptimization } from '@/hooks/useScrollOptimization';
 import { ImageUpload } from '@/components/ImageUpload';
-import { NightModeToggle } from '@/components/NightModeToggle';
 import { AuthGuard } from '@/components/AuthGuard';
 
 const plantTypes = [
@@ -132,12 +131,12 @@ export default function AddPlantPage() {
 
   return (
     <AuthGuard message="Please sign in to add new plants to your collection">
-      <div className="min-h-screen bg-background flex flex-col pb-16">
+      <div className="min-h-screen bg-background flex flex-col ios-safe-layout mobile-content">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10 shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+        className="top-header-fixed bg-transparent backdrop-blur-xl shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
         style={{ 
           // Additional inline styles to ensure it stays fixed
           position: 'fixed',
@@ -163,7 +162,7 @@ export default function AddPlantPage() {
           </svg>
         </motion.button>
         <h1 className="text-xl font-bold text-foreground">Add New Plant</h1>
-        <NightModeToggle />
+        <div></div>
       </motion.header>
 
       {/* Form Content */}
@@ -206,13 +205,13 @@ export default function AddPlantPage() {
             <label className="block text-sm font-medium text-foreground mb-4">
               Plant Type *
             </label>
-            <div className="grid grid-cols-2 gap-2 scroll-card">
+            <div className="grid grid-cols-4 gap-2 scroll-card">
               {plantTypes.map((type, index) => (
                 <motion.button
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeSelect(type.id)}
-                  className={`p-2 rounded-lg border-2 transition-all duration-200 btn-mobile touch-feedback ${
+                  className={`aspect-square p-1.5 rounded-lg border-2 transition-all duration-200 btn-mobile touch-feedback flex flex-col items-center justify-center ${
                     selectedType === type.id
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-card text-foreground active:bg-accent'
@@ -222,8 +221,8 @@ export default function AddPlantPage() {
                   transition={{ delay: 0.3 + index * 0.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="text-xl mb-1">{type.icon}</div>
-                  <div className="text-xs font-medium">{type.name}</div>
+                  <div className="text-xs mb-0.5">{type.icon}</div>
+                  <div className="text-[9px] font-medium text-center leading-tight">{type.name}</div>
                 </motion.button>
               ))}
             </div>
@@ -421,15 +420,6 @@ export default function AddPlantPage() {
             )}
           </motion.div>
 
-          {/* Gesture Hint */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 2 }}
-            className="text-center text-xs text-muted-foreground pb-nav-safe"
-          >
-            👉 Swipe right to go back
-          </motion.div>
         </form>
         </div>
       </div>

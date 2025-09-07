@@ -1,6 +1,0 @@
-This is a placeholder for the app icon.
-To create the actual icon:
-1. Create a 1024x1024 PNG image with the Tamagotchi blob design
-2. Use the primary green color (#4CAF50) as the background
-3. Center the cute plant character from TamagotchiBlob.tsx
-4. Ensure it looks good at various sizes (20x20 to 1024x1024) 

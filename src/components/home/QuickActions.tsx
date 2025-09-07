@@ -14,7 +14,7 @@ const actions = [
       </svg>
     ),
     href: '/add-plant',
-    color: 'from-green-500 to-emerald-600',
+    color: 'from-emerald-500 to-emerald-600',
   },
   {
     id: 'view-plants',
@@ -26,7 +26,7 @@ const actions = [
       </svg>
     ),
     href: '/plants',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-emerald-500 to-green-600',
   },
   {
     id: 'settings',

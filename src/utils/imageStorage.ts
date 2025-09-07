@@ -133,11 +133,9 @@ class ModernImageStorage {
    */
   async getImage(id: string): Promise<string | null> {
     if (!id) {
-      console.log('📦 ImageStorage: No ID provided');
       return null;
     }
     
-    console.log('📦 ImageStorage: Getting image with ID:', id);
     await this.init();
 
     try {
@@ -146,29 +144,18 @@ class ModernImageStorage {
       let metadata: ImageMetadata | null = null;
 
       if (this.db) {
-        console.log('📦 ImageStorage: Checking IndexedDB for image:', id);
         const localImage = await this.getFromIndexedDB(id);
         if (localImage) {
           imageData = localImage.data;
           metadata = localImage.metadata;
-          // Found in IndexedDB
-        } else {
-          // Not in IndexedDB
         }
       } else {
-        // Checking localStorage
         imageData = this.getFromLocalStorage(id);
         metadata = this.getMetadataFromLocalStorage(id);
-        if (imageData) {
-          // Found in localStorage
-        } else {
-          // Not in localStorage
-        }
       }
 
       // If we have local data, use it
       if (imageData) {
-        // Returning local data
         await this.updateLastAccessed(id);
         return imageData;
       }
@@ -654,6 +641,7 @@ class ModernImageStorage {
     const match = dataUrl.match(/data:([^;]+);/);
     return match ? match[1] : 'image/jpeg';
   }
+
 }
 
 // Export singleton instance

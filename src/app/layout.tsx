@@ -1,47 +1,38 @@
-import { Inter } from 'next/font/google';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-  preload: true,
-  fallback: ['system-ui', '-apple-system', 'sans-serif'],
-});
-
 export const metadata = {
   metadataBase: new URL('https://simmys-plant-diary.netlify.app'),
-  title: 'Simmys Plant Diary',
+  title: 'Planter',
   description: 'A beautiful plant care app with a Tamagotchi-style companion to help you nurture your green friends.',
   keywords: 'plants, care, tracking, watering, garden, tamagotchi, plant diary, garden app, simmy',
-  authors: [{ name: 'Simmy' }],
-  creator: 'Simmy',
-  publisher: 'Simmys Plant Diary',
+  authors: [{ name: 'Michael Preciado' }],
+  creator: 'Michael Preciado',
+  publisher: 'Planter',
   robots: 'index, follow',
   category: 'productivity',
   openGraph: {
-    title: 'Simmys Plant Diary',
+    title: 'Planter',
     description: 'A beautiful plant care app with a Tamagotchi-style companion.',
     type: 'website',
     locale: 'en_US',
     url: 'https://simmys-plant-diary.netlify.app',
-    siteName: 'Simmys Plant Diary',
+    siteName: 'Planter',
     images: [
       {
         url: '/apple-touch-icon.png',
         width: 180,
         height: 180,
-        alt: 'Simmys Plant Diary App'
+        alt: 'Planter App'
       }
     ]
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Simmys Plant Diary',
+    title: 'Planter',
     description: 'A beautiful plant care app with a Tamagotchi-style companion.',
     images: ['/apple-touch-icon.png'],
   },
@@ -76,7 +67,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, user-scalable=no" />
         <meta name="theme-color" content="#10B981" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -99,15 +90,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.className} antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden mobile-scroll-container flex flex-col`}>
+      <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden">
+        <div className="min-h-dvh bg-background">
         <Providers>
-          <main 
-            className="flex-grow"
-            style={{
-              minHeight: "calc(100dvh - var(--nav-height) - env(safe-area-inset-bottom, 0px))",
-              paddingBottom: "calc(var(--nav-height) + env(safe-area-inset-bottom, 0px))",
-            }}
-          >
+          <main className="relative pb-nav-safe min-h-dvh bg-background">
             <PageTransition>
               {children}
             </PageTransition>
@@ -115,6 +101,7 @@ export default function RootLayout({
           <BottomNavigation />
           <Toaster />
         </Providers>
+        </div>
       </body>
     </html>
   );

@@ -4,11 +4,18 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
 import { usePlantStore } from '@/lib/plant-store';
+import { 
+  isOfflineMode, 
+  validateOfflineAdmin, 
+  OFFLINE_ADMIN,
+  loadDummyDataIfEmpty 
+} from '@/utils/offlineMode';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isOffline: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, username?: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -20,8 +27,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOffline] = useState(() => isOfflineMode());
 
   useEffect(() => {
+    // Handle offline mode initialization
+    if (isOffline) {
+      // Check if admin is already logged in offline
+      const savedOfflineUser = localStorage.getItem('planter_offline_user');
+      if (savedOfflineUser) {
+        try {
+          const offlineUser = JSON.parse(savedOfflineUser);
+          setUser(offlineUser);
+          // Load dummy data if needed
+          setTimeout(() => {
+            const { plants, addPlant } = usePlantStore.getState();
+            loadDummyDataIfEmpty(plants, addPlant);
+          }, 100);
+        } catch (error) {
+          console.error('Failed to parse offline user:', error);
+          localStorage.removeItem('planter_offline_user');
+        }
+      }
+      setLoading(false);
+      return;
+    }
+
     // Skip auth setup if Supabase is not configured
     if (!isSupabaseConfigured() || !supabase) {
       setLoading(false);
@@ -62,11 +92,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [isOffline]);
 
   const signIn = async (email: string, password: string) => {
+    // Handle offline admin authentication
+    if (isOffline) {
+      if (validateOfflineAdmin(email, password)) {
+        const offlineUser = OFFLINE_ADMIN.user as any;
+        setUser(offlineUser);
+        localStorage.setItem('planter_offline_user', JSON.stringify(offlineUser));
+        
+        // Load dummy data if plants array is empty
+        setTimeout(() => {
+          const { plants, addPlant } = usePlantStore.getState();
+          loadDummyDataIfEmpty(plants, addPlant);
+        }, 100);
+        
+        return {};
+      } else {
+        return { error: 'Invalid admin credentials. Use admin@planter.test / admin123' };
+      }
+    }
+
     if (!isSupabaseConfigured() || !supabase) {
-      return { error: 'Authentication not available in offline mode' };
+      return { error: 'Authentication not available' };
     }
 
     try {
@@ -86,8 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
+    // Disable signup in offline mode
+    if (isOffline) {
+      return { error: 'Sign up not available in offline mode. Use admin login instead.' };
+    }
+
     if (!isSupabaseConfigured() || !supabase) {
-      return { error: 'Authentication not available in offline mode' };
+      return { error: 'Authentication not available' };
     }
 
     try {
@@ -112,6 +166,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Handle offline mode signout
+    if (isOffline) {
+      setUser(null);
+      localStorage.removeItem('planter_offline_user');
+      // Clear local plant data when user signs out
+      usePlantStore.setState({ plants: [], recentlyWateredPlant: null });
+      return;
+    }
+
     if (isSupabaseConfigured() && supabase) {
       await supabase.auth.signOut();
     }
@@ -123,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    isOffline,
     signIn,
     signUp,
     signOut,

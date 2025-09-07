@@ -7,25 +7,29 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { ImageDisplay } from '@/components/ImageDisplay';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { usePlants } from '@/lib/plant-store';
-import { NightModeToggle } from '@/components/NightModeToggle';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { format } from 'date-fns';
 import { AuthGuard } from '@/components/AuthGuard';
-import { FadeIn, SlideUp, ScaleIn, AnimatedButton, Spinner } from '@/components/AnimationReplacements';
-import { motion } from 'framer-motion';
+import { FadeIn, SlideUp, ScaleIn, AnimatedButton } from '@/components/AnimationReplacements';
 
-type FilterType = 'all' | 'healthy' | 'needs_water' | 'overdue';
+type FilterType = 'all' | 'healthy' | 'needs_attention';
 
 export function ListPageClient() {
-  const { plants, waterPlant, removePlant, triggerManualSync } = usePlants();
+  const { plants, waterPlant, removePlant } = usePlants();
   const searchParams = useSearchParams();
   const router = useRouter();
   const haptic = useHapticFeedback();
   
   // Use URL state for filter - better UX and SSR
-  const filter = (searchParams.get('filter') as FilterType) || 'all';
+  const rawFilter = searchParams.get('filter');
+  const filter = (() => {
+    // Handle legacy filter types for backward compatibility
+    if (rawFilter === 'needs_water' || rawFilter === 'overdue') {
+      return 'needs_attention';
+    }
+    return (rawFilter as FilterType) || 'all';
+  })();
   const [isPending, startTransition] = useTransition();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [waterAnimationId, setWaterAnimationId] = useState<string | null>(null);
   
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -38,16 +42,35 @@ export function ListPageClient() {
     plantName: null,
   });
 
-  const filteredPlants = plants.filter(plant => {
-    if (filter === 'all') return true;
-    return plant.status === filter;
-  });
+  // Redirect legacy filter URLs to clean URLs
+  useEffect(() => {
+    if (rawFilter === 'needs_water' || rawFilter === 'overdue') {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('filter', 'needs_attention');
+      router.replace(`/list?${params.toString()}`);
+    }
+  }, [rawFilter, searchParams, router]);
+
+  const filteredPlants = plants
+    .filter(plant => {
+      if (filter === 'all') return true;
+      if (filter === 'healthy') return plant.status === 'healthy';
+      if (filter === 'needs_attention') return plant.status === 'needs_water' || plant.status === 'overdue';
+      return false;
+    })
+    .sort((a, b) => {
+      // When filtering for plants that need attention, prioritize overdue plants
+      if (filter === 'needs_attention') {
+        if (a.status === 'overdue' && b.status === 'needs_water') return -1;
+        if (a.status === 'needs_water' && b.status === 'overdue') return 1;
+      }
+      return 0;
+    });
 
   const filters = [
     { key: 'all', label: 'All', count: plants.length },
     { key: 'healthy', label: 'Healthy', count: plants.filter(p => p.status === 'healthy').length },
-    { key: 'needs_water', label: 'Needs Water', count: plants.filter(p => p.status === 'needs_water').length },
-    { key: 'overdue', label: 'Overdue', count: plants.filter(p => p.status === 'overdue').length },
+    { key: 'needs_attention', label: 'Need Water', count: plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length },
   ];
 
   const handleFilterChange = (newFilter: FilterType) => {
@@ -91,19 +114,6 @@ export function ListPageClient() {
     });
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    haptic.lightImpact();
-    try {
-      await triggerManualSync();
-      haptic.success();
-    } catch (error) {
-      console.error('Refresh failed:', error);
-      haptic.error();
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -128,7 +138,7 @@ export function ListPageClient() {
       <div className="flex flex-col h-full">
         {/* Filter Tabs with refresh button */}
         <FadeIn 
-          className="top-header-fixed bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl border-b border-white/20 dark:border-white/10"
+          className="top-header-fixed bg-transparent backdrop-blur-xl pt-safe-ios px-6 pb-4"
           style={{ 
             // Additional inline styles to ensure it stays fixed
             position: 'fixed',
@@ -138,28 +148,11 @@ export function ListPageClient() {
             zIndex: '9998',
             transform: 'translateZ(0)',
             WebkitTransform: 'translateZ(0)',
-            paddingTop: 'max(env(safe-area-inset-top), 0.5rem)',
-            paddingLeft: '1.5rem',
-            paddingRight: '1.5rem',
-            paddingBottom: '1rem',
           }}>
           <div className="flex items-center justify-between gap-4 mb-4">
-            <AnimatedButton
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              variant="ghost"
-              className="p-2 rounded-lg"
-            >
-              {isRefreshing ? (
-                <Spinner size="sm" />
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-              )}
-            </AnimatedButton>
+            <div className="w-10"></div> {/* Spacer to maintain center alignment */}
             <h1 className="text-xl font-semibold text-foreground">My Plants</h1>
-            <NightModeToggle />
+            <div className="w-10"></div> {/* Spacer to maintain center alignment */}
           </div>
           
           <div className="w-full">
@@ -189,11 +182,7 @@ export function ListPageClient() {
         >
           {filteredPlants.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <SlideUp delay={0.2}>
                 <div className="avatar-responsive bg-primary/20 flex items-center justify-center mx-auto mb-4">
                   <span className="text-responsive-lg">🌱</span>
                 </div>
@@ -206,17 +195,19 @@ export function ListPageClient() {
                     : `No plants match the "${filter}" filter.`}
                 </p>
                 {plants.length === 0 && (
-                  <Link
-                    href="/add-plant"
-                    className="inline-flex items-center gap-responsive bg-primary text-primary-foreground btn-responsive font-semibold hover:bg-primary/90 transition-colors"
-                  >
-                    <svg className="icon-responsive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Add Your First Plant
-                  </Link>
+                  <AnimatedButton>
+                    <Link
+                      href="/add-plant"
+                      className="inline-flex items-center gap-responsive bg-primary text-primary-foreground btn-responsive font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      <svg className="icon-responsive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                      </svg>
+                      Add Your First Plant
+                    </Link>
+                  </AnimatedButton>
                 )}
-              </motion.div>
+              </SlideUp>
             </div>
           ) : (
             <div className="space-y-6 px-6">

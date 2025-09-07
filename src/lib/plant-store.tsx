@@ -10,6 +10,7 @@ import { format, addDays } from 'date-fns';
 import { plantService, isSupabaseConfigured } from '@/utils/supabase';
 import { Plant as DBPlant } from '@/types';
 import { storeImage, getImage, removeImage } from '@/utils/imageStorage';
+import { useMemo } from 'react';
 
 export interface Plant {
   id: string;
@@ -609,23 +610,33 @@ export const usePlantStore = create<PlantStore>()(
   )
 );
 
-// Enhanced hook that provides real-time plant data
+// Optimized hook that provides real-time plant data with memoization
 export function usePlants() {
   const store = usePlantStore();
   
-  // Return plants with real-time status
-  const plantsWithRealTimeStatus = store.plants.map(plant => {
-    const realTimeInfo = getRealTimePlantInfo(plant);
-    return {
-      ...plant,
-      status: realTimeInfo.status,
-      nextWatering: realTimeInfo.nextWatering
-    };
-  });
+  // Memoize plants with real-time status to prevent unnecessary recalculations
+  const plantsWithRealTimeStatus = useMemo(() => {
+    return store.plants.map(plant => {
+      const realTimeInfo = getRealTimePlantInfo(plant);
+      return {
+        ...plant,
+        status: realTimeInfo.status,
+        nextWatering: realTimeInfo.nextWatering
+      };
+    });
+  }, [store.plants]);
+
+  // Create optimized selectors with memoization
+  const optimizedSelectors = useMemo(() => ({
+    healthyPlants: plantsWithRealTimeStatus.filter(p => p.status === 'healthy'),
+    plantsNeedingWater: plantsWithRealTimeStatus.filter(p => p.status === 'needs_water' || p.status === 'overdue'),
+    plantsCount: plantsWithRealTimeStatus.length,
+  }), [plantsWithRealTimeStatus]);
   
   return {
     ...store,
     plants: plantsWithRealTimeStatus,
+    ...optimizedSelectors,
   };
 }
 

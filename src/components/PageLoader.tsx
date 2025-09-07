@@ -1,5 +1,6 @@
 'use client';
 
+import { FadeIn, Spinner } from '@/components/AnimationReplacements';
 import { motion } from 'framer-motion';
 
 interface PageLoaderProps {
@@ -108,7 +109,7 @@ export function PageHeader({ title, children }: { title: string; children?: Reac
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="top-header-fixed bg-card/30 backdrop-blur-md border-b border-border shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
+      className="top-header-fixed bg-transparent backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-4 pt-safe"
       style={{ 
         // Additional inline styles to ensure it stays fixed
         position: 'fixed',

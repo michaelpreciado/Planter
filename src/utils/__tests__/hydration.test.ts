@@ -23,7 +23,7 @@ describe('Hydration utilities', () => {
 
   describe('getSpriteForStatus', () => {
     test('returns correct sprite paths', () => {
-      expect(getSpriteForStatus('happy')).toBe('/assets/happy.png');
+      expect(getSpriteForStatus('happy')).toBe('/assets/tamagotchi.png');
       expect(getSpriteForStatus('thirsty')).toBe('/assets/thirsty.png');
       expect(getSpriteForStatus('mad')).toBe('/assets/mad.png');
     });

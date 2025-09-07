@@ -119,6 +119,7 @@ module.exports = {
       },
       // Essential screen sizes only
       screens: {
+        'xs': '320px',
         'sm': '480px',
         'md': '640px',
         'lg': '960px',

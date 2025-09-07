@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, memo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { usePlants } from '@/lib/plant-store';
@@ -58,13 +58,18 @@ export const TamagotchiBlob = memo(({
   const [particles, setParticles] = useState<{ id: number; type: string; delay: number }[]>([]);
   const [hasEntryPlayed, setHasEntryPlayed] = useState(false);
 
-  // Determine mood based on plants using hydration logic
+  // Optimized mood calculation with proper memoization
+  const plantsHash = useMemo(() => 
+    plants.map(p => `${p.id}-${p.lastWatered}-${p.nextWatering}-${p.wateringFrequency}`).join('|'), 
+    [plants]
+  );
+  
   const calculatedMood = useMemo(() => {
     if (plants.length === 0) return 'neutral';
     
     // Calculate average hydration across all plants
     const plantsWithHydration = plants.map(plant => {
-      if (!plant.lastWatered || !plant.nextWatering) return 50; // Default to moderate hydration
+      if (!plant.lastWatered || !plant.nextWatering) return 50;
       
       const lastWatered = plant.lastWatered === 'Just planted' ? new Date() : new Date(plant.lastWatered);
       const nextWaterDue = new Date(lastWatered.getTime() + (plant.wateringFrequency * 24 * 60 * 60 * 1000));
@@ -74,15 +79,15 @@ export const TamagotchiBlob = memo(({
     
     const avgHydration = plantsWithHydration.reduce((sum, h) => sum + h, 0) / plantsWithHydration.length;
     return getStatusFromHydration(avgHydration);
-  }, [plants]);
+  }, [plants, plantsHash]);
 
   const currentMood = mood !== 'neutral' ? mood : calculatedMood;
 
-  // Get sprite URL based on mood
+  // Get sprite URL based on mood - optimized without console logs
   const spriteUrl = useMemo(() => {
-    if (currentMood === 'neutral') return '/assets/happy.png'; // Default sprite
-    if (currentMood === 'thirsty') return '/assets/thirsty.png';
-    return getSpriteForStatus(currentMood as Status);
+    // Convert 'neutral' to a valid Status
+    const validStatus: Status = currentMood === 'neutral' ? 'happy' : currentMood;
+    return getSpriteForStatus(validStatus);
   }, [currentMood]);
 
   // Memoized glow color
@@ -95,20 +100,39 @@ export const TamagotchiBlob = memo(({
     }
   }, [currentMood]);
 
-  // Auto-cycle animation
+  // Optimized animation using RAF instead of setInterval
+  const animationRequestRef = useRef<number | null>(null);
+  const lastAnimationTime = useRef<number>(0);
+  
   useEffect(() => {
-    if (!showAnimation) return;
+    if (!showAnimation) {
+      if (animationRequestRef.current) {
+        cancelAnimationFrame(animationRequestRef.current);
+        animationRequestRef.current = null;
+      }
+      return;
+    }
     
-    const interval = setInterval(() => {
-      setIsActive(true);
-      setTimeout(() => setIsActive(false), 3000);
-    }, 8000);
+    const animate = (timestamp: number) => {
+      if (timestamp - lastAnimationTime.current >= 8000) {
+        setIsActive(true);
+        setTimeout(() => setIsActive(false), 3000);
+        lastAnimationTime.current = timestamp;
+      }
+      animationRequestRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRequestRef.current = requestAnimationFrame(animate);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (animationRequestRef.current) {
+        cancelAnimationFrame(animationRequestRef.current);
+      }
+    };
   }, [showAnimation]);
 
-  // Particle generation
-  const generateParticles = useMemo(() => (type: string, count: number) => {
+  // Optimized particle generation with static function
+  const generateParticles = useCallback((type: string, count: number) => {
     return Array.from({ length: count }, (_, i) => ({
       id: Date.now() + i,
       type,
@@ -116,28 +140,39 @@ export const TamagotchiBlob = memo(({
     }));
   }, []);
 
-  // Effect particles based on mood
+  // Effect particles based on mood - debounced for performance
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   useEffect(() => {
     if (!isActive) return;
 
-    let newParticles: { id: number; type: string; delay: number }[] = [];
-    
-    switch (currentMood) {
-      case 'happy':
-        newParticles = generateParticles('✨', 5);
-        break;
-      case 'thirsty':
-        newParticles = generateParticles('💧', 3);
-        break;
-      case 'mad':
-        newParticles = generateParticles('💢', 3);
-        break;
-      default:
-        newParticles = generateParticles('🌿', 2);
+    // Clear any pending timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
 
+    // Batch particle updates to reduce state changes
+    const particleConfig = {
+      'happy': { type: '✨', count: 5 },
+      'thirsty': { type: '💧', count: 3 },
+      'mad': { type: '💢', count: 3 },
+      'default': { type: '🌿', count: 2 }
+    };
+    
+    const config = particleConfig[currentMood as keyof typeof particleConfig] || particleConfig.default;
+    const newParticles = generateParticles(config.type, config.count);
+
     setParticles(newParticles);
-    setTimeout(() => setParticles([]), 2500);
+    
+    timeoutRef.current = setTimeout(() => {
+      setParticles([]);
+    }, 2500);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [isActive, currentMood, generateParticles]);
 
   return (
@@ -216,7 +251,13 @@ export const TamagotchiBlob = memo(({
               style={{
                 imageRendering: 'crisp-edges'
               }}
-              priority={size > 100}
+              onError={(e) => {
+                console.error('Image failed to load:', spriteUrl, e);
+              }}
+              onLoad={() => {
+                console.log('Image loaded successfully:', spriteUrl);
+              }}
+              priority
             />
           </motion.div>
         </motion.div>

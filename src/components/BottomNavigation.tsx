@@ -50,7 +50,7 @@ export function BottomNavigation() {
       href: '/list',
       label: 'Plants',
       icon: (isActive: boolean) => (
-        <svg className={`w-5 h-5 ${isActive ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-5 h-5 ${isActive ? 'text-emerald-500' : 'text-slate-700 dark:text-emerald-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
         </svg>
       )
@@ -59,7 +59,7 @@ export function BottomNavigation() {
       href: '/',
       label: 'Home',
       icon: (isActive: boolean) => (
-        <svg className={`w-5 h-5 ${isActive ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-5 h-5 ${isActive ? 'text-emerald-500' : 'text-slate-700 dark:text-emerald-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
         </svg>
       )
@@ -68,7 +68,7 @@ export function BottomNavigation() {
       href: '/add-plant',
       label: 'Add',
       icon: (isActive: boolean) => (
-        <svg className={`w-5 h-5 ${isActive ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-5 h-5 ${isActive ? 'text-emerald-500' : 'text-slate-700 dark:text-emerald-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
         </svg>
       )
@@ -78,24 +78,30 @@ export function BottomNavigation() {
   return (
     <nav
       ref={navRef}
-      className="bottom-nav-fixed h-auto min-h-16 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-white/20 dark:border-white/10 safe-area-bottom"
+      className="bottom-nav-fixed h-auto min-h-16 pb-safe-nav pt-3 nav-liquid-glass"
       style={{ 
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        paddingTop: '0.5rem',
-        // Additional inline styles to ensure it stays fixed
+        // Ensure it stays fixed on iOS Safari
         position: 'fixed',
         bottom: '0',
         left: '0',
         right: '0',
-        zIndex: '10000', // Higher z-index to ensure visibility
+        zIndex: '10000',
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
-        // Force visibility and prevent hidden
-        visibility: 'visible',
-        display: 'block',
-        // Additional mobile fixes
+        // Force visibility
+        visibility: 'visible' as const,
+        // iOS Safari specific fixes
         WebkitBackfaceVisibility: 'hidden',
         backfaceVisibility: 'hidden',
+        // Prevent any layout interference
+        contain: 'layout style paint',
+        // Ensure proper touch handling
+        touchAction: 'manipulation',
+        // Additional iOS fixes
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        // Prevent scroll interference
+        overscrollBehavior: 'contain',
       }}
     >
       <div className="flex items-center justify-around px-2 py-1 sm:py-2">
@@ -108,26 +114,26 @@ export function BottomNavigation() {
               href={item.href}
               aria-label={item.label}
               onClick={handleNavClick}
-              className="relative flex flex-col items-center justify-center py-1 sm:py-2 px-2 sm:px-3 min-w-0 flex-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+              className="relative flex flex-col items-center justify-center py-1 sm:py-2 px-2 sm:px-3 min-w-0 flex-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
             >
-              {/* Active indicator dot */}
+              {/* Active liquid glass background */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute top-1 w-1 h-1 bg-primary-500 rounded-full"
+                  className="absolute inset-0 rounded-xl btn-liquid-glass"
                   initial={false}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
               
               {/* Icon */}
-              <div className="mb-1">
+              <div className="mb-1 relative z-10">
                 {item.icon(isActive)}
               </div>
               
               {/* Label */}
-              <span className={`text-[10px] font-medium leading-none ${
-                isActive ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'
+              <span className={`text-[10px] font-medium leading-none relative z-10 ${
+                isActive ? 'text-emerald-500' : 'text-slate-700 dark:text-emerald-400'
               }`}>
                 {item.label}
               </span>
