@@ -11,6 +11,13 @@ import { plantService, isSupabaseConfigured } from '@/utils/supabase';
 import { Plant as DBPlant } from '@/types';
 import { storeImage, getImage, removeImage } from '@/utils/imageStorage';
 import { useMemo } from 'react';
+import { sanitizePlantInput, isOnline } from '@/utils/security';
+import {
+  addToSyncQueue,
+  getSyncQueue,
+  markSyncFailure,
+  removeFromSyncQueue,
+} from '@/utils/syncQueue';
 
 export interface Plant {
   id: string;
@@ -36,6 +43,7 @@ interface PlantStore {
   loading: boolean;
   error: string | null;
   hasHydrated: boolean;
+  syncQueueCount: number;
   
   // Core operations
   addPlant: (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -59,6 +67,7 @@ interface PlantStore {
   // Sync operations
   syncWithDatabase: () => Promise<void>;
   triggerManualSync: () => Promise<void>;
+  processPendingSyncQueue: () => Promise<void>;
   removeDuplicatePlants: () => number;
 }
 
@@ -133,20 +142,28 @@ export const usePlantStore = create<PlantStore>()(
       loading: false,
       error: null,
       hasHydrated: false,
+      syncQueueCount: 0,
       
       // Core operations
       addPlant: async (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => {
         set({ loading: true, error: null });
         
         try {
+          const sanitizedPlantData = sanitizePlantInput(plantData);
           const newPlant: Plant = {
-            ...plantData,
+            name: sanitizedPlantData.name || plantData.name,
+            species: sanitizedPlantData.species || plantData.species,
+            plantingDate: sanitizedPlantData.plantingDate || plantData.plantingDate,
+            wateringFrequency: sanitizedPlantData.wateringFrequency || plantData.wateringFrequency,
+            notes: sanitizedPlantData.notes,
+            noteAttachments: sanitizedPlantData.noteAttachments || plantData.noteAttachments,
+            imageUrl: sanitizedPlantData.imageUrl || plantData.imageUrl,
             id: uuidv4(),
             icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
             iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
             status: 'healthy',
             lastWatered: 'Just planted',
-            nextWatering: calculateNextWatering(plantData.wateringFrequency),
+            nextWatering: calculateNextWatering(sanitizedPlantData.wateringFrequency || 7),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -187,9 +204,22 @@ export const usePlantStore = create<PlantStore>()(
               
               if (isDevelopment) console.log(`Successfully synced new plant: ${newPlant.name} (${newPlant.id} -> ${createdPlant.id})`);
             } catch (error) {
+              const queue = addToSyncQueue({
+                type: 'create',
+                plantId: newPlant.id,
+                payload: newPlant,
+              });
+              set({ syncQueueCount: queue.length });
               // Don't fail the local save if database sync fails
               if (isDevelopment) console.warn('Failed to sync new plant to database:', error);
             }
+          } else {
+            const queue = addToSyncQueue({
+              type: 'create',
+              plantId: newPlant.id,
+              payload: newPlant,
+            });
+            set({ syncQueueCount: queue.length });
           }
         } catch (error) {
           console.error('Error adding plant:', error);
@@ -222,8 +252,19 @@ export const usePlantStore = create<PlantStore>()(
           try {
             await plantService.deletePlant(id);
           } catch (error) {
+            const queue = addToSyncQueue({
+              type: 'delete',
+              plantId: id,
+            });
+            set({ syncQueueCount: queue.length });
             if (isDevelopment) console.warn('Database delete failed:', error);
           }
+        } else {
+          const queue = addToSyncQueue({
+            type: 'delete',
+            plantId: id,
+          });
+          set({ syncQueueCount: queue.length });
         }
       },
 
@@ -231,8 +272,9 @@ export const usePlantStore = create<PlantStore>()(
         set({ loading: true, error: null });
         
         try {
+          const sanitizedUpdates = sanitizePlantInput(updates);
           const updatedData = {
-            ...updates,
+            ...sanitizedUpdates,
             updatedAt: new Date().toISOString(),
           };
 
@@ -249,8 +291,21 @@ export const usePlantStore = create<PlantStore>()(
             try {
               await plantService.updatePlant(id, updatedData);
             } catch (error) {
+              const queue = addToSyncQueue({
+                type: 'update',
+                plantId: id,
+                payload: updatedData,
+              });
+              set({ syncQueueCount: queue.length });
               if (isDevelopment) console.warn('Database update failed:', error);
             }
+          } else {
+            const queue = addToSyncQueue({
+              type: 'update',
+              plantId: id,
+              payload: updatedData,
+            });
+            set({ syncQueueCount: queue.length });
           }
         } catch (error) {
           console.error('Error updating plant:', error);
@@ -361,6 +416,7 @@ export const usePlantStore = create<PlantStore>()(
         set({ loading: true, error: null });
         
         try {
+          await get().processPendingSyncQueue();
           const localPlants = get().plants;
           
           // Step 1: Fetch all plants from database
@@ -551,6 +607,45 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
+      processPendingSyncQueue: async () => {
+        if (!isSupabaseConfigured() || !isOnline()) {
+          const queue = getSyncQueue();
+          set({ syncQueueCount: queue.length });
+          return;
+        }
+
+        const queue = getSyncQueue();
+        if (queue.length === 0) {
+          set({ syncQueueCount: 0 });
+          return;
+        }
+
+        for (const operation of queue) {
+          try {
+            if (operation.type === 'create' && operation.payload) {
+              await plantService.createPlant(operation.payload as any);
+            }
+
+            if (operation.type === 'update' && operation.payload) {
+              await plantService.updatePlant(operation.plantId, operation.payload as any);
+            }
+
+            if (operation.type === 'delete') {
+              await plantService.deletePlant(operation.plantId);
+            }
+
+            const updatedQueue = removeFromSyncQueue(operation.id);
+            set({ syncQueueCount: updatedQueue.length });
+          } catch (error) {
+            const updatedQueue = markSyncFailure(
+              operation.id,
+              error instanceof Error ? error.message : 'Queue sync failed'
+            );
+            set({ syncQueueCount: updatedQueue.length });
+          }
+        }
+      },
+
       // Debug function removed for production
 
       // Utility function to manually remove duplicate plants
@@ -603,6 +698,7 @@ export const usePlantStore = create<PlantStore>()(
           if (state) {
             state.hasHydrated = true;
             state.loading = false;
+            state.syncQueueCount = getSyncQueue().length;
           }
         };
       },

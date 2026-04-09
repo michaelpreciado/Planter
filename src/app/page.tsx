@@ -12,13 +12,12 @@ import { isSupabaseConfigured } from '@/utils/supabase';
 import { FadeIn, SlideUp, StaggerContainer as StaggeredChildren, ScaleIn } from '@/components/AnimationReplacements';
 
 export default function HomePage() {
-  const { plants, triggerManualSync, loading, error, hasHydrated } = usePlants();
+  const { plants, triggerManualSync, loading, hasHydrated, syncQueueCount } = usePlants();
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const haptic = useHapticFeedback();
   // Debug tools removed
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [isClientReady, setIsClientReady] = useState(false);
   
   // Simple client-side ready state
@@ -29,6 +28,7 @@ export default function HomePage() {
   const healthyPlants = plants.filter(p => p.status === 'healthy').length;
   const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
   const isDbConfigured = isSupabaseConfigured();
+  const isOffline = typeof navigator !== 'undefined' ? !navigator.onLine : false;
 
   // Show simple loading only on initial hydration
   if (!isClientReady || (!hasHydrated && loading)) {
@@ -53,7 +53,6 @@ export default function HomePage() {
     haptic.mediumImpact();
     try {
       await triggerManualSync();
-      setLastSyncTime(new Date().toLocaleTimeString());
       haptic.success();
     } catch (error) {
       console.error('Sync failed:', error);
@@ -152,6 +151,16 @@ export default function HomePage() {
               delay={0.8}
               className="bg-white/10 dark:bg-gray-900/20 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border border-white/20 dark:border-white/10 max-w-md mx-auto"
             >
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className={`px-2.5 py-1 rounded-full font-medium ${isOffline ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                  {isOffline ? 'Offline mode active' : 'Online and ready'}
+                </span>
+                {syncQueueCount > 0 && (
+                  <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-medium">
+                    {syncQueueCount} pending sync {syncQueueCount === 1 ? 'change' : 'changes'}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-6 sm:gap-8 text-center">
                 <div>
                   <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500">{healthyPlants}</div>
@@ -187,6 +196,14 @@ export default function HomePage() {
                   )}
                 </div>
               </div>
+              {syncQueueCount > 0 && (
+                <button
+                  onClick={handleSync}
+                  className="mt-5 w-full bg-primary/20 hover:bg-primary/30 text-primary-foreground rounded-xl py-2.5 text-sm font-medium transition-colors"
+                >
+                  Sync now
+                </button>
+              )}
             </SlideUp>
           )}
         </div>

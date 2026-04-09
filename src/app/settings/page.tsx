@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePlants } from '@/lib/plant-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { setupImageStorage, checkStoragePermissions } from '@/utils/setupStorage';
+import { setupImageStorage } from '@/utils/setupStorage';
 import { syncImagesToCloud, getStorageStats } from '@/utils/imageStorage';
 import { isSupabaseConfigured } from '@/utils/supabase';
 import { isOfflineMode, toggleOfflineMode } from '@/utils/offlineMode';
@@ -21,7 +20,7 @@ export default function SettingsPage() {
   const [wateringReminders, setWateringReminders] = useState(true);
   const [dailyCheckIns, setDailyCheckIns] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const { hasHydrated, loading, plants } = usePlants();
+  const { hasHydrated, loading, plants, syncQueueCount, processPendingSyncQueue } = usePlants();
   const { user } = useAuth();
 
   // Simple client-side ready state
@@ -88,6 +87,18 @@ export default function SettingsPage() {
       await loadStorageStats();
     } catch (error) {
       setSyncStatus('Image sync failed');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleProcessQueuedChanges = async () => {
+    setIsSyncing(true);
+    try {
+      await processPendingSyncQueue();
+      setSyncStatus('Queued offline changes synced.');
+    } catch (error) {
+      setSyncStatus('Failed to process queued changes.');
     } finally {
       setIsSyncing(false);
     }
@@ -412,6 +423,28 @@ export default function SettingsPage() {
           </div>
         </SlideUp>
 
+        <SlideUp delay={0.55}>
+          <div className="bg-card/30 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-border/40 shadow-lg">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span className="text-xl">🔄</span>
+              Offline Sync Queue
+            </h3>
+            <div className="p-4 bg-card/50 rounded-lg flex items-center justify-between gap-4">
+              <div>
+                <div className="font-medium text-foreground">{syncQueueCount} pending {syncQueueCount === 1 ? 'change' : 'changes'}</div>
+                <div className="text-sm text-muted-foreground">Changes made while offline are safely queued on this device.</div>
+              </div>
+              <button
+                onClick={handleProcessQueuedChanges}
+                disabled={isSyncing || syncQueueCount === 0}
+                className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Push queue
+              </button>
+            </div>
+          </div>
+        </SlideUp>
+
         {/* About Section */}
         <SlideUp delay={0.6}>
           <div className="bg-card/30 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-border/40 shadow-lg">
@@ -429,6 +462,21 @@ export default function SettingsPage() {
                 <span className="text-muted-foreground">💚 Next.js & Tailwind</span>
               </div>
             </div>
+          </div>
+        </SlideUp>
+
+        <SlideUp delay={0.65}>
+          <div className="bg-card/30 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-border/40 shadow-lg">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span className="text-xl">📱</span>
+              iOS App Store Readiness
+            </h3>
+            <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+              <li>Offline-first data layer with automatic online queue processing.</li>
+              <li>Privacy usage descriptions configured for camera/photos/notifications.</li>
+              <li>Secure sync strategy with authenticated cloud requests only.</li>
+              <li>PWA metadata and install assets aligned with app branding.</li>
+            </ul>
           </div>
         </SlideUp>
 
