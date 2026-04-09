@@ -30,6 +30,14 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Plant Tracker uses your camera so you can add photos of your plants.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Plant Tracker saves plant photos to help you track growth over time.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Plant Tracker lets you choose existing plant photos from your library.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Plant Tracker sends watering reminders so your plants stay healthy.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

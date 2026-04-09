@@ -62,6 +62,16 @@ The project is configured for Netlify deployment with:
 - PWA optimization
 - Performance headers
 
+### Vercel
+
+This repository is now configured for both Netlify and Vercel:
+
+- **Netlify build command**: `npm run build:netlify`
+- **Vercel build command**: `npm run build:vercel`
+- **Static export build** (for Capacitor/offline bundles): `npm run build:static`
+
+`next.config.js` automatically switches behavior using `NEXT_STATIC_EXPORT=true` only when static export is explicitly requested.
+
 ### Environment Variables for Production
 
 Set these in your deployment platform:

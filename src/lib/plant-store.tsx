@@ -8,9 +8,16 @@ import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { format, addDays } from 'date-fns';
 import { plantService, isSupabaseConfigured } from '@/utils/supabase';
-import { Plant as DBPlant } from '@/types';
+import type { Database } from '@/types';
 import { storeImage, getImage, removeImage } from '@/utils/imageStorage';
 import { useMemo } from 'react';
+import { sanitizePlantInput, isOnline } from '@/utils/security';
+import {
+  addToSyncQueue,
+  getSyncQueue,
+  markSyncFailure,
+  removeFromSyncQueue,
+} from '@/utils/syncQueue';
 
 export interface Plant {
   id: string;
@@ -36,6 +43,7 @@ interface PlantStore {
   loading: boolean;
   error: string | null;
   hasHydrated: boolean;
+  syncQueueCount: number;
   
   // Core operations
   addPlant: (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -59,8 +67,12 @@ interface PlantStore {
   // Sync operations
   syncWithDatabase: () => Promise<void>;
   triggerManualSync: () => Promise<void>;
+  processPendingSyncQueue: () => Promise<void>;
   removeDuplicatePlants: () => number;
 }
+
+type CreatePlantPayload = Omit<Database['public']['Tables']['plants']['Insert'], 'userId'>;
+type UpdatePlantPayload = Database['public']['Tables']['plants']['Update'];
 
 const plantIcons = ['🌱', '🍃', '🌿', '🌺', '🌻', '🌹', '🌷', '🌵', '🍅', '🥕', '🌾', '🌸', '🌼', '🪴', '🌳'];
 const plantColors = [
@@ -133,20 +145,28 @@ export const usePlantStore = create<PlantStore>()(
       loading: false,
       error: null,
       hasHydrated: false,
+      syncQueueCount: 0,
       
       // Core operations
       addPlant: async (plantData: Omit<Plant, 'id' | 'icon' | 'iconColor' | 'status' | 'createdAt' | 'updatedAt'>) => {
         set({ loading: true, error: null });
         
         try {
+          const sanitizedPlantData = sanitizePlantInput(plantData);
           const newPlant: Plant = {
-            ...plantData,
+            name: sanitizedPlantData.name || plantData.name,
+            species: sanitizedPlantData.species || plantData.species,
+            plantingDate: sanitizedPlantData.plantingDate || plantData.plantingDate,
+            wateringFrequency: sanitizedPlantData.wateringFrequency || plantData.wateringFrequency,
+            notes: sanitizedPlantData.notes,
+            noteAttachments: sanitizedPlantData.noteAttachments || plantData.noteAttachments,
+            imageUrl: sanitizedPlantData.imageUrl || plantData.imageUrl,
             id: uuidv4(),
             icon: plantIcons[Math.floor(Math.random() * plantIcons.length)],
             iconColor: plantColors[Math.floor(Math.random() * plantColors.length)],
             status: 'healthy',
             lastWatered: 'Just planted',
-            nextWatering: calculateNextWatering(plantData.wateringFrequency),
+            nextWatering: calculateNextWatering(sanitizedPlantData.wateringFrequency || 7),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -158,24 +178,24 @@ export const usePlantStore = create<PlantStore>()(
           }));
 
           // Try to sync to database immediately
+          const dbPlant: CreatePlantPayload = {
+            name: newPlant.name,
+            species: newPlant.species,
+            plantedDate: newPlant.plantingDate,
+            plantingDate: newPlant.plantingDate,
+            wateringFrequency: newPlant.wateringFrequency,
+            icon: newPlant.icon,
+            iconColor: newPlant.iconColor,
+            lastWatered: newPlant.lastWatered,
+            nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
+            status: newPlant.status,
+            notes: newPlant.notes,
+            noteAttachments: newPlant.noteAttachments,
+            imageUrl: newPlant.imageUrl,
+          };
+
           if (isSupabaseConfigured()) {
             try {
-              const dbPlant = {
-                name: newPlant.name,
-                species: newPlant.species,
-                plantedDate: newPlant.plantingDate,
-                plantingDate: newPlant.plantingDate,
-                wateringFrequency: newPlant.wateringFrequency,
-                icon: newPlant.icon,
-                iconColor: newPlant.iconColor,
-                lastWatered: newPlant.lastWatered,
-                nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
-                status: newPlant.status,
-                notes: newPlant.notes,
-                noteAttachments: newPlant.noteAttachments,
-                imageUrl: newPlant.imageUrl,
-                userId: '', // Will be set by plantService.createPlant
-              };
               const createdPlant = await plantService.createPlant(dbPlant);
               
               // Update local plant with database ID to prevent duplication
@@ -187,9 +207,22 @@ export const usePlantStore = create<PlantStore>()(
               
               if (isDevelopment) console.log(`Successfully synced new plant: ${newPlant.name} (${newPlant.id} -> ${createdPlant.id})`);
             } catch (error) {
+              const queue = addToSyncQueue({
+                type: 'create',
+                plantId: newPlant.id,
+                payload: dbPlant,
+              });
+              set({ syncQueueCount: queue.length });
               // Don't fail the local save if database sync fails
               if (isDevelopment) console.warn('Failed to sync new plant to database:', error);
             }
+          } else {
+            const queue = addToSyncQueue({
+              type: 'create',
+              plantId: newPlant.id,
+              payload: dbPlant,
+            });
+            set({ syncQueueCount: queue.length });
           }
         } catch (error) {
           console.error('Error adding plant:', error);
@@ -222,8 +255,19 @@ export const usePlantStore = create<PlantStore>()(
           try {
             await plantService.deletePlant(id);
           } catch (error) {
+            const queue = addToSyncQueue({
+              type: 'delete',
+              plantId: id,
+            });
+            set({ syncQueueCount: queue.length });
             if (isDevelopment) console.warn('Database delete failed:', error);
           }
+        } else {
+          const queue = addToSyncQueue({
+            type: 'delete',
+            plantId: id,
+          });
+          set({ syncQueueCount: queue.length });
         }
       },
 
@@ -231,8 +275,12 @@ export const usePlantStore = create<PlantStore>()(
         set({ loading: true, error: null });
         
         try {
+          const sanitizedUpdates = sanitizePlantInput(updates);
+          const remoteUpdatePayload: UpdatePlantPayload = {
+            ...sanitizedUpdates,
+          };
           const updatedData = {
-            ...updates,
+            ...sanitizedUpdates,
             updatedAt: new Date().toISOString(),
           };
 
@@ -247,10 +295,23 @@ export const usePlantStore = create<PlantStore>()(
           // Try database sync
           if (isSupabaseConfigured()) {
             try {
-              await plantService.updatePlant(id, updatedData);
+              await plantService.updatePlant(id, remoteUpdatePayload);
             } catch (error) {
+              const queue = addToSyncQueue({
+                type: 'update',
+                plantId: id,
+                payload: remoteUpdatePayload,
+              });
+              set({ syncQueueCount: queue.length });
               if (isDevelopment) console.warn('Database update failed:', error);
             }
+          } else {
+            const queue = addToSyncQueue({
+              type: 'update',
+              plantId: id,
+              payload: remoteUpdatePayload,
+            });
+            set({ syncQueueCount: queue.length });
           }
         } catch (error) {
           console.error('Error updating plant:', error);
@@ -361,6 +422,7 @@ export const usePlantStore = create<PlantStore>()(
         set({ loading: true, error: null });
         
         try {
+          await get().processPendingSyncQueue();
           const localPlants = get().plants;
           
           // Step 1: Fetch all plants from database
@@ -551,6 +613,50 @@ export const usePlantStore = create<PlantStore>()(
         }
       },
 
+      processPendingSyncQueue: async () => {
+        if (!isSupabaseConfigured() || !isOnline()) {
+          const queue = getSyncQueue();
+          set({ syncQueueCount: queue.length });
+          return;
+        }
+
+        const queue = getSyncQueue();
+        if (queue.length === 0) {
+          set({ syncQueueCount: 0 });
+          return;
+        }
+
+        for (const operation of queue) {
+          try {
+            if (operation.type === 'create' && operation.payload) {
+              const createdPlant = await plantService.createPlant(operation.payload as CreatePlantPayload);
+              set((state) => ({
+                plants: state.plants.map((plant) =>
+                  plant.id === operation.plantId ? { ...plant, id: createdPlant.id, updatedAt: createdPlant.updatedAt || new Date().toISOString() } : plant
+                ),
+              }));
+            }
+
+            if (operation.type === 'update' && operation.payload) {
+              await plantService.updatePlant(operation.plantId, operation.payload as UpdatePlantPayload);
+            }
+
+            if (operation.type === 'delete') {
+              await plantService.deletePlant(operation.plantId);
+            }
+
+            const updatedQueue = removeFromSyncQueue(operation.id);
+            set({ syncQueueCount: updatedQueue.length });
+          } catch (error) {
+            const updatedQueue = markSyncFailure(
+              operation.id,
+              error instanceof Error ? error.message : 'Queue sync failed'
+            );
+            set({ syncQueueCount: updatedQueue.length });
+          }
+        }
+      },
+
       // Debug function removed for production
 
       // Utility function to manually remove duplicate plants
@@ -603,6 +709,7 @@ export const usePlantStore = create<PlantStore>()(
           if (state) {
             state.hasHydrated = true;
             state.loading = false;
+            state.syncQueueCount = getSyncQueue().length;
           }
         };
       },

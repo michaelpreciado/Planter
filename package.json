@@ -4,8 +4,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:capacitor": "next build",
+    "build:capacitor": "npm run build:static",
     "build:netlify": "next build",
+    "build:static": "cross-env NEXT_STATIC_EXPORT=true next build",
+    "build:vercel": "next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

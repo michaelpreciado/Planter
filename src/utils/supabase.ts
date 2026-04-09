@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../types';
 import { createClient } from '@supabase/supabase-js';
+import { sanitizePlantInput } from './security';
 
 // Use environment variables for Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -61,8 +62,9 @@ const transformPlantFromDB = (data: any) => {
 
 // Safe data transformation to prevent type errors
 const sanitizePlantData = (data: any) => {
+  const safePlant = sanitizePlantInput(data);
   return {
-    ...data,
+    ...safePlant,
     // Ensure dates are properly formatted
     plantedDate: data.plantedDate || data.plantingDate || new Date().toISOString(),
     plantingDate: data.plantingDate || data.plantedDate || new Date().toISOString(),
