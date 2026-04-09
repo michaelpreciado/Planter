@@ -8,7 +8,7 @@ import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { format, addDays } from 'date-fns';
 import { plantService, isSupabaseConfigured } from '@/utils/supabase';
-import { Plant as DBPlant } from '@/types';
+import type { Database } from '@/types';
 import { storeImage, getImage, removeImage } from '@/utils/imageStorage';
 import { useMemo } from 'react';
 import { sanitizePlantInput, isOnline } from '@/utils/security';
@@ -70,6 +70,9 @@ interface PlantStore {
   processPendingSyncQueue: () => Promise<void>;
   removeDuplicatePlants: () => number;
 }
+
+type CreatePlantPayload = Omit<Database['public']['Tables']['plants']['Insert'], 'userId'>;
+type UpdatePlantPayload = Database['public']['Tables']['plants']['Update'];
 
 const plantIcons = ['🌱', '🍃', '🌿', '🌺', '🌻', '🌹', '🌷', '🌵', '🍅', '🥕', '🌾', '🌸', '🌼', '🪴', '🌳'];
 const plantColors = [
@@ -175,24 +178,24 @@ export const usePlantStore = create<PlantStore>()(
           }));
 
           // Try to sync to database immediately
+          const dbPlant: CreatePlantPayload = {
+            name: newPlant.name,
+            species: newPlant.species,
+            plantedDate: newPlant.plantingDate,
+            plantingDate: newPlant.plantingDate,
+            wateringFrequency: newPlant.wateringFrequency,
+            icon: newPlant.icon,
+            iconColor: newPlant.iconColor,
+            lastWatered: newPlant.lastWatered,
+            nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
+            status: newPlant.status,
+            notes: newPlant.notes,
+            noteAttachments: newPlant.noteAttachments,
+            imageUrl: newPlant.imageUrl,
+          };
+
           if (isSupabaseConfigured()) {
             try {
-              const dbPlant = {
-                name: newPlant.name,
-                species: newPlant.species,
-                plantedDate: newPlant.plantingDate,
-                plantingDate: newPlant.plantingDate,
-                wateringFrequency: newPlant.wateringFrequency,
-                icon: newPlant.icon,
-                iconColor: newPlant.iconColor,
-                lastWatered: newPlant.lastWatered,
-                nextWatering: newPlant.nextWatering || calculateNextWatering(newPlant.wateringFrequency, newPlant.lastWatered),
-                status: newPlant.status,
-                notes: newPlant.notes,
-                noteAttachments: newPlant.noteAttachments,
-                imageUrl: newPlant.imageUrl,
-                userId: '', // Will be set by plantService.createPlant
-              };
               const createdPlant = await plantService.createPlant(dbPlant);
               
               // Update local plant with database ID to prevent duplication
@@ -207,7 +210,7 @@ export const usePlantStore = create<PlantStore>()(
               const queue = addToSyncQueue({
                 type: 'create',
                 plantId: newPlant.id,
-                payload: newPlant,
+                payload: dbPlant,
               });
               set({ syncQueueCount: queue.length });
               // Don't fail the local save if database sync fails
@@ -217,7 +220,7 @@ export const usePlantStore = create<PlantStore>()(
             const queue = addToSyncQueue({
               type: 'create',
               plantId: newPlant.id,
-              payload: newPlant,
+              payload: dbPlant,
             });
             set({ syncQueueCount: queue.length });
           }
@@ -273,6 +276,9 @@ export const usePlantStore = create<PlantStore>()(
         
         try {
           const sanitizedUpdates = sanitizePlantInput(updates);
+          const remoteUpdatePayload: UpdatePlantPayload = {
+            ...sanitizedUpdates,
+          };
           const updatedData = {
             ...sanitizedUpdates,
             updatedAt: new Date().toISOString(),
@@ -289,12 +295,12 @@ export const usePlantStore = create<PlantStore>()(
           // Try database sync
           if (isSupabaseConfigured()) {
             try {
-              await plantService.updatePlant(id, updatedData);
+              await plantService.updatePlant(id, remoteUpdatePayload);
             } catch (error) {
               const queue = addToSyncQueue({
                 type: 'update',
                 plantId: id,
-                payload: updatedData,
+                payload: remoteUpdatePayload,
               });
               set({ syncQueueCount: queue.length });
               if (isDevelopment) console.warn('Database update failed:', error);
@@ -303,7 +309,7 @@ export const usePlantStore = create<PlantStore>()(
             const queue = addToSyncQueue({
               type: 'update',
               plantId: id,
-              payload: updatedData,
+              payload: remoteUpdatePayload,
             });
             set({ syncQueueCount: queue.length });
           }
@@ -623,11 +629,16 @@ export const usePlantStore = create<PlantStore>()(
         for (const operation of queue) {
           try {
             if (operation.type === 'create' && operation.payload) {
-              await plantService.createPlant(operation.payload as any);
+              const createdPlant = await plantService.createPlant(operation.payload as CreatePlantPayload);
+              set((state) => ({
+                plants: state.plants.map((plant) =>
+                  plant.id === operation.plantId ? { ...plant, id: createdPlant.id, updatedAt: createdPlant.updatedAt || new Date().toISOString() } : plant
+                ),
+              }));
             }
 
             if (operation.type === 'update' && operation.payload) {
-              await plantService.updatePlant(operation.plantId, operation.payload as any);
+              await plantService.updatePlant(operation.plantId, operation.payload as UpdatePlantPayload);
             }
 
             if (operation.type === 'delete') {
