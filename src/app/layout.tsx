@@ -2,10 +2,13 @@ import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
-export const metadata = {
-  metadataBase: new URL('https://simmys-plant-diary.netlify.app'),
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://planter.vercel.app';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: 'Planter',
   description: 'A beautiful plant care app with a Tamagotchi-style companion to help you nurture your green friends.',
   keywords: 'plants, care, tracking, watering, garden, tamagotchi, plant diary, garden app, simmy',
@@ -19,7 +22,7 @@ export const metadata = {
     description: 'A beautiful plant care app with a Tamagotchi-style companion.',
     type: 'website',
     locale: 'en_US',
-    url: 'https://simmys-plant-diary.netlify.app',
+    url: appUrl,
     siteName: 'Planter',
     images: [
       {
@@ -48,7 +51,7 @@ export const metadata = {
   }
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -67,32 +70,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, user-scalable=no" />
-        <meta name="theme-color" content="#10B981" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Planter" />
-        
-        {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-        <link rel="preconnect" href="https://analytics.netlify.com" />
-        
-        {/* Security headers */}
-        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-        <meta httpEquiv="X-Frame-Options" content="DENY" />
-        <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
-        <meta
-          httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co https://*.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
-        />
-        
-        {/* Favicon and app icons */}
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden">
         <div className="min-h-dvh bg-background">

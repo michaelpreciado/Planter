@@ -54,31 +54,25 @@ npm run type-check
 
 ## 📦 Deployment
 
-### Netlify (Recommended)
-
-The project is configured for Netlify deployment with:
-- Automatic builds from Git
-- Edge functions support
-- PWA optimization
-- Performance headers
-
 ### Vercel
 
-This repository is now configured for both Netlify and Vercel:
+This repository is optimized for **Vercel deployment**:
 
-- **Netlify build command**: `npm run build:netlify`
 - **Vercel build command**: `npm run build:vercel`
 - **Static export build** (for Capacitor/offline bundles): `npm run build:static`
 
 `next.config.js` automatically switches behavior using `NEXT_STATIC_EXPORT=true` only when static export is explicitly requested.
 
+For a complete setup walkthrough, see `docs/vercel-deployment.md`.
+
 ### Environment Variables for Production
 
-Set these in your deployment platform:
+Set these in your Vercel project:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-key
+NEXT_PUBLIC_APP_URL=https://your-project-name.vercel.app
 NEXT_TELEMETRY_DISABLED=1
 ```
 
@@ -92,7 +86,7 @@ NEXT_TELEMETRY_DISABLED=1
 - **Storage**: IndexedDB/LocalStorage
 - **Animations**: Framer Motion
 - **Testing**: Jest + React Testing Library
-- **Deployment**: Netlify
+- **Deployment**: Vercel
 
 ## 📁 Project Structure
 

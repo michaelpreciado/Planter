@@ -1,15 +1,19 @@
 'use client';
 
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { TamagotchiBlob } from '@/components/TamagotchiBlob';
-import { AuthModal } from '@/components/AuthModal';
 import { usePlants } from '@/lib/plant-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHapticFeedback } from '@/hooks/useMobileGestures';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { isSupabaseConfigured } from '@/utils/supabase';
-import { FadeIn, SlideUp, StaggerContainer as StaggeredChildren, ScaleIn } from '@/components/AnimationReplacements';
+import { FadeIn, SlideUp, ScaleIn } from '@/components/AnimationReplacements';
+
+const AuthModal = dynamic(
+  () => import('@/components/AuthModal').then((mod) => mod.AuthModal),
+  { ssr: false },
+);
 
 export default function HomePage() {
   const { plants, triggerManualSync, loading, hasHydrated, syncQueueCount } = usePlants();
@@ -25,10 +29,34 @@ export default function HomePage() {
     setIsClientReady(true);
   }, []);
 
-  const healthyPlants = plants.filter(p => p.status === 'healthy').length;
-  const plantsNeedingWater = plants.filter(p => p.status === 'needs_water' || p.status === 'overdue').length;
+  const healthyPlants = useMemo(
+    () => plants.filter((p) => p.status === 'healthy').length,
+    [plants],
+  );
+  const plantsNeedingWater = useMemo(
+    () => plants.filter((p) => p.status === 'needs_water' || p.status === 'overdue').length,
+    [plants],
+  );
   const isDbConfigured = isSupabaseConfigured();
   const isOffline = typeof navigator !== 'undefined' ? !navigator.onLine : false;
+
+  const handleSignOut = useCallback(async () => {
+    haptic.mediumImpact();
+    await signOut();
+  }, [haptic, signOut]);
+
+  const handleSync = useCallback(async () => {
+    if (!isDbConfigured || !user) return;
+    
+    haptic.mediumImpact();
+    try {
+      await triggerManualSync();
+      haptic.success();
+    } catch (error) {
+      console.error('Sync failed:', error);
+      haptic.error();
+    }
+  }, [haptic, isDbConfigured, triggerManualSync, user]);
 
   // Show simple loading only on initial hydration
   if (!isClientReady || (!hasHydrated && loading)) {
@@ -41,24 +69,6 @@ export default function HomePage() {
       </div>
     );
   }
-
-  const handleSignOut = async () => {
-    haptic.mediumImpact();
-    await signOut();
-  };
-
-  const handleSync = async () => {
-    if (!isDbConfigured || !user) return;
-    
-    haptic.mediumImpact();
-    try {
-      await triggerManualSync();
-      haptic.success();
-    } catch (error) {
-      console.error('Sync failed:', error);
-      haptic.error();
-    }
-  };
 
   return (
     <div className="min-h-screen max-h-screen bg-background flex flex-col ios-safe-layout mobile-content overflow-hidden">
