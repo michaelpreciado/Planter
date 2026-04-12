@@ -3,10 +3,19 @@ const isStaticExport = process.env.NEXT_STATIC_EXPORT === 'true';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   ...(isStaticExport ? { output: 'export', assetPrefix: './' } : {}),
-  trailingSlash: true,
+  trailingSlash: isStaticExport,
   poweredByHeader: false,
+  reactStrictMode: true,
+  compress: true,
   images: {
     unoptimized: isStaticExport,
+    formats: ['image/avif', 'image/webp'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  experimental: {
+    optimizePackageImports: ['date-fns', 'framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
   },
   async headers() {
     return [
@@ -25,7 +34,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://*.netlify.app",
+              "connect-src 'self' https://*.supabase.co",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -33,8 +42,20 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
+      {
+        source: '/(.*).(js|css|woff2|svg|png|jpg|jpeg|webp|avif)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
     ];
   },
 };
 
-module.exports = nextConfig
+module.exports = nextConfig;
