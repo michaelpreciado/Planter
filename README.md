@@ -10,6 +10,9 @@ Planter is being rebuilt as a local-first botanical journal with an offline care
 - Progress photo uploads for each plant
 - AI-style care feedback and follow-up questions grounded in local plant history
 - Important badges for plants that need attention
+- Health scoring from status, reminder cadence, notes, and photo history
+- Photo comparison for before/after progress review
+- Export/import backups so users own their local data
 - Settings for a future offline model such as Gemma 4 0.8B
 
 ## Run locally

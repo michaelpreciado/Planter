@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -10,6 +10,7 @@ import {
   Check,
   ChevronRight,
   Cpu,
+  Download,
   Droplet,
   ImagePlus,
   Leaf,
@@ -21,8 +22,10 @@ import {
   Sparkles,
   Sprout,
   Sun,
+  Upload,
 } from 'lucide-react';
 import { fileToDataUrl } from '@/lib/image';
+import { healthLabel, healthScore, reminderCopy } from '@/lib/plant-insights';
 import { usePlantStore } from '@/lib/plant-store';
 import type { PlantEntry, PlantStatus } from '@/types/planter';
 
@@ -61,6 +64,7 @@ function EmptyPhoto() {
 
 function PlantHero({ plant }: { plant: PlantEntry }) {
   const latest = plant.photos[0];
+  const score = healthScore(plant);
   return (
     <section className="botanical-card overflow-hidden rounded-[2rem]">
       <div className="relative h-72 bg-moss/10">
@@ -76,6 +80,16 @@ function PlantHero({ plant }: { plant: PlantEntry }) {
               <h2 className="font-serif text-4xl leading-none">{plant.name}</h2>
             </div>
             <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusCopy[plant.status].className}`}>{statusCopy[plant.status].label}</span>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="rounded-2xl bg-paper/15 p-3 backdrop-blur">
+              <p className="text-xs uppercase tracking-[0.18em] text-paper/70">Health score</p>
+              <p className="text-2xl font-bold">{score}/100 <span className="text-sm font-semibold text-paper/75">{healthLabel(score)}</span></p>
+            </div>
+            <div className="rounded-2xl bg-paper/15 p-3 backdrop-blur">
+              <p className="text-xs uppercase tracking-[0.18em] text-paper/70">Care reminder</p>
+              <p className="text-lg font-bold">{reminderCopy(plant)}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -124,6 +138,10 @@ function GardenScreen({ openPlant, goAdd }: { openPlant: (id: string) => void; g
                 <ChevronRight className="mt-2 h-5 w-5 text-moss transition group-hover:translate-x-1" />
               </div>
               <p className="mt-4 line-clamp-2 text-sm leading-6 text-ink/70">{plant.careGoal}</p>
+              <div className="mt-4 flex items-center justify-between rounded-2xl bg-paper/70 px-3 py-2 text-xs font-bold text-moss">
+                <span>{healthScore(plant)}/100 · {healthLabel(healthScore(plant))}</span>
+                <span>{reminderCopy(plant)}</span>
+              </div>
             </div>
           </button>
         ))}
@@ -196,9 +214,10 @@ function Field({ label, value, onChange, placeholder, required }: { label: strin
 }
 
 function PlantScreen({ plant }: { plant: PlantEntry }) {
-  const { addPhoto, addNote, toggleImportant, updateStatus, askAi } = usePlantStore();
+  const { addPhoto, addNote, toggleImportant, updateStatus, updateReminder, markCaredFor, askAi } = usePlantStore();
   const [note, setNote] = useState('');
   const [photoNote, setPhotoNote] = useState('');
+  const [comparison, setComparison] = useState(50);
 
   async function addProgressPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -215,11 +234,37 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
           <div className="flex flex-wrap gap-2">
             {(['thriving', 'watch', 'urgent'] as PlantStatus[]).map((status) => <button key={status} onClick={() => updateStatus(plant.id, status)} className={`rounded-full border px-4 py-2 text-sm font-bold ${plant.status === status ? 'bg-moss text-paper' : 'bg-paper/70 text-moss'}`}>{statusCopy[status].label}</button>)}
             <button onClick={() => toggleImportant(plant.id)} className={`rounded-full border px-4 py-2 text-sm font-bold ${plant.important ? 'bg-terra text-paper' : 'bg-paper/70 text-terra'}`}><Bell className="mr-1 inline h-4 w-4" /> Important</button>
+            <button onClick={() => markCaredFor(plant.id)} className="rounded-full border bg-paper/70 px-4 py-2 text-sm font-bold text-moss"><Check className="mr-1 inline h-4 w-4" /> Mark cared for</button>
           </div>
           <p className="mt-4 text-sm leading-6 text-ink/70">{plant.careGoal}</p>
+          <label className="mt-4 block">
+            <span className="mb-2 block text-sm font-bold text-moss">Care reminder cadence</span>
+            <select value={plant.reminderDays ?? ''} onChange={(event) => updateReminder(plant.id, event.target.value ? Number(event.target.value) : undefined)} className="w-full rounded-full border border-ink/10 bg-paper/70 px-4 py-3 font-semibold text-moss outline-none">
+              <option value="">No reminder</option>
+              <option value="2">Every 2 days</option>
+              <option value="4">Every 4 days</option>
+              <option value="7">Weekly</option>
+              <option value="14">Every 2 weeks</option>
+            </select>
+          </label>
         </section>
       </div>
       <div className="space-y-6">
+        {plant.photos.length >= 2 && (
+          <section className="botanical-card rounded-[2rem] p-5">
+            <h3 className="mb-4 font-serif text-3xl">Photo comparison</h3>
+            <div className="relative h-72 overflow-hidden rounded-[1.75rem] bg-sage/10">
+              <Image src={plant.photos[1].dataUrl} alt={`${plant.name} earlier`} fill className="object-cover" unoptimized />
+              <div className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${comparison}%` }}>
+                <Image src={plant.photos[0].dataUrl} alt={`${plant.name} latest`} fill className="object-cover" unoptimized />
+              </div>
+              <div className="absolute inset-x-4 bottom-4 rounded-full bg-ink/45 px-4 py-3 text-paper backdrop-blur">
+                <input aria-label="Compare latest photo with previous photo" type="range" min="0" max="100" value={comparison} onChange={(event) => setComparison(Number(event.target.value))} className="w-full accent-sun" />
+                <div className="mt-1 flex justify-between text-xs font-bold uppercase tracking-[0.16em]"><span>Previous</span><span>Latest</span></div>
+              </div>
+            </div>
+          </section>
+        )}
         <section className="botanical-card rounded-[2rem] p-5">
           <h3 className="mb-4 font-serif text-3xl">Progress timeline</h3>
           <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -264,12 +309,34 @@ function AiScreen() {
 }
 
 function SettingsScreen() {
-  const { model, setModelStatus, plants } = usePlantStore();
+  const { model, setModelStatus, plants, exportBackup, importBackup } = usePlantStore();
+  const importRef = useRef<HTMLInputElement>(null);
   const important = plants.filter((plant) => plant.important || plant.status === 'urgent').length;
+
+  function downloadBackup() {
+    const backup = exportBackup();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `planter-backup-${backup.exportedAt.slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importFromFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const backup = JSON.parse(await file.text());
+    importBackup(backup);
+    event.target.value = '';
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Offline model</p><h2 className="font-serif text-4xl">{model.name}</h2><p className="mt-3 text-ink/70">Planter is designed around local-first data. This setting prepares the UI for installing a small offline model like Gemma 4 0.8B when the runtime is wired in.</p><div className="mt-5 rounded-[1.5rem] bg-paper/70 p-4"><p className="text-sm font-bold text-moss">Status: {model.status.replace('-', ' ')}</p><p className="mt-1 text-sm text-ink/60">Model size target: {model.size}</p></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={() => setModelStatus('queued')} className="botanical-button rounded-full bg-sun px-4 py-3 font-bold text-ink">Queue install</button><button onClick={() => setModelStatus('ready')} className="botanical-button rounded-full bg-moss px-4 py-3 font-bold text-paper">Mark ready</button></div></section>
-      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Local data</p><h2 className="font-serif text-4xl">Private by default</h2><div className="mt-5 space-y-3"><SettingRow icon={<ShieldCheck />} label="Storage" value="Browser local storage" /><SettingRow icon={<Bell />} label="Important badges" value={`${important} active`} /><SettingRow icon={<Cpu />} label="Sync" value="Not enabled" /></div><p className="mt-5 rounded-[1.5rem] bg-terra/10 p-4 text-sm leading-6 text-terra">Next pass should add export/import backups before we add any cloud sync. Local-first needs a clean escape hatch.</p></section>
+      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Local data</p><h2 className="font-serif text-4xl">Private by default</h2><div className="mt-5 space-y-3"><SettingRow icon={<ShieldCheck />} label="Storage" value="Browser local storage" /><SettingRow icon={<Bell />} label="Important badges" value={`${important} active`} /><SettingRow icon={<Cpu />} label="Sync" value="Not enabled" /></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={downloadBackup} className="botanical-button rounded-full bg-moss px-4 py-3 font-bold text-paper"><Download className="mr-2 inline h-5 w-5" /> Export backup</button><button onClick={() => importRef.current?.click()} className="botanical-button rounded-full bg-paper px-4 py-3 font-bold text-moss"><Upload className="mr-2 inline h-5 w-5" /> Import backup</button><input ref={importRef} type="file" accept="application/json" onChange={importFromFile} className="sr-only" /></div><p className="mt-5 rounded-[1.5rem] bg-terra/10 p-4 text-sm leading-6 text-terra">Portfolio note: export/import proves the local-first architecture has a user-owned data path before online sync is added.</p></section>
+      <section className="botanical-card rounded-[2rem] p-6 lg:col-span-2"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">AI engineering showcase</p><h2 className="font-serif text-4xl">Built to demonstrate real AI product work</h2><div className="mt-5 grid gap-3 md:grid-cols-3"><SettingRow icon={<Cpu />} label="Model lifecycle" value="Install state ready" /><SettingRow icon={<Camera />} label="Vision path" value="Photo timeline + compare" /><SettingRow icon={<ShieldCheck />} label="Privacy" value="Local-first by design" /></div><p className="mt-5 text-sm leading-6 text-ink/70">Next engineering milestone: wire this UI to a real on-device model runtime, then add an eval harness that checks care advice quality, safety, and hallucination resistance.</p></section>
     </div>
   );
 }

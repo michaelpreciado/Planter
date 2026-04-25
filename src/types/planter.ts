@@ -16,6 +16,8 @@ export type PlantEntry = {
   careGoal: string;
   status: PlantStatus;
   important: boolean;
+  reminderDays?: number;
+  lastCareAt?: string;
   createdAt: string;
   updatedAt: string;
   photos: PlantPhoto[];
@@ -36,4 +38,12 @@ export type OfflineModel = {
   name: string;
   size: string;
   status: 'not-installed' | 'queued' | 'ready';
+};
+
+export type PlanterBackup = {
+  schema: 'planter.local.v2';
+  exportedAt: string;
+  plants: PlantEntry[];
+  messages: AiMessage[];
+  model: OfflineModel;
 };

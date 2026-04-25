@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AiMessage, OfflineModel, PlantEntry, PlantPhoto, PlantStatus } from '@/types/planter';
+import type { AiMessage, OfflineModel, PlanterBackup, PlantEntry, PlantPhoto, PlantStatus } from '@/types/planter';
 
 type NewPlantInput = {
   name: string;
@@ -21,10 +21,14 @@ type StoreState = {
   addPhoto: (plantId: string, photo: Omit<PlantPhoto, 'id' | 'createdAt' | 'aiSummary'>) => void;
   addNote: (plantId: string, note: string) => void;
   updateStatus: (plantId: string, status: PlantStatus) => void;
+  updateReminder: (plantId: string, reminderDays?: number) => void;
+  markCaredFor: (plantId: string) => void;
   toggleImportant: (plantId: string) => void;
   askAi: (prompt: string, plantId?: string) => void;
   setModelStatus: (status: OfflineModel['status']) => void;
   selectPlant: (plantId?: string) => void;
+  exportBackup: () => PlanterBackup;
+  importBackup: (backup: PlanterBackup) => void;
 };
 
 const now = () => new Date().toISOString();
@@ -39,6 +43,7 @@ const starterPlants: PlantEntry[] = [
     careGoal: 'Track leaf unfurling and avoid overwatering.',
     status: 'thriving',
     important: false,
+    reminderDays: 7,
     createdAt: now(),
     updatedAt: now(),
     photos: [],
@@ -95,6 +100,7 @@ export const usePlantStore = create<StoreState>()(
           careGoal: input.careGoal.trim() || 'Build a photo history and learn its rhythm.',
           status: 'thriving',
           important: false,
+          reminderDays: 7,
           createdAt,
           updatedAt: createdAt,
           photos: input.photo?.dataUrl ? [{ id: uuid(), dataUrl: input.photo.dataUrl, note: input.photo.note, createdAt, aiSummary: 'First photo saved. Keep future photos from a similar angle for clearer progress comparison.' }] : [],
@@ -122,6 +128,16 @@ export const usePlantStore = create<StoreState>()(
       updateStatus: (plantId, status) => {
         set((state) => ({ plants: state.plants.map((plant) => plant.id === plantId ? { ...plant, status, important: status === 'urgent' ? true : plant.important, updatedAt: now() } : plant) }));
       },
+      updateReminder: (plantId, reminderDays) => {
+        set((state) => ({
+          plants: state.plants.map((plant) => plant.id === plantId ? { ...plant, reminderDays, updatedAt: now() } : plant),
+        }));
+      },
+      markCaredFor: (plantId) => {
+        set((state) => ({
+          plants: state.plants.map((plant) => plant.id === plantId ? { ...plant, lastCareAt: now(), status: plant.status === 'urgent' ? 'watch' : plant.status, updatedAt: now() } : plant),
+        }));
+      },
       toggleImportant: (plantId) => {
         set((state) => ({ plants: state.plants.map((plant) => plant.id === plantId ? { ...plant, important: !plant.important, updatedAt: now() } : plant) }));
       },
@@ -135,6 +151,27 @@ export const usePlantStore = create<StoreState>()(
       },
       setModelStatus: (status) => set((state) => ({ model: { ...state.model, status } })),
       selectPlant: (plantId) => set({ selectedPlantId: plantId }),
+      exportBackup: () => {
+        const state = get();
+        return {
+          schema: 'planter.local.v2',
+          exportedAt: now(),
+          plants: state.plants,
+          messages: state.messages,
+          model: state.model,
+        };
+      },
+      importBackup: (backup) => {
+        if (backup.schema !== 'planter.local.v2') {
+          throw new Error('Unsupported Planter backup file');
+        }
+        set({
+          plants: backup.plants,
+          messages: backup.messages,
+          model: backup.model,
+          selectedPlantId: backup.plants[0]?.id,
+        });
+      },
     }),
     { name: 'planter-local-v2', version: 1 },
   ),
