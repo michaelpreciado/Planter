@@ -1,6 +1,6 @@
 # 🌱 Simmys Plant Diary
 
-A beautiful plant care app with a Tamagotchi-style companion to help you nurture your green friends.
+A plant care tracker with a playful Tamagotchi-style companion, offline-first storage, optional Supabase sync, and modern PWA workflows.
 
 ## ✨ Features
 
@@ -11,6 +11,15 @@ A beautiful plant care app with a Tamagotchi-style companion to help you nurture
 - 📸 **Image Storage**: Capture and store plant photos locally
 - 🔄 **Offline First**: Works completely offline with optional cloud sync
 - 🌙 **Dark Mode**: Automatic theme switching based on system preferences
+- 🧪 **Design Prototype**: `/prototype` contains a warm botanical journal × Tamagotchi companion concept using `lucide-react`
+
+## 🧭 Product / Architecture Notes
+
+- **Local-first core**: plant data and care notes are designed to remain useful offline.
+- **Optional cloud sync**: Supabase can be enabled for cross-device persistence without making the app cloud-only.
+- **Mobile-first UX**: the app prioritizes thumb-friendly navigation, installability, and responsive layouts.
+- **Prototype route**: the `/prototype` route is intentionally isolated from production data flows so new visual concepts can be explored safely.
+- **Vercel-first deployment**: production deploys use `vercel.json` and `npm run build:vercel`; Netlify config has been removed.
 
 ## 🚀 Quick Start
 

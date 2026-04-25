@@ -1,7 +1,4 @@
-import { Providers } from './providers';
-import { Toaster } from '@/components/ui/toast';
-import { BottomNavigation } from '@/components/BottomNavigation';
-import { PageTransition } from '@/components/PageTransition';
+import { AppShell } from './AppShell';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -79,15 +76,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden">
         <div className="min-h-dvh bg-background">
-        <Providers>
-          <main className="relative pb-nav-safe min-h-dvh bg-background">
-            <PageTransition>
-              {children}
-            </PageTransition>
-          </main>
-          <BottomNavigation />
-          <Toaster />
-        </Providers>
+          <AppShell>{children}</AppShell>
         </div>
       </body>
     </html>
