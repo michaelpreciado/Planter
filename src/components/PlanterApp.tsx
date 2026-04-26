@@ -47,7 +47,7 @@ function ShellButton({ active, children, onClick }: { active?: boolean; children
     <button
       type="button"
       onClick={onClick}
-      className={`botanical-button flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold ${
+      className={`botanical-button flex shrink-0 items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold ${
         active ? 'bg-moss text-paper' : 'bg-paper/70 text-ink hover:bg-paper'
       } touch-target`}
     >
@@ -109,12 +109,12 @@ function GardenScreen({ openPlant, goAdd }: { openPlant: (id: string) => void; g
 
   return (
     <div className="space-y-6">
-      <section className="botanical-card paper-texture rounded-[2.25rem] p-6 md:p-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <section className="botanical-card paper-texture rounded-[2.25rem] p-5 md:p-8 xl:p-10">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-earth"><Sparkles className="h-4 w-4" /> Local-first garden journal</p>
-            <h1 className="max-w-2xl font-serif text-5xl leading-[0.95] md:text-7xl">Planter got its fresh start.</h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-ink/70">Log plants offline, save progress photos, and ask the built-in care companion for practical next steps without dragging the old app along.</p>
+            <h1 className="max-w-3xl font-serif text-[clamp(3rem,8vw,6.5rem)] leading-[0.92] tracking-[-0.04em]">Planter got its fresh start.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-ink/70 md:text-lg">Log plants offline, save progress photos, and ask the built-in care companion for practical next steps without dragging the old app along.</p>
           </div>
           <button type="button" onClick={goAdd} className="botanical-button touch-target inline-flex items-center justify-center gap-2 rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">
             <Plus className="h-5 w-5" /> Add plant
@@ -127,7 +127,7 @@ function GardenScreen({ openPlant, goAdd }: { openPlant: (id: string) => void; g
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {plants.map((plant) => (
           <button key={plant.id} type="button" onClick={() => openPlant(plant.id)} className="botanical-card group overflow-hidden rounded-[2rem] text-left transition hover:-translate-y-1 hover:shadow-botanical">
             <div className="relative h-52 bg-sage/10">
@@ -182,7 +182,7 @@ function AddPlantScreen({ done }: { done: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)]">
       <section className="botanical-card rounded-[2rem] p-6">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">New plant</p>
         <h2 className="font-serif text-4xl">Start a local record</h2>
@@ -232,8 +232,8 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <div className="space-y-6">
+    <div className="grid gap-6 xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.15fr)]">
+      <div className="space-y-6 xl:sticky xl:top-32 xl:self-start">
         <PlantHero plant={plant} />
         <section className="botanical-card rounded-[2rem] p-5">
           <div className="flex flex-wrap gap-2">
@@ -276,7 +276,7 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
             <input value={photoNote} onChange={(event) => setPhotoNote(event.target.value)} placeholder="What changed in this photo?" className="rounded-full border border-ink/10 bg-paper/70 px-4 py-3 outline-none" />
             <label className="botanical-button touch-target cursor-pointer rounded-full bg-moss px-5 py-3 text-center font-bold text-paper"><Camera className="mr-2 inline h-5 w-5" /> Add photo<input type="file" {...cameraCaptureProps} onChange={addProgressPhoto} className="sr-only" /></label>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
             {plant.photos.map((photo) => <article key={photo.id} className="overflow-hidden rounded-[1.5rem] border border-ink/10 bg-paper/70"><Image src={photo.dataUrl} alt={photo.note || plant.name} width={700} height={560} className="h-44 w-full object-cover" unoptimized /><div className="p-4"><p className="text-xs font-bold uppercase tracking-[0.18em] text-earth">{formatDistanceToNow(new Date(photo.createdAt), { addSuffix: true })}</p><p className="mt-2 text-sm text-ink/70">{photo.note || 'Progress photo saved.'}</p>{photo.aiSummary && <p className="mt-3 rounded-2xl bg-sage/15 p-3 text-sm leading-6 text-moss">{photo.aiSummary}</p>}</div></article>)}
           </div>
         </section>
@@ -305,7 +305,7 @@ function AiScreen() {
   return (
     <section className="botanical-card rounded-[2rem] p-5 md:p-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.24em] text-earth">Offline care companion</p><h2 className="font-serif text-4xl">Ask Planter AI</h2></div><select value={selectedPlantId ?? ''} onChange={(event) => selectPlant(event.target.value || undefined)} className="rounded-full border border-ink/10 bg-paper px-4 py-3 font-semibold text-moss"><option value="">General question</option>{plants.map((plant) => <option key={plant.id} value={plant.id}>{plant.name}</option>)}</select></div>
-      <div className="momentum-scroll max-h-[55vh] space-y-3 overflow-y-auto rounded-[1.75rem] bg-paper/45 p-3">
+      <div className="momentum-scroll max-h-[62vh] space-y-3 overflow-y-auto rounded-[1.75rem] bg-paper/45 p-3 md:p-4">
         {visibleMessages.map((message) => <div key={message.id} className={`max-w-[86%] rounded-[1.5rem] px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'ml-auto bg-moss text-paper' : 'bg-sage/15 text-ink'}`}>{message.content}</div>)}
       </div>
       <form onSubmit={submit} className="mt-4 flex gap-2"><input value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask about watering, light, yellow leaves…" className="min-w-0 flex-1 rounded-full border border-ink/10 bg-paper px-4 py-3 outline-none" /><button className="botanical-button touch-target rounded-full bg-moss px-5 text-paper"><Send className="h-5 w-5" /></button></form>
@@ -362,18 +362,18 @@ export function PlanterApp() {
   }
 
   return (
-    <main className="ios-safe-shell min-h-screen px-4 py-4 md:px-8 md:py-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="ios-bottom-bar sticky top-2 z-30 mb-6 flex flex-col gap-4 rounded-[2rem] border border-ink/10 bg-paper/80 p-3 backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+    <main className="ios-safe-shell min-h-screen px-3 py-3 sm:px-4 md:px-8 md:py-8">
+      <div className="mx-auto max-w-screen-2xl">
+        <header className="ios-bottom-bar sticky top-2 z-30 mb-5 flex flex-col gap-3 rounded-[2rem] border border-ink/10 bg-paper/85 p-3 shadow-card backdrop-blur-xl md:mb-6 md:flex-row md:items-center md:justify-between">
           <button type="button" onClick={() => setScreen('garden')} className="touch-target flex items-center gap-3 px-2 text-left"><span className="flex h-12 w-12 items-center justify-center rounded-full bg-moss text-paper"><Leaf className="h-6 w-6" /></span><span><span className="block font-serif text-3xl leading-none">Planter</span><span className="text-xs font-bold uppercase tracking-[0.22em] text-earth">Botanical OS</span></span></button>
-          <nav className="flex flex-wrap gap-2">
+          <nav className="momentum-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             <ShellButton active={screen === 'garden'} onClick={() => setScreen('garden')}><BookOpen className="h-4 w-4" /> Garden</ShellButton>
             <ShellButton active={screen === 'add'} onClick={() => setScreen('add')}><Plus className="h-4 w-4" /> Add</ShellButton>
             <ShellButton active={screen === 'ai'} onClick={() => setScreen('ai')}><MessageCircle className="h-4 w-4" /> AI</ShellButton>
             <ShellButton active={screen === 'settings'} onClick={() => setScreen('settings')}><Settings className="h-4 w-4" /> Settings</ShellButton>
           </nav>
         </header>
-        <div className="mb-5 flex items-center justify-between rounded-full border border-ink/10 bg-paper/45 px-4 py-2 text-sm text-ink/65"><span className="flex items-center gap-2"><Sun className="h-4 w-4 text-marigold" /> Offline-ready · local journal</span><span className="flex items-center gap-2"><Droplet className="h-4 w-4 text-moss" /> {importantCount} important</span></div>
+        <div className="mb-5 flex flex-col gap-2 rounded-[1.5rem] border border-ink/10 bg-paper/45 px-4 py-3 text-sm text-ink/65 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-2"><span className="flex items-center gap-2"><Sun className="h-4 w-4 text-marigold" /> Offline-ready · local journal</span><span className="flex items-center gap-2"><Droplet className="h-4 w-4 text-moss" /> {importantCount} important</span></div>
         {screen === 'garden' && <GardenScreen openPlant={openPlant} goAdd={() => setScreen('add')} />}
         {screen === 'add' && <AddPlantScreen done={() => setScreen('garden')} />}
         {screen === 'plant' && selectedPlant && <PlantScreen plant={selectedPlant} />}
