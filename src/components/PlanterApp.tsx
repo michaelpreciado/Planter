@@ -31,6 +31,11 @@ import type { PlantEntry, PlantStatus } from '@/types/planter';
 
 type Screen = 'garden' | 'add' | 'plant' | 'ai' | 'settings';
 
+const cameraCaptureProps = {
+  accept: 'image/*',
+  capture: 'environment',
+} as const;
+
 const statusCopy: Record<PlantStatus, { label: string; className: string }> = {
   thriving: { label: 'Thriving', className: 'bg-fern/15 text-moss border-fern/20' },
   watch: { label: 'Watch', className: 'bg-sun/20 text-earth border-sun/30' },
@@ -44,7 +49,7 @@ function ShellButton({ active, children, onClick }: { active?: boolean; children
       onClick={onClick}
       className={`botanical-button flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold ${
         active ? 'bg-moss text-paper' : 'bg-paper/70 text-ink hover:bg-paper'
-      }`}
+      } touch-target`}
     >
       {children}
     </button>
@@ -111,7 +116,7 @@ function GardenScreen({ openPlant, goAdd }: { openPlant: (id: string) => void; g
             <h1 className="max-w-2xl font-serif text-5xl leading-[0.95] md:text-7xl">Planter got its fresh start.</h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-ink/70">Log plants offline, save progress photos, and ask the built-in care companion for practical next steps without dragging the old app along.</p>
           </div>
-          <button type="button" onClick={goAdd} className="botanical-button inline-flex items-center justify-center gap-2 rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">
+          <button type="button" onClick={goAdd} className="botanical-button touch-target inline-flex items-center justify-center gap-2 rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">
             <Plus className="h-5 w-5" /> Add plant
           </button>
         </div>
@@ -195,10 +200,10 @@ function AddPlantScreen({ done }: { done: () => void }) {
         <h3 className="mb-4 flex items-center gap-2 font-serif text-3xl"><ImagePlus className="h-6 w-6 text-terra" /> First photo</h3>
         <label className="flex min-h-72 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2rem] border border-dashed border-moss/25 bg-sage/10 text-center">
           {image ? <Image src={image} alt="Selected plant" width={800} height={700} className="h-72 w-full object-cover" unoptimized /> : <><Camera className="mb-3 h-10 w-10 text-moss" /><span className="font-bold text-moss">Attach image</span><span className="mt-1 text-sm text-ink/55">Saved locally in this browser</span></>}
-          <input type="file" accept="image/*" onChange={handleFile} className="sr-only" />
+          <input type="file" {...cameraCaptureProps} onChange={handleFile} className="sr-only" />
         </label>
         <Field label="Photo note" value={form.photoNote} onChange={(photoNote) => setForm({ ...form, photoNote })} placeholder="Freshly watered, new leaf emerging…" />
-        <button className="botanical-button mt-5 w-full rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">Create plant</button>
+        <button className="botanical-button touch-target mt-5 w-full rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">Create plant</button>
       </section>
     </form>
   );
@@ -232,9 +237,9 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
         <PlantHero plant={plant} />
         <section className="botanical-card rounded-[2rem] p-5">
           <div className="flex flex-wrap gap-2">
-            {(['thriving', 'watch', 'urgent'] as PlantStatus[]).map((status) => <button key={status} onClick={() => updateStatus(plant.id, status)} className={`rounded-full border px-4 py-2 text-sm font-bold ${plant.status === status ? 'bg-moss text-paper' : 'bg-paper/70 text-moss'}`}>{statusCopy[status].label}</button>)}
-            <button onClick={() => toggleImportant(plant.id)} className={`rounded-full border px-4 py-2 text-sm font-bold ${plant.important ? 'bg-terra text-paper' : 'bg-paper/70 text-terra'}`}><Bell className="mr-1 inline h-4 w-4" /> Important</button>
-            <button onClick={() => markCaredFor(plant.id)} className="rounded-full border bg-paper/70 px-4 py-2 text-sm font-bold text-moss"><Check className="mr-1 inline h-4 w-4" /> Mark cared for</button>
+            {(['thriving', 'watch', 'urgent'] as PlantStatus[]).map((status) => <button key={status} onClick={() => updateStatus(plant.id, status)} className={`touch-target rounded-full border px-4 py-2 text-sm font-bold ${plant.status === status ? 'bg-moss text-paper' : 'bg-paper/70 text-moss'}`}>{statusCopy[status].label}</button>)}
+            <button onClick={() => toggleImportant(plant.id)} className={`touch-target rounded-full border px-4 py-2 text-sm font-bold ${plant.important ? 'bg-terra text-paper' : 'bg-paper/70 text-terra'}`}><Bell className="mr-1 inline h-4 w-4" /> Important</button>
+            <button onClick={() => markCaredFor(plant.id)} className="touch-target rounded-full border bg-paper/70 px-4 py-2 text-sm font-bold text-moss"><Check className="mr-1 inline h-4 w-4" /> Mark cared for</button>
           </div>
           <p className="mt-4 text-sm leading-6 text-ink/70">{plant.careGoal}</p>
           <label className="mt-4 block">
@@ -269,7 +274,7 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
           <h3 className="mb-4 font-serif text-3xl">Progress timeline</h3>
           <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
             <input value={photoNote} onChange={(event) => setPhotoNote(event.target.value)} placeholder="What changed in this photo?" className="rounded-full border border-ink/10 bg-paper/70 px-4 py-3 outline-none" />
-            <label className="botanical-button cursor-pointer rounded-full bg-moss px-5 py-3 text-center font-bold text-paper"><Camera className="mr-2 inline h-5 w-5" /> Add photo<input type="file" accept="image/*" onChange={addProgressPhoto} className="sr-only" /></label>
+            <label className="botanical-button touch-target cursor-pointer rounded-full bg-moss px-5 py-3 text-center font-bold text-paper"><Camera className="mr-2 inline h-5 w-5" /> Add photo<input type="file" {...cameraCaptureProps} onChange={addProgressPhoto} className="sr-only" /></label>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {plant.photos.map((photo) => <article key={photo.id} className="overflow-hidden rounded-[1.5rem] border border-ink/10 bg-paper/70"><Image src={photo.dataUrl} alt={photo.note || plant.name} width={700} height={560} className="h-44 w-full object-cover" unoptimized /><div className="p-4"><p className="text-xs font-bold uppercase tracking-[0.18em] text-earth">{formatDistanceToNow(new Date(photo.createdAt), { addSuffix: true })}</p><p className="mt-2 text-sm text-ink/70">{photo.note || 'Progress photo saved.'}</p>{photo.aiSummary && <p className="mt-3 rounded-2xl bg-sage/15 p-3 text-sm leading-6 text-moss">{photo.aiSummary}</p>}</div></article>)}
@@ -277,7 +282,7 @@ function PlantScreen({ plant }: { plant: PlantEntry }) {
         </section>
         <section className="botanical-card rounded-[2rem] p-5">
           <h3 className="mb-3 font-serif text-3xl">Care notes</h3>
-          <div className="flex gap-2"><input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Add an observation…" className="min-w-0 flex-1 rounded-full border border-ink/10 bg-paper/70 px-4 py-3 outline-none" /><button onClick={() => { addNote(plant.id, note); setNote(''); }} className="botanical-button rounded-full bg-moss px-4 text-paper"><Check className="h-5 w-5" /></button></div>
+          <div className="flex gap-2"><input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Add an observation…" className="min-w-0 flex-1 rounded-full border border-ink/10 bg-paper/70 px-4 py-3 outline-none" /><button onClick={() => { addNote(plant.id, note); setNote(''); }} className="botanical-button touch-target rounded-full bg-moss px-4 text-paper"><Check className="h-5 w-5" /></button></div>
           <div className="mt-4 space-y-2">{plant.notes.map((item, index) => <p key={`${item}-${index}`} className="rounded-2xl bg-paper/70 p-3 text-sm text-ink/70">{item}</p>)}</div>
           <button onClick={() => askAi('What should I check next based on this plant history?', plant.id)} className="mt-4 rounded-full bg-sun/25 px-4 py-2 text-sm font-bold text-earth">Ask AI for next check</button>
         </section>
@@ -300,10 +305,10 @@ function AiScreen() {
   return (
     <section className="botanical-card rounded-[2rem] p-5 md:p-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.24em] text-earth">Offline care companion</p><h2 className="font-serif text-4xl">Ask Planter AI</h2></div><select value={selectedPlantId ?? ''} onChange={(event) => selectPlant(event.target.value || undefined)} className="rounded-full border border-ink/10 bg-paper px-4 py-3 font-semibold text-moss"><option value="">General question</option>{plants.map((plant) => <option key={plant.id} value={plant.id}>{plant.name}</option>)}</select></div>
-      <div className="max-h-[55vh] space-y-3 overflow-y-auto rounded-[1.75rem] bg-paper/45 p-3">
+      <div className="momentum-scroll max-h-[55vh] space-y-3 overflow-y-auto rounded-[1.75rem] bg-paper/45 p-3">
         {visibleMessages.map((message) => <div key={message.id} className={`max-w-[86%] rounded-[1.5rem] px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'ml-auto bg-moss text-paper' : 'bg-sage/15 text-ink'}`}>{message.content}</div>)}
       </div>
-      <form onSubmit={submit} className="mt-4 flex gap-2"><input value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask about watering, light, yellow leaves…" className="min-w-0 flex-1 rounded-full border border-ink/10 bg-paper px-4 py-3 outline-none" /><button className="botanical-button rounded-full bg-moss px-5 text-paper"><Send className="h-5 w-5" /></button></form>
+      <form onSubmit={submit} className="mt-4 flex gap-2"><input value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask about watering, light, yellow leaves…" className="min-w-0 flex-1 rounded-full border border-ink/10 bg-paper px-4 py-3 outline-none" /><button className="botanical-button touch-target rounded-full bg-moss px-5 text-paper"><Send className="h-5 w-5" /></button></form>
     </section>
   );
 }
@@ -334,8 +339,8 @@ function SettingsScreen() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Offline model</p><h2 className="font-serif text-4xl">{model.name}</h2><p className="mt-3 text-ink/70">Planter is designed around local-first data. This setting prepares the UI for installing a small offline model like Gemma 4 0.8B when the runtime is wired in.</p><div className="mt-5 rounded-[1.5rem] bg-paper/70 p-4"><p className="text-sm font-bold text-moss">Status: {model.status.replace('-', ' ')}</p><p className="mt-1 text-sm text-ink/60">Model size target: {model.size}</p></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={() => setModelStatus('queued')} className="botanical-button rounded-full bg-sun px-4 py-3 font-bold text-ink">Queue install</button><button onClick={() => setModelStatus('ready')} className="botanical-button rounded-full bg-moss px-4 py-3 font-bold text-paper">Mark ready</button></div></section>
-      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Local data</p><h2 className="font-serif text-4xl">Private by default</h2><div className="mt-5 space-y-3"><SettingRow icon={<ShieldCheck />} label="Storage" value="Browser local storage" /><SettingRow icon={<Bell />} label="Important badges" value={`${important} active`} /><SettingRow icon={<Cpu />} label="Sync" value="Not enabled" /></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={downloadBackup} className="botanical-button rounded-full bg-moss px-4 py-3 font-bold text-paper"><Download className="mr-2 inline h-5 w-5" /> Export backup</button><button onClick={() => importRef.current?.click()} className="botanical-button rounded-full bg-paper px-4 py-3 font-bold text-moss"><Upload className="mr-2 inline h-5 w-5" /> Import backup</button><input ref={importRef} type="file" accept="application/json" onChange={importFromFile} className="sr-only" /></div><p className="mt-5 rounded-[1.5rem] bg-terra/10 p-4 text-sm leading-6 text-terra">Portfolio note: export/import proves the local-first architecture has a user-owned data path before online sync is added.</p></section>
+      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Offline model</p><h2 className="font-serif text-4xl">{model.name}</h2><p className="mt-3 text-ink/70">Planter is designed around local-first data. This setting prepares the UI for installing a small offline model like Gemma 4 0.8B when the runtime is wired in.</p><div className="mt-5 rounded-[1.5rem] bg-paper/70 p-4"><p className="text-sm font-bold text-moss">Status: {model.status.replace('-', ' ')}</p><p className="mt-1 text-sm text-ink/60">Model size target: {model.size}</p></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={() => setModelStatus('queued')} className="botanical-button touch-target rounded-full bg-sun px-4 py-3 font-bold text-ink">Queue install</button><button onClick={() => setModelStatus('ready')} className="botanical-button touch-target rounded-full bg-moss px-4 py-3 font-bold text-paper">Mark ready</button></div></section>
+      <section className="botanical-card rounded-[2rem] p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">Local data</p><h2 className="font-serif text-4xl">Private by default</h2><div className="mt-5 space-y-3"><SettingRow icon={<ShieldCheck />} label="Storage" value="Browser local storage" /><SettingRow icon={<Bell />} label="Important badges" value={`${important} active`} /><SettingRow icon={<Cpu />} label="Sync" value="Not enabled" /></div><div className="mt-5 flex flex-wrap gap-2"><button onClick={downloadBackup} className="botanical-button touch-target rounded-full bg-moss px-4 py-3 font-bold text-paper"><Download className="mr-2 inline h-5 w-5" /> Export backup</button><button onClick={() => importRef.current?.click()} className="botanical-button touch-target rounded-full bg-paper px-4 py-3 font-bold text-moss"><Upload className="mr-2 inline h-5 w-5" /> Import backup</button><input ref={importRef} type="file" accept="application/json" onChange={importFromFile} className="sr-only" /></div><p className="mt-5 rounded-[1.5rem] bg-terra/10 p-4 text-sm leading-6 text-terra">Portfolio note: export/import proves the local-first architecture has a user-owned data path before online sync is added.</p></section>
       <section className="botanical-card rounded-[2rem] p-6 lg:col-span-2"><p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-earth">AI engineering showcase</p><h2 className="font-serif text-4xl">Built to demonstrate real AI product work</h2><div className="mt-5 grid gap-3 md:grid-cols-3"><SettingRow icon={<Cpu />} label="Model lifecycle" value="Install state ready" /><SettingRow icon={<Camera />} label="Vision path" value="Photo timeline + compare" /><SettingRow icon={<ShieldCheck />} label="Privacy" value="Local-first by design" /></div><p className="mt-5 text-sm leading-6 text-ink/70">Next engineering milestone: wire this UI to a real on-device model runtime, then add an eval harness that checks care advice quality, safety, and hallucination resistance.</p></section>
     </div>
   );
@@ -357,10 +362,10 @@ export function PlanterApp() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-4 md:px-8 md:py-8">
+    <main className="ios-safe-shell min-h-screen px-4 py-4 md:px-8 md:py-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-ink/10 bg-paper/60 p-3 backdrop-blur md:flex-row md:items-center md:justify-between">
-          <button type="button" onClick={() => setScreen('garden')} className="flex items-center gap-3 px-2 text-left"><span className="flex h-12 w-12 items-center justify-center rounded-full bg-moss text-paper"><Leaf className="h-6 w-6" /></span><span><span className="block font-serif text-3xl leading-none">Planter</span><span className="text-xs font-bold uppercase tracking-[0.22em] text-earth">Botanical OS</span></span></button>
+        <header className="ios-bottom-bar sticky top-2 z-30 mb-6 flex flex-col gap-4 rounded-[2rem] border border-ink/10 bg-paper/80 p-3 backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+          <button type="button" onClick={() => setScreen('garden')} className="touch-target flex items-center gap-3 px-2 text-left"><span className="flex h-12 w-12 items-center justify-center rounded-full bg-moss text-paper"><Leaf className="h-6 w-6" /></span><span><span className="block font-serif text-3xl leading-none">Planter</span><span className="text-xs font-bold uppercase tracking-[0.22em] text-earth">Botanical OS</span></span></button>
           <nav className="flex flex-wrap gap-2">
             <ShellButton active={screen === 'garden'} onClick={() => setScreen('garden')}><BookOpen className="h-4 w-4" /> Garden</ShellButton>
             <ShellButton active={screen === 'add'} onClick={() => setScreen('add')}><Plus className="h-4 w-4" /> Add</ShellButton>

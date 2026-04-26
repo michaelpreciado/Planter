@@ -12,5 +12,20 @@
       "sizes": "any",
       "type": "image/svg+xml"
     }
+  ],
+  "id": "/",
+  "scope": "/",
+  "orientation": "portrait",
+  "categories": [
+    "health",
+    "lifestyle",
+    "productivity"
+  ],
+  "lang": "en-US",
+  "dir": "ltr",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
   ]
 }

@@ -73,3 +73,57 @@ img {
     linear-gradient(90deg, rgba(30, 42, 28, 0.025) 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+@supports (padding: max(0px)) {
+  .ios-safe-shell {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+}
+
+.ios-bottom-bar {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+button,
+a,
+label,
+select,
+input[type='range'] {
+  touch-action: manipulation;
+}
+
+@media (display-mode: standalone) {
+  body {
+    min-height: 100dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
