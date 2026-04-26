@@ -1,40 +1,31 @@
 {
-  "name": "Planter • Offline Garden Companion",
+  "name": "Planter",
   "short_name": "Planter",
-  "description": "Offline-first plant care and watering reminders with secure optional cloud sync.",
+  "description": "A local-first botanical journal with offline AI care notes.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#5EB15E",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "categories": ["productivity", "lifestyle"],
-  "lang": "en",
-  "dir": "ltr",
+  "background_color": "#F5EFE0",
+  "theme_color": "#355E3B",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.ico",
-      "sizes": "16x16 32x32",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/svg+xml"
     }
   ],
-  "features": ["cross-platform", "low-latency", "installable", "offline-first"],
-  "prefer_related_applications": false
-} 
+  "id": "/",
+  "scope": "/",
+  "orientation": "portrait",
+  "categories": [
+    "health",
+    "lifestyle",
+    "productivity"
+  ],
+  "lang": "en-US",
+  "dir": "ltr",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ]
+}
