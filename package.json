@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "ci": "npm ci && npm run type-check && npm run build"
+    "ci": "npm ci && npm run type-check && npm run build",
+    "build:vercel": "next build"
   },
   "dependencies": {
     "@types/node": "^20.10.5",
