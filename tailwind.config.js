@@ -94,6 +94,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
       },
       // Reduce animation count - keep only essential ones
       animation: {

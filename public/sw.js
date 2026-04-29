@@ -1,1 +1,85 @@
-if(!self.define){let e,s={};const t=(t,n)=>(t=new URL(t+".js",n).href,s[t]||new Promise((s=>{if("document"in self){const e=document.createElement("script");e.src=t,e.onload=s,document.head.appendChild(e)}else e=t,importScripts(t),s()})).then((()=>{let e=s[t];if(!e)throw new Error(`Module ${t} didn’t register its module`);return e})));self.define=(n,c)=>{const a=e||("document"in self?document.currentScript.src:"")||location.href;if(s[a])return;let i={};const r=e=>t(e,a),u={module:{uri:a},exports:i,require:r};s[a]=Promise.all(n.map((e=>u[e]||r(e)))).then((e=>(c(...e),i)))}}define(["./workbox-4754cb34"],(function(e){"use strict";importScripts(),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/_next/app-build-manifest.json",revision:"03ffad14442ef7a8f2223d5bfd522d38"},{url:"/_next/static/chunks/176-be5b6c39ea2889fd.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/891-73c4b84264f94a08.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/893-9825dbb9eb27ac88.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/_not-found/page-128bdca03b6810a4.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/add-plant/page-67c78a45c6f74939.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/error-ca62b8460aeff012.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/layout-d23b3792231e3f68.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/list/page-68b554fdb3e1f9bf.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/not-found-e02c760ddf025bab.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/notes/page-67ac71ea53bc268a.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/page-20eca923043d5010.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/plant/%5Bid%5D/page-e0e1099b8252fc4a.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/app/settings/page-52de0d48924135d8.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/framework-bb58f8ed77e9a17c.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/lib-089b6bc706a89bb4.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/main-193033701a46f6c9.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/main-app-8139f20f0d1cf3cf.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/pages/_app-04d963b5b9e65ffc.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/pages/_error-6f9cfbc063b720cd.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/supabase-0d08456b-81d16dd754bd4acb.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/supabase-55776fae-65e7a8d9655866eb.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-04fef8b0-4dd9fc54e1f6dcd4.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-05e245ef-a4c801d50f807ed6.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-26242a00-89fcf402c583a6cb.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-2898f16f-5ce74a2f2cd12c04.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-362d063c-ec8b8080626cbc66.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-4a7382ad-bb4175da225e5e14.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-4c6b37ae-36076d9032217312.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-6808aa01-1b3971c2386a5f77.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-7237a82e-75112f2d3bf4f63a.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-7ec938a2-a0a86fb15c8c6935.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-9c587c8a-cdb7da73018497d6.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-a6f90180-0572bbbbbeb3863a.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-b49fab05-82438bd0b40e69cb.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-cfb98476-df699fa572ae51f3.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-d7c15829-c9b291bebcae7c5c.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-d91c2bd6-1a9974292d7f8c5b.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-dfc0d3ba-c0e08d1986566809.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/vendors-fa70753b-2b2c5e4adce42699.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/chunks/webpack-652247fbe7d62228.js",revision:"mxQRDJc34UvF9jIvutfJq"},{url:"/_next/static/css/914d0b50b5f04b7f.css",revision:"914d0b50b5f04b7f"},{url:"/_next/static/mxQRDJc34UvF9jIvutfJq/_buildManifest.js",revision:"c2d47dbb563f03b98edf844e9b5f9858"},{url:"/_next/static/mxQRDJc34UvF9jIvutfJq/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/apple-touch-icon.png",revision:"f6bc2bb7cecba7550a2c2dd230513207"},{url:"/assets/happy.png",revision:"eb9c1d98868c53dfbdf2c849907e6727"},{url:"/assets/mad.png",revision:"c248ff9b079e9e0713721f7d4da883e2"},{url:"/assets/tamagatchi.png",revision:"2837da60e2ae2b31fad69e9a4c458faf"},{url:"/assets/tamagotchi.png",revision:"2837da60e2ae2b31fad69e9a4c458faf"},{url:"/assets/thirsty.png",revision:"bbae792295cf0fa18c43ab31ff53f0d0"},{url:"/favicon.ico",revision:"c723132632aab7d12e10eef6e1160f5d"},{url:"/favicon.svg",revision:"f6bc2bb7cecba7550a2c2dd230513207"},{url:"/manifest.json",revision:"123e099542ab10418a8b60ad5d502b99"},{url:"/robots.txt",revision:"95ad6f8e697abe398f58577c891c1674"},{url:"/sitemap.xml",revision:"8d70454ac3ed83921592aa6099636852"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:s,event:t,state:n})=>s&&"opaqueredirect"===s.type?new Response(s.body,{status:200,statusText:"OK",headers:s.headers}):s}]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,new e.CacheFirst({cacheName:"google-fonts-webfonts",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,new e.StaleWhileRevalidate({cacheName:"google-fonts-stylesheets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,new e.StaleWhileRevalidate({cacheName:"static-font-assets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,new e.StaleWhileRevalidate({cacheName:"static-image-assets",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/image\?url=.+$/i,new e.StaleWhileRevalidate({cacheName:"next-image",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp3|wav|ogg)$/i,new e.CacheFirst({cacheName:"static-audio-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp4)$/i,new e.CacheFirst({cacheName:"static-video-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:js)$/i,new e.StaleWhileRevalidate({cacheName:"static-js-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:css|less)$/i,new e.StaleWhileRevalidate({cacheName:"static-style-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/data\/.+\/.+\.json$/i,new e.StaleWhileRevalidate({cacheName:"next-data",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:json|xml|csv)$/i,new e.NetworkFirst({cacheName:"static-data-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;const s=e.pathname;return!s.startsWith("/api/auth/")&&!!s.startsWith("/api/")}),new e.NetworkFirst({cacheName:"apis",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:16,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;return!e.pathname.startsWith("/api/")}),new e.NetworkFirst({cacheName:"others",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>!(self.origin===e.origin)),new e.NetworkFirst({cacheName:"cross-origin",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:3600})]}),"GET")}));
+// Service Worker for Planter app
+// Handles overdue plant notifications
+
+const CACHE_NAME = 'planter-sw-v1';
+
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing...');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating...');
+  event.waitUntil(clients.claim());
+});
+
+// Handle messages from the main app
+self.addEventListener('message', async (event) => {
+  const { type, plants } = event.data;
+  
+  if (type === 'CHECK_OVERDUE') {
+    await checkOverduePlants(plants);
+  }
+});
+
+async function checkOverduePlants(plants) {
+  if (!Notification.permission === 'granted') {
+    return;
+  }
+  
+  const now = Date.now();
+  
+  for (const plant of plants) {
+    if (plant.priority !== 'high') continue;
+    
+    const lastWatered = new Date(plant.lastWatered).getTime();
+    const intervalMs = plant.wateringIntervalDays * 24 * 60 * 60 * 1000;
+    const isOverdue = (now - lastWatered) > intervalMs;
+    
+    if (isOverdue) {
+      const daysOverdue = Math.floor(
+        (now - lastWatered - intervalMs) / (24 * 60 * 60 * 1000)
+      );
+      
+      const title = `💧 ${plant.nickname || plant.name} needs water!`;
+      const body = daysOverdue === 1 
+        ? 'Overdue by 1 day. Tap to log watering.'
+        : `Overdue by ${daysOverdue} days. Tap to log watering.`;
+      
+      // Show notification
+      self.registration.showNotification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/badge-72.png',
+        tag: `plant-${plant.id}`,
+        requireInteraction: true,
+        data: {
+          plantId: plant.id,
+          url: '/v2',
+        },
+      });
+    }
+  }
+}
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  const url = event.notification.data?.url || '/v2';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // If a window is already open, focus it
+      for (const client of clientList) {
+        if (client.url === url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise, open a new window
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
+});

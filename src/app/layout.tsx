@@ -2,7 +2,13 @@ import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toast';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { PageTransition } from '@/components/PageTransition';
+import { Fraunces } from 'next/font/google';
 import './globals.css';
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+});
 
 export const metadata = {
   metadataBase: new URL('https://simmys-plant-diary.netlify.app'),
@@ -90,7 +96,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden">
+      <body className={`font-sans antialiased bg-background text-foreground transition-colors duration-300 min-h-dvh overflow-x-hidden ${fraunces.variable}`}>
         <div className="min-h-dvh bg-background">
         <Providers>
           <main className="relative pb-nav-safe min-h-dvh bg-background">
