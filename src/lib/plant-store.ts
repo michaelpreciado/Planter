@@ -33,6 +33,7 @@ type StoreState = {
 
 const now = () => new Date().toISOString();
 const uuid = () => crypto.randomUUID();
+const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
 const starterPlants: PlantEntry[] = [
   {
@@ -40,14 +41,69 @@ const starterPlants: PlantEntry[] = [
     name: 'Monstera Scout',
     type: 'Monstera deliciosa',
     location: 'Morning window',
-    careGoal: 'Track leaf unfurling and avoid overwatering.',
+    careGoal: 'Track new leaf unfurling, rotate weekly, and avoid watering before the top soil dries.',
     status: 'thriving',
     important: false,
     reminderDays: 7,
-    createdAt: now(),
-    updatedAt: now(),
-    photos: [],
-    notes: ['Demo plant — add your own to begin a fresh local journal.'],
+    lastCareAt: daysAgo(2),
+    createdAt: daysAgo(42),
+    updatedAt: daysAgo(1),
+    photos: [
+      { id: 'monstera-photo-latest', dataUrl: '/assets/demo-monstera.svg', note: 'New leaf opened cleanly after moving closer to the morning window.', createdAt: daysAgo(1), aiSummary: 'Growth looks stable. Keep the current light and watering rhythm.' },
+      { id: 'monstera-photo-before', dataUrl: '/assets/demo-monstera.svg', note: 'Leaf was still curled; soil was lightly damp.', createdAt: daysAgo(12), aiSummary: 'Good baseline photo for comparing leaf posture and color.' },
+    ],
+    notes: ['Rotated pot one quarter turn after the new leaf leaned toward the window.', 'Skipped watering because the top inch was still damp.'],
+  },
+  {
+    id: 'starter-rubber',
+    name: 'Ruby Rubber Plant',
+    type: 'Ficus elastica',
+    location: 'East shelf',
+    careGoal: 'Watch for dust buildup and keep watering consistent while new growth hardens.',
+    status: 'watch',
+    important: true,
+    reminderDays: 4,
+    lastCareAt: daysAgo(5),
+    createdAt: daysAgo(31),
+    updatedAt: daysAgo(2),
+    photos: [
+      { id: 'rubber-photo-latest', dataUrl: '/assets/demo-rubber.svg', note: 'Lower leaf edge looked slightly dry; moved away from vent.', createdAt: daysAgo(2), aiSummary: 'Watch airflow and humidity this week. No urgent action if new growth stays firm.' },
+    ],
+    notes: ['Moved 18 inches away from the vent.', 'Wiped leaves with a damp cloth.'],
+  },
+  {
+    id: 'starter-calathea',
+    name: 'Calathea Orbit',
+    type: 'Calathea orbifolia',
+    location: 'Bathroom ledge',
+    careGoal: 'Use photos to catch curling early and keep humidity changes visible.',
+    status: 'urgent',
+    important: true,
+    reminderDays: 2,
+    lastCareAt: daysAgo(4),
+    createdAt: daysAgo(24),
+    updatedAt: daysAgo(1),
+    photos: [
+      { id: 'calathea-photo-latest', dataUrl: '/assets/demo-calathea.svg', note: 'Edges curled after two dry days; humidity tray refilled.', createdAt: daysAgo(1), aiSummary: 'Important: compare tomorrow. Curling plus dry edges suggests humidity or inconsistent moisture.' },
+    ],
+    notes: ['Refilled humidity tray.', 'Marked important until leaves flatten again.'],
+  },
+  {
+    id: 'starter-pothos',
+    name: 'Golden Pothos',
+    type: 'Epipremnum aureum',
+    location: 'Kitchen rail',
+    careGoal: 'Track trailing growth and prune cuttings once vines reach the counter.',
+    status: 'thriving',
+    important: false,
+    reminderDays: 14,
+    lastCareAt: daysAgo(6),
+    createdAt: daysAgo(56),
+    updatedAt: daysAgo(3),
+    photos: [
+      { id: 'pothos-photo-latest', dataUrl: '/assets/demo-pothos.svg', note: 'Vines gained about two inches since last check.', createdAt: daysAgo(3), aiSummary: 'Healthy progress. Consider pruning one vine for propagation soon.' },
+    ],
+    notes: ['Added moss clip to guide the longest vine.', 'No yellow leaves this week.'],
   },
 ];
 

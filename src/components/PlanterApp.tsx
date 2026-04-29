@@ -112,18 +112,18 @@ function GardenScreen({ openPlant, goAdd }: { openPlant: (id: string) => void; g
       <section className="botanical-card paper-texture rounded-[2.25rem] p-5 md:p-8 xl:p-10">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
-            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.26em] text-earth"><Sparkles className="h-4 w-4" /> Local-first garden journal</p>
-            <h1 className="max-w-3xl font-serif text-[clamp(3rem,8vw,6.5rem)] leading-[0.92] tracking-[-0.04em]">Planter got its fresh start.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-ink/70 md:text-lg">Log plants offline, save progress photos, and ask the built-in care companion for practical next steps without dragging the old app along.</p>
+            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-earth"><Sparkles className="h-4 w-4" /> Offline-first plant care journal</p>
+            <h1 className="max-w-3xl font-serif text-[clamp(3rem,8vw,6.5rem)] leading-[0.92] tracking-[-0.04em]">Track every plant like a living project.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-ink/75 md:text-lg">Save care notes, progress photos, reminders, and practical AI-style guidance in one calm local journal that still works without an account.</p>
           </div>
           <button type="button" onClick={goAdd} className="botanical-button touch-target inline-flex items-center justify-center gap-2 rounded-full bg-moss px-5 py-4 font-bold text-paper hover:bg-fern">
             <Plus className="h-5 w-5" /> Add plant
           </button>
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Stat icon={<Sprout />} label="Plants" value={plants.length} />
+          <Stat icon={<Sprout />} label="Plants tracked" value={plants.length} />
           <Stat icon={<Camera />} label="Progress photos" value={totalPhotos} />
-          <Stat icon={<Bell />} label="Important" value={importantCount} />
+          <Stat icon={<Bell />} label="Need attention" value={importantCount} />
         </div>
       </section>
 
@@ -373,7 +373,7 @@ export function PlanterApp() {
             <ShellButton active={screen === 'settings'} onClick={() => setScreen('settings')}><Settings className="h-4 w-4" /> Settings</ShellButton>
           </nav>
         </header>
-        <div className="mb-5 flex flex-col gap-2 rounded-[1.5rem] border border-ink/10 bg-paper/45 px-4 py-3 text-sm text-ink/65 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-2"><span className="flex items-center gap-2"><Sun className="h-4 w-4 text-marigold" /> Offline-ready · local journal</span><span className="flex items-center gap-2"><Droplet className="h-4 w-4 text-moss" /> {importantCount} important</span></div>
+        <div className="mb-5 flex flex-col gap-2 rounded-[1.5rem] border border-ink/10 bg-paper/55 px-4 py-3 text-sm text-ink/70 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-2"><span className="flex items-center gap-2"><Sun className="h-4 w-4 text-marigold" /> Local data · exportable backup</span><span className="flex items-center gap-2"><Droplet className="h-4 w-4 text-moss" /> {plants.length} plants · {importantCount} need attention</span></div>
         {screen === 'garden' && <GardenScreen openPlant={openPlant} goAdd={() => setScreen('add')} />}
         {screen === 'add' && <AddPlantScreen done={() => setScreen('garden')} />}
         {screen === 'plant' && selectedPlant && <PlantScreen plant={selectedPlant} />}

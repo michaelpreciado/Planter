@@ -51,9 +51,9 @@ img {
 }
 
 .botanical-card {
-  border: 1px solid rgba(30, 42, 28, 0.1);
-  background: rgba(251, 246, 233, 0.82);
-  box-shadow: 0 18px 50px rgba(30, 42, 28, 0.08);
+  border: 1px solid rgba(30, 42, 28, 0.14);
+  background: rgba(251, 246, 233, 0.88);
+  box-shadow: 0 18px 50px rgba(30, 42, 28, 0.1);
   backdrop-filter: blur(18px);
 }
 
