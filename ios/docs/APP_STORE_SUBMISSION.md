@@ -40,7 +40,7 @@ plant,care,journal,watering,houseplant,garden,tracker,reminder,growth,photo,diar
 
 ## Privacy
 
-- **Privacy policy URL**: host `PRIVACY_POLICY.md` publicly (GitHub Pages on this repo is the easy path) and paste the URL.
+- **Privacy policy URL**: `https://<your-vercel-domain>/privacy` (the repo's website hosts the policy). Marketing URL: the site root.
 - **App privacy questionnaire**: select **"Data Not Collected"** for everything. This is true: no analytics, no accounts, no server. It must stay true — adding any analytics SDK later means redoing this section.
 - **Export compliance**: the app uses only exempt encryption (HTTPS/OS). `ITSAppUsesNonExemptEncryption = NO` is already set in the project, so App Store Connect should not even ask. If it does, answer: uses encryption → only exempt/standard.
 

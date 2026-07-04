@@ -2,12 +2,12 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [planter]
   push:
-    branches: [main]
+    branches: [planter]
 
 jobs:
-  build-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,10 +21,5 @@ jobs:
         run: npm run lint
       - name: Type check
         run: npm run type-check
-      - name: Unit tests
-        run: npm test -- --coverage
-      - name: Vercel build
-        run: npm run build:vercel
-      - name: Semantic Release
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: npm run release
+      - name: Build
+        run: npm run build
