@@ -2,7 +2,7 @@
   "name": "planter",
   "version": "2.0.0",
   "private": true,
-  "description": "A local-first botanical journal for tracking plants, image progress, and offline AI care notes.",
+  "description": "Landing page and privacy policy host for Planter, the iOS plant care journal.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -21,7 +21,6 @@
     "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.16",
     "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
     "lucide-react": "^0.468.0",
     "next": "^14.2.29",
     "postcss": "^8.4.32",
@@ -29,7 +28,10 @@
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.3",
-    "zustand": "^4.5.7"
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.30"
   }
 }

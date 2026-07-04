@@ -4,14 +4,10 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Planter',
-  description: 'A local-first botanical journal with offline AI plant care notes.',
+  title: 'Planter — Plant Care Journal for iPhone',
+  description:
+    'A private plant journal with marigold roots: photo growth timelines, care reminders, and on-device AI plant help. No accounts, no cloud, no tracking.',
   manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    title: 'Planter',
-    statusBarStyle: 'black-translucent',
-  },
   formatDetection: {
     telephone: false,
     email: false,

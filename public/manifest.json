@@ -1,9 +1,9 @@
 {
   "name": "Planter",
   "short_name": "Planter",
-  "description": "A local-first botanical journal with offline AI care notes.",
+  "description": "A private plant journal for iPhone — photo timelines, care reminders, and on-device AI.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#F5EFE0",
   "theme_color": "#355E3B",
   "icons": [
@@ -13,19 +13,6 @@
       "type": "image/svg+xml"
     }
   ],
-  "id": "/",
-  "scope": "/",
-  "orientation": "portrait",
-  "categories": [
-    "health",
-    "lifestyle",
-    "productivity"
-  ],
   "lang": "en-US",
-  "dir": "ltr",
-  "display_override": [
-    "standalone",
-    "minimal-ui",
-    "browser"
-  ]
+  "dir": "ltr"
 }

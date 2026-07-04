@@ -52,4 +52,4 @@ Questions? Email **mpreciado1997@gmail.com**.
 
 ---
 
-_Hosting note (not part of the policy): App Store Connect requires a public privacy policy URL. The easiest path is enabling GitHub Pages on this repository and pointing the URL at this file, or paste this text into any free page host._
+_Hosting note (not part of the policy): this policy is published at the site's `/privacy` page (`src/app/privacy/page.tsx` on the Vercel deploy). Use `https://<your-vercel-domain>/privacy` as the privacy policy URL in App Store Connect. If you edit this file, mirror the change in the web page._
