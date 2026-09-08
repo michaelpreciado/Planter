@@ -120,3 +120,8 @@ yarn-error.*
 
 # Test coverage
 coverage/
+
+# Local environment files; keep the setup template trackable
+.env
+.env.*
+!.env.example
