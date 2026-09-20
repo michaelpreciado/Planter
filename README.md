@@ -4,7 +4,7 @@
 
 ## Demo
 
-Live: **[planter-ekb2f1y8p-michael-preciados-projects.vercel.app](https://planter-ekb2f1y8p-michael-preciados-projects.vercel.app)**
+Live: **[planter-ruddy.vercel.app](https://planter-ruddy.vercel.app)**
 
 ## Why I built this
 
